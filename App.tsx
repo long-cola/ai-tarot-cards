@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { AppPhase, DrawnCard, SPREAD_LABELS, Language, SessionUser, Plan } from './types';
 import { MAJOR_ARCANA, TRANSLATIONS } from './constants';
 import { getTarotReading } from './services/bailianService';
@@ -8,6 +8,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { API_BASE_URL } from './services/apiClient';
 import { getSession, consumeUsage, redeemMembership, logout } from './services/authService';
+import { toPng } from 'html-to-image';
 
 // Header with Title and Language Switch
 const Header = ({ 
@@ -179,6 +180,9 @@ const App: React.FC = () => {
   const [showRedeem, setShowRedeem] = useState(false);
   const [redeemCodeInput, setRedeemCodeInput] = useState('');
   const [redeemFeedback, setRedeemFeedback] = useState('');
+  const [isSavingImage, setIsSavingImage] = useState(false);
+  const [saveError, setSaveError] = useState('');
+  const readingRef = useRef<HTMLDivElement>(null);
 
   const t = TRANSLATIONS[language];
   
@@ -347,6 +351,28 @@ const App: React.FC = () => {
       return () => clearTimeout(timer);
     }
   }, [phase, drawnCards, question, language]);
+
+  const handleSaveImage = async () => {
+    if (!readingRef.current) return;
+    setIsSavingImage(true);
+    setSaveError('');
+    try {
+      const dataUrl = await toPng(readingRef.current, {
+        cacheBust: true,
+        backgroundColor: '#0f172a',
+        pixelRatio: 2,
+      });
+      const link = document.createElement('a');
+      link.download = 'tarot-reading.png';
+      link.href = dataUrl;
+      link.click();
+    } catch (err) {
+      console.error("save image failed", err);
+      setSaveError(language === 'zh' ? '保存图片失败，请重试。' : 'Failed to save image. Please try again.');
+    } finally {
+      setIsSavingImage(false);
+    }
+  };
 
   const resetApp = () => {
     setPhase(AppPhase.INPUT);
@@ -539,6 +565,7 @@ const App: React.FC = () => {
         {(phase === AppPhase.REVEAL || phase === AppPhase.ANALYSIS) && (
           <div className="w-full flex flex-col items-center space-y-6 animate-fade-in pb-20">
              
+             <div ref={readingRef} className="w-full flex flex-col items-center">
              <div className="text-center w-full px-4 py-6 bg-gradient-to-b from-purple-900/10 to-transparent rounded-b-3xl -mt-4 mb-4">
                 <span className="block text-xs font-bold text-amber-600/80 uppercase tracking-widest mb-2 font-cinzel">{t.questionLabel}</span>
                 <p className="text-lg text-slate-200 font-mystic leading-relaxed">“{question}”</p>
@@ -565,7 +592,7 @@ const App: React.FC = () => {
                     </button>
                   )}
                 </div>
-             </div>
+              </div>
 
             <div className="flex justify-center gap-3 md:gap-6 px-2 w-full max-w-3xl">
               {drawnCards.map((card, idx) => (
@@ -605,6 +632,18 @@ const App: React.FC = () => {
                   </div>
                 </div>
               )}
+            </div>
+             </div>
+
+            <div className="flex items-center gap-3">
+              <button
+                onClick={handleSaveImage}
+                disabled={isReadingLoading || isSavingImage || !reading}
+                className="px-6 py-3 bg-amber-500/80 hover:bg-amber-500 disabled:opacity-50 disabled:cursor-not-allowed text-slate-900 font-semibold rounded-full shadow-lg border border-amber-300/50"
+              >
+                {isSavingImage ? (language === 'zh' ? '保存中...' : 'Saving...') : (language === 'zh' ? '保存解读为图片' : 'Save reading as image')}
+              </button>
+              {saveError && <span className="text-xs text-red-400">{saveError}</span>}
             </div>
           </div>
         )}
