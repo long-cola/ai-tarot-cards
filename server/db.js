@@ -1,4 +1,9 @@
 import pg from "pg";
+import dotenv from "dotenv";
+
+// Load env early so connection string is available when this module initializes
+dotenv.config({ path: ".env.server.local" });
+dotenv.config();
 
 const { Pool } = pg;
 
