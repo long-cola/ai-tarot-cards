@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { AppPhase, DrawnCard, SPREAD_LABELS, Language } from './types';
+import { AppPhase, DrawnCard, SPREAD_LABELS, Language, SessionUser, Plan } from './types';
 import { MAJOR_ARCANA, TRANSLATIONS } from './constants';
 import { getTarotReading } from './services/bailianService';
 import { Card } from './components/Card';
 import { StarryBackground } from './components/StarryBackground';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { API_BASE_URL } from './services/apiClient';
+import { getSession, consumeUsage, redeemMembership, logout } from './services/authService';
 
 // Header with Title and Language Switch
 const Header = ({ 
@@ -13,13 +15,23 @@ const Header = ({
   onBack, 
   showBack, 
   language, 
-  onToggleLanguage 
+  onToggleLanguage,
+  user,
+  plan,
+  onLogin,
+  onLogout,
+  authLoading
 }: { 
   title: string, 
   onBack?: () => void, 
   showBack: boolean,
   language: Language,
-  onToggleLanguage: () => void
+  onToggleLanguage: () => void,
+  user: SessionUser | null,
+  plan: Plan,
+  onLogin: () => void,
+  onLogout: () => void,
+  authLoading: boolean
 }) => (
   <div className="sticky top-0 z-40 w-full pt-4 pb-4 px-4 bg-slate-950/20 backdrop-blur-sm border-b border-white/5 flex items-center justify-between h-[64px] box-border transition-all duration-300">
      <div className="w-12 flex justify-start">
@@ -36,13 +48,35 @@ const Header = ({
        {title}
      </h1>
 
-     <div className="w-12 flex justify-end">
+     <div className="flex items-center gap-2">
         <button 
           onClick={onToggleLanguage} 
           className="text-xs font-cinzel border border-white/20 bg-white/5 hover:bg-white/10 text-white/80 px-2 py-1 rounded transition-colors"
         >
           {language === 'zh' ? 'EN' : '中'}
         </button>
+        {authLoading ? (
+          <div className="w-10 h-8 border border-white/10 rounded-md flex items-center justify-center text-white/60 text-xs">...</div>
+        ) : user ? (
+          <div className="flex items-center gap-2">
+            <div className="text-[10px] text-slate-300/80">
+              {user.name || user.email || (language === 'zh' ? '已登录' : 'Logged in')}
+            </div>
+            <button 
+              onClick={onLogout} 
+              className="text-[10px] px-2 py-1 bg-slate-800/60 border border-white/10 rounded-md text-white/70 hover:bg-slate-700"
+            >
+              {language === 'zh' ? '退出' : 'Logout'}
+            </button>
+          </div>
+        ) : (
+          <button 
+            onClick={onLogin} 
+            className="text-[10px] px-3 py-2 bg-amber-500/80 hover:bg-amber-500 text-slate-900 font-semibold rounded-md transition-colors"
+          >
+            {language === 'zh' ? '使用 Chrome 登录' : 'Login with Chrome'}
+          </button>
+        )}
      </div>
   </div>
 );
@@ -137,6 +171,14 @@ const App: React.FC = () => {
   const [isInteracting, setIsInteracting] = useState(false);
   const [language, setLanguage] = useState<Language>('zh');
   const [errorMsg, setErrorMsg] = useState('');
+  const [user, setUser] = useState<SessionUser | null>(null);
+  const [plan, setPlan] = useState<Plan>('guest');
+  const [remainingToday, setRemainingToday] = useState<number | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [usageError, setUsageError] = useState('');
+  const [showRedeem, setShowRedeem] = useState(false);
+  const [redeemCodeInput, setRedeemCodeInput] = useState('');
+  const [redeemFeedback, setRedeemFeedback] = useState('');
 
   const t = TRANSLATIONS[language];
   
@@ -145,47 +187,94 @@ const App: React.FC = () => {
     setDeck([...MAJOR_ARCANA]);
   }, []);
 
-  // Daily Limit Check
-  const checkDailyLimit = (): boolean => {
-    const STORAGE_KEY = 'mystic_tarot_usage';
-    const MAX_DAILY = 5;
-    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-    
-    let usageData = { date: today, count: 0 };
-    
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (parsed.date === today) {
-          usageData = parsed;
+  // Load session
+  useEffect(() => {
+    const loadSession = async () => {
+      try {
+        const data = await getSession();
+        if (data?.user) {
+          setUser(data.user);
+          setPlan((data.plan as Plan) || 'free');
+          setRemainingToday(data.remaining_today ?? null);
+        } else {
+          setUser(null);
+          setPlan('guest');
+          setRemainingToday(null);
         }
+      } catch (e) {
+        console.error("Session load error", e);
+      } finally {
+        setAuthLoading(false);
       }
-    } catch (e) {
-      console.warn("Storage error", e);
-    }
+    };
+    loadSession();
+  }, []);
 
-    if (usageData.count >= MAX_DAILY) {
+  const loginWithGoogle = () => {
+    window.location.href = `${API_BASE_URL}/auth/google`;
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      setUser(null);
+      setPlan('guest');
+      setRemainingToday(null);
+    } catch (e) {
+      console.error("logout failed", e);
+    }
+  };
+
+  const ensureUsageAllowance = async (): Promise<boolean> => {
+    if (!user) {
+      setUsageError(language === 'zh' ? '请先使用 Chrome 账号登录后再进行解读。' : 'Please log in with your Chrome (Google) account before requesting a reading.');
       return false;
     }
+    try {
+      const res = await consumeUsage();
+      setPlan((res.plan as Plan) || plan);
+      setRemainingToday(res.remaining ?? null);
+      setUsageError('');
+      return true;
+    } catch (err: any) {
+      if (err?.data?.requireRedemption) {
+        setShowRedeem(true);
+        setUsageError(language === 'zh' ? '今日免费次数已用完，请输入兑换码开启会员。' : 'Free daily limit reached. Redeem a code to unlock membership.');
+      } else if (err?.status === 401) {
+        setUsageError(language === 'zh' ? '会话已过期，请重新登录。' : 'Session expired, please log in again.');
+        setUser(null);
+        setPlan('guest');
+      } else {
+        setUsageError(language === 'zh' ? '请求受限，请稍后再试。' : 'Request blocked. Please try again later.');
+      }
+      return false;
+    }
+  };
 
-    // Increment and save
-    usageData.count += 1;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(usageData));
-    return true;
+  const handleRedeem = async () => {
+    if (!redeemCodeInput.trim()) return;
+    try {
+      const res = await redeemMembership(redeemCodeInput.trim());
+      setRedeemFeedback(language === 'zh' ? '兑换成功，会员已开通！' : 'Redeemed successfully. Membership activated!');
+      setPlan('member');
+      setRemainingToday(50);
+      setShowRedeem(false);
+    } catch (err: any) {
+      const reason = err?.data?.reason;
+      const msg = {
+        not_found: language === 'zh' ? '兑换码不存在' : 'Code not found',
+        used: language === 'zh' ? '兑换码已被使用' : 'Code already used',
+        expired: language === 'zh' ? '兑换码已过期' : 'Code expired',
+      }[reason as string] || (language === 'zh' ? '兑换失败，请重试' : 'Redeem failed, try again');
+      setRedeemFeedback(msg);
+    }
   };
 
   // Handle Input Submit
   const handleStart = () => {
     if (!question.trim()) return;
-    
-    // Check limit before starting
-    if (!checkDailyLimit()) {
-      setErrorMsg(t.limitReached);
-      return;
-    }
-    setErrorMsg('');
 
+    setErrorMsg('');
     setPhase(AppPhase.SHUFFLING);
   };
 
@@ -245,6 +334,12 @@ const App: React.FC = () => {
       const timer = setTimeout(async () => {
         setPhase(AppPhase.ANALYSIS);
         setIsReadingLoading(true);
+        const allowed = await ensureUsageAllowance();
+        if (!allowed) {
+          setReading(usageError || (language === 'zh' ? '请先登录或兑换会员后再尝试。' : 'Please log in or redeem membership to continue.'));
+          setIsReadingLoading(false);
+          return;
+        }
         const result = await getTarotReading(question, drawnCards, language);
         setReading(result);
         setIsReadingLoading(false);
@@ -277,6 +372,11 @@ const App: React.FC = () => {
         onBack={resetApp} 
         language={language}
         onToggleLanguage={toggleLanguage}
+        user={user}
+        plan={plan}
+        onLogin={loginWithGoogle}
+        onLogout={handleLogout}
+        authLoading={authLoading}
       />
 
       <main className="relative z-10 w-full flex-1 flex flex-col items-center px-4 py-4 min-h-0">
@@ -442,6 +542,29 @@ const App: React.FC = () => {
              <div className="text-center w-full px-4 py-6 bg-gradient-to-b from-purple-900/10 to-transparent rounded-b-3xl -mt-4 mb-4">
                 <span className="block text-xs font-bold text-amber-600/80 uppercase tracking-widest mb-2 font-cinzel">{t.questionLabel}</span>
                 <p className="text-lg text-slate-200 font-mystic leading-relaxed">“{question}”</p>
+                <div className="mt-4 flex flex-col items-center gap-2 text-xs text-slate-400">
+                  <div className="flex items-center gap-2">
+                    <span className="px-2 py-1 rounded-full bg-slate-800/60 border border-white/5 text-amber-200/80">
+                      {plan === 'member' ? (language === 'zh' ? '会员' : 'Member') : plan === 'free' ? (language === 'zh' ? '普通用户' : 'Free User') : (language === 'zh' ? '游客' : 'Guest')}
+                    </span>
+                    {remainingToday !== null && (
+                      <span className="px-2 py-1 rounded-full bg-slate-800/60 border border-white/5">
+                        {language === 'zh' ? `今日剩余：${remainingToday} 次` : `Remaining today: ${remainingToday}`}
+                      </span>
+                    )}
+                  </div>
+                  {usageError && (
+                    <div className="text-red-400 text-xs">{usageError}</div>
+                  )}
+                  {user && plan === 'free' && (
+                    <button
+                      onClick={() => setShowRedeem(true)}
+                      className="text-[11px] px-3 py-1 bg-amber-500/80 text-slate-900 rounded-md hover:bg-amber-500"
+                    >
+                      {language === 'zh' ? '输入兑换码开通会员' : 'Redeem code for membership'}
+                    </button>
+                  )}
+                </div>
              </div>
 
             <div className="flex justify-center gap-3 md:gap-6 px-2 w-full max-w-3xl">
@@ -492,6 +615,40 @@ const App: React.FC = () => {
          <div className="fixed bottom-4 left-0 w-full text-center pointer-events-none z-0">
              <div className="text-[10px] text-slate-700 uppercase tracking-widest font-cinzel opacity-50">Mystic Tarot v1.1</div>
          </div>
+      )}
+
+      {showRedeem && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 px-4">
+          <div className="bg-slate-900 border border-amber-500/30 rounded-2xl p-6 w-full max-w-sm shadow-2xl space-y-4">
+            <h3 className="text-lg text-amber-200 font-semibold">
+              {language === 'zh' ? '输入兑换码' : 'Enter Redemption Code'}
+            </h3>
+            <input
+              type="text"
+              className="w-full bg-slate-800 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-amber-400"
+              placeholder={language === 'zh' ? '兑换码' : 'Code'}
+              value={redeemCodeInput}
+              onChange={(e) => setRedeemCodeInput(e.target.value)}
+            />
+            {redeemFeedback && (
+              <div className="text-sm text-amber-300">{redeemFeedback}</div>
+            )}
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => setShowRedeem(false)}
+                className="px-4 py-2 rounded-lg bg-slate-800 text-slate-200 border border-white/10"
+              >
+                {language === 'zh' ? '取消' : 'Cancel'}
+              </button>
+              <button
+                onClick={handleRedeem}
+                className="px-4 py-2 rounded-lg bg-amber-500 text-slate-900 font-semibold"
+              >
+                {language === 'zh' ? '兑换' : 'Redeem'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       <style>{`

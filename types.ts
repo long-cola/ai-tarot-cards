@@ -22,6 +22,16 @@ export interface DrawnCard extends TarotCardData {
   position: number; // 0: Past, 1: Present, 2: Future
 }
 
+export type Plan = 'guest' | 'free' | 'member';
+
+export interface SessionUser {
+  id: string;
+  email: string | null;
+  name: string | null;
+  avatar: string | null;
+  membership_expires_at?: string | null;
+}
+
 export enum CardSpreadPosition {
   PAST = 0,
   PRESENT = 1,
