@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { AppPhase, DrawnCard, SPREAD_LABELS, Language } from './types';
 import { MAJOR_ARCANA, TRANSLATIONS } from './constants';
-import { getTarotReading } from './services/geminiService';
+import { getTarotReading } from './services/bailianService';
 import { Card } from './components/Card';
 import { StarryBackground } from './components/StarryBackground';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 // Header with Title and Language Switch
 const Header = ({ 
@@ -96,6 +97,34 @@ const WisdomLoader = ({ language }: { language: Language }) => {
         </div>
      </div>
   );
+};
+
+const markdownComponents = {
+  h2: ({ children }: { children: React.ReactNode }) => (
+    <h2 className="text-xl font-semibold text-amber-200/90 tracking-wide mb-3 border-l-4 border-amber-400/40 pl-3">
+      {children}
+    </h2>
+  ),
+  h3: ({ children }: { children: React.ReactNode }) => (
+    <h3 className="text-lg font-semibold text-amber-100/90 mb-2">
+      {children}
+    </h3>
+  ),
+  ul: ({ children }: { children: React.ReactNode }) => (
+    <ul className="list-disc list-inside space-y-2 text-slate-200/90">{children}</ul>
+  ),
+  ol: ({ children }: { children: React.ReactNode }) => (
+    <ol className="list-decimal list-inside space-y-2 text-slate-200/90">{children}</ol>
+  ),
+  li: ({ children }: { children: React.ReactNode }) => (
+    <li className="leading-relaxed">{children}</li>
+  ),
+  strong: ({ children }: { children: React.ReactNode }) => (
+    <strong className="text-amber-300 font-semibold">{children}</strong>
+  ),
+  p: ({ children }: { children: React.ReactNode }) => (
+    <p className="leading-relaxed text-slate-200/90">{children}</p>
+  ),
 };
 
 const App: React.FC = () => {
@@ -435,7 +464,13 @@ const App: React.FC = () => {
                  <WisdomLoader language={language} />
               ) : (
                 <div className="prose prose-invert prose-sm sm:prose-base prose-p:text-slate-300 prose-p:leading-loose prose-headings:text-amber-100 prose-strong:text-amber-400 max-w-none font-mystic">
-                  <ReactMarkdown>{reading}</ReactMarkdown>
+                  <ReactMarkdown 
+                    remarkPlugins={[remarkGfm]} 
+                    components={markdownComponents} 
+                    linkTarget="_blank"
+                  >
+                    {reading}
+                  </ReactMarkdown>
                   
                   <div className="pt-8 pb-2 flex justify-center">
                     <button 

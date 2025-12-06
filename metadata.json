@@ -1,5 +1,5 @@
 {
   "name": "Mystic Tarot AI",
-  "description": "An immersive AI-powered Tarot reading experience with a mystical atmosphere, card shuffling rituals, and deep interpretation using Gemini.",
+  "description": "An immersive AI-powered Tarot reading experience with a mystical atmosphere, card shuffling rituals, and deep interpretation powered by Alibaba Bailian's Qwen models.",
   "requestFramePermissions": []
 }
