@@ -21,6 +21,7 @@ const {
   CLIENT_ORIGIN = "http://localhost:5173",
   SERVER_URL = "http://localhost:3001",
   ADMIN_CODE_SECRET,
+  HOST = "0.0.0.0",
 } = process.env;
 
 if (!SESSION_SECRET) {
@@ -170,8 +171,8 @@ const start = async () => {
       console.error("[server] Failed to ensure schema", err);
     }
   }
-  app.listen(PORT, () => {
-    console.log(`[server] listening on ${PORT}`);
+  app.listen(PORT, HOST, () => {
+    console.log(`[server] listening on ${HOST}:${PORT}`);
   });
 };
 
