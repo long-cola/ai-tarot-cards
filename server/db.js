@@ -7,7 +7,15 @@ dotenv.config();
 
 const { Pool } = pg;
 
-const connectionString = process.env.DATABASE_URL;
+let connectionString = process.env.DATABASE_URL;
+
+// Neon 在 serverless 环境可能因 channel_binding 参数导致握手失败，移除该参数
+if (connectionString?.includes("channel_binding")) {
+  connectionString = connectionString.replace(/([\?&])channel_binding=[^&]+&?/gi, "$1");
+  if (connectionString.endsWith("?") || connectionString.endsWith("&")) {
+    connectionString = connectionString.slice(0, -1);
+  }
+}
 
 if (!connectionString) {
   console.warn("[db] DATABASE_URL is not set. Database features will be unavailable until configured.");
@@ -27,6 +35,9 @@ export const getPool = () => {
       max: 1, // Minimize connections in serverless
       connectionTimeoutMillis: 5000,
       idleTimeoutMillis: 30000,
+      statement_timeout: 5000,
+      idle_in_transaction_session_timeout: 5000,
+      options: "-c statement_timeout=5000 -c idle_in_transaction_session_timeout=5000",
     });
   }
 

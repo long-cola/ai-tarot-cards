@@ -26,6 +26,7 @@ const Header = ({
   onOpenTopics,
   quota,
   onRedeem,
+  onUpgrade,
 }: { 
   title: string, 
   onBack?: () => void, 
@@ -40,6 +41,7 @@ const Header = ({
   onOpenTopics: () => void,
   quota: PlanQuota | null,
   onRedeem: () => void,
+  onUpgrade: () => void,
 }) => (
   <div className="sticky top-0 z-40 w-full pt-4 pb-4 px-4 bg-slate-950/20 backdrop-blur-sm border-b border-white/5 flex items-center justify-between h-[64px] box-border transition-all duration-300">
      <div className="w-12 flex justify-start">
@@ -134,8 +136,8 @@ const Header = ({
                     {language === 'zh' ? '命题列表' : 'Topics'}
                   </button>
                   {plan === 'free' && (
-                    <button
-                      onClick={() => setShowPaywall(true)}
+                  <button
+                      onClick={onUpgrade}
                       className="flex-1 text-[11px] px-3 py-2 bg-amber-500 text-slate-900 font-semibold rounded-lg"
                     >
                       {language === 'zh' ? '升级/兑换' : 'Upgrade/Redeem'}
@@ -937,6 +939,7 @@ Card drawn: ${currentCardStr}`;
         onOpenTopics={openTopicsModal}
         quota={topicQuota}
         onRedeem={() => setShowRedeem(true)}
+        onUpgrade={() => setShowPaywall(true)}
       />
 
       {/* Expiry banner */}
