@@ -35,6 +35,11 @@ if (!SESSION_SECRET) {
   console.warn("[server] SESSION_SECRET is not set. Please configure it in .env.server.local or env vars.");
 }
 
+// Early health check endpoint (before middleware) for fast serverless warmup
+app.get("/api/health", (_req, res) => {
+  res.json({ ok: true, status: "healthy", timestamp: Date.now() });
+});
+
 configurePassport({
   googleClientId: GOOGLE_CLIENT_ID,
   googleClientSecret: GOOGLE_CLIENT_SECRET,
@@ -52,16 +57,19 @@ app.use(
   })
 );
 app.use(express.json());
+// Session configuration optimized for serverless
 app.use(
   session({
     secret: SESSION_SECRET || "change-me",
     resave: false,
     saveUninitialized: false,
     cookie: {
-      sameSite: "lax",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       secure: process.env.NODE_ENV === "production",
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     },
+    // Accept MemoryStore limitations in serverless (sessions won't persist across instances)
+    // For production, consider using @vercel/kv or similar
   })
 );
 app.use(passport.initialize());
@@ -87,10 +95,6 @@ const requireAuth = (req, res, next) => {
   }
   return next();
 };
-
-app.get("/api/health", (_req, res) => {
-  res.json({ ok: true, status: "healthy" });
-});
 
 app.get("/api/me", async (req, res) => {
   if (!req.isAuthenticated || !req.isAuthenticated()) {
