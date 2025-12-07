@@ -8,6 +8,9 @@
     { "source": "/api/auth/google/callback", "destination": "/api/auth-google-callback" },
     { "source": "/api/usage/consume", "destination": "/api/usage-consume" },
     { "source": "/api/tarot-reading", "destination": "/api/tarot-reading" },
+    { "source": "/api/topics/:id/events", "destination": "/api/topics-add-event?id=:id" },
+    { "source": "/api/topics/:id", "destination": "/api/topics-detail?id=:id" },
+    { "source": "/api/topics", "destination": "/api/topics" },
     { "source": "/api/(.*)", "destination": "/api/server" },
     { "source": "/admin", "destination": "/" }
   ],
