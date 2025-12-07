@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #0f172a; color: #e2e8f0; margin: 0; padding: 16px; }
+    h1 { font-size: 20px; margin-bottom: 12px; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+    th, td { border: 1px solid #334155; padding: 8px; font-size: 12px; }
+    th { background: #1e293b; }
+    tr:nth-child(every) { background: #0f172a; }
+    input, button { padding: 8px; border: 1px solid #334155; border-radius: 6px; background: #1e293b; color: #e2e8f0; }
+    button { cursor: pointer; }
+    .card { background: #111827; border: 1px solid #1f2937; border-radius: 12px; padding: 12px; margin-bottom: 16px; }
+    .flex { display: flex; gap: 8px; align-items: center; }
+    .mt { margin-top: 8px; }
+    pre { white-space: pre-wrap; word-break: break-all; background: #0b1220; padding: 8px; border-radius: 8px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Admin Dashboard</h1>
+    <div class="flex">
+      <input id="email" type="text" placeholder="邮箱" value="catadioptric19941@gmail.com" style="flex:1;">
+      <input id="password" type="password" placeholder="密码" value="Admin@!23" style="flex:1;">
+      <button onclick="loadUsers()">登录并加载</button>
+    </div>
+  </div>
+
+  <div id="users" class="card">
+    <h2 style="font-size:16px;">用户列表</h2>
+    <div id="userCount"></div>
+    <table id="userTable">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Email</th>
+          <th>Plan</th>
+          <th>到期</th>
+          <th>注册时间</th>
+          <th>命题数</th>
+          <th>事件数</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <div id="topics" class="card" style="display:none;">
+    <h2 style="font-size:16px;">用户命题</h2>
+    <table id="topicTable">
+      <thead>
+        <tr>
+          <th>标题</th>
+          <th>创建时间</th>
+          <th>事件数</th>
+          <th>查看事件</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <div id="events" class="card" style="display:none;">
+    <h2 style="font-size:16px;">命题事件</h2>
+    <table id="eventTable">
+      <thead>
+        <tr>
+          <th>名称</th>
+          <th>时间</th>
+          <th>牌</th>
+          <th>解读</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <script>
+    const api = (path) => {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const headers = {
+        'Authorization': 'Basic ' + btoa(`${email}:${password}`)
+      };
+      return fetch(path, { headers }).then(r => r.json());
+    };
+
+    async function loadUsers() {
+      const data = await api('/api/admin/users');
+      const tbody = document.querySelector('#userTable tbody');
+      tbody.innerHTML = '';
+      document.getElementById('userCount').innerText = `总用户：${data.total || 0}`;
+      (data.users || []).forEach(u => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${u.id}</td>
+          <td>${u.email || ''}</td>
+          <td>${u.plan}</td>
+          <td>${u.membership_expires_at || ''}</td>
+          <td>${u.created_at || ''}</td>
+          <td>${u.topic_count || 0}</td>
+          <td>${u.event_count || 0}</td>
+          <td><button data-id="${u.id}">查看命题</button></td>
+        `;
+        tr.querySelector('button').onclick = () => loadTopics(u.id, secret);
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function loadTopics(userId) {
+      const data = await api(`/api/admin/users/${userId}/topics`);
+      const tbody = document.querySelector('#topicTable tbody');
+      tbody.innerHTML = '';
+      (data.topics || []).forEach(t => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${t.title}</td>
+          <td>${t.created_at || ''}</td>
+          <td>${t.event_count || 0}</td>
+          <td><button data-id="${t.id}">查看</button></td>
+        `;
+        tr.querySelector('button').onclick = () => loadEvents(t.id, secret);
+        tbody.appendChild(tr);
+      });
+      document.getElementById('topics').style.display = 'block';
+      document.getElementById('events').style.display = 'none';
+    }
+
+    async function loadEvents(topicId) {
+      const data = await api(`/api/admin/topics/${topicId}/events`);
+      const tbody = document.querySelector('#eventTable tbody');
+      tbody.innerHTML = '';
+      (data.events || []).forEach(e => {
+        const cards = (e.cards || []).map(c => c.name || c.nameCn || '').join(', ');
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${e.name}</td>
+          <td>${e.created_at || ''}</td>
+          <td>${cards}</td>
+          <td><pre>${e.reading || ''}</pre></td>
+        `;
+        tbody.appendChild(tr);
+      });
+      document.getElementById('events').style.display = 'block';
+    }
+  </script>
+</body>
+</html>

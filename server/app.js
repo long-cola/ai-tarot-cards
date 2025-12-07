@@ -8,6 +8,9 @@ import { ensureSchema } from "./schema.js";
 import { pool } from "./db.js";
 import { getPlanInfo, getTodayUsage, incrementUsage } from "./usage.js";
 import { redeemCode, generateCodes } from "./redemption.js";
+import { ensureActiveCycleForUser, getPlanQuotaSummary } from "./plan.js";
+import { getUserStats, getUserTopics, getTopicEvents, isAdminAuthorized } from "./admin.js";
+import { getTopicDetailWithEvents } from "./topics.js";
 
 // Load env for local/dev; on Vercel, env is injected automatically
 dotenv.config({ path: ".env.server.local" });
@@ -122,13 +125,19 @@ app.get("/api/me", authMiddleware, async (req, res) => {
   const user = req.user;
   const planInfo = getPlanInfo(user);
   const today = await getTodayUsage(user.id);
+  const quota = await getPlanQuotaSummary(user);
   res.json({
     user,
-    plan: planInfo.plan,
+    plan: quota?.plan || planInfo.plan,
     membership_expires_at: user.membership_expires_at,
     daily_limit: planInfo.dailyLimit,
     used_today: today.count,
     remaining_today: Math.max(planInfo.dailyLimit - today.count, 0),
+    topic_quota_total: quota?.topic_quota_total ?? null,
+    topic_quota_remaining: quota?.topic_quota_remaining ?? null,
+    event_quota_per_topic: quota?.event_quota_per_topic ?? null,
+    cycle_expires_at: quota?.expires_at ?? null,
+    downgrade_limited_topic_id: quota?.downgrade_limited_topic_id ?? null,
   });
 });
 
@@ -212,6 +221,49 @@ app.post("/api/codes/generate", async (req, res) => {
   const { count = 1, durationDays = 30, validDays = 365 } = req.body || {};
   const codes = await generateCodes({ count: Math.min(count, 50), durationDays, validDays });
   res.json({ ok: true, codes });
+});
+
+// Admin: user stats
+app.get("/api/admin/users", async (req, res) => {
+  if (!isAdminAuthorized(req)) {
+    return res.status(403).json({ ok: false, message: "forbidden" });
+  }
+  if (!pool) return res.status(500).json({ ok: false, message: "db_not_configured" });
+  await ensureSchemaOnce();
+  const stats = await getUserStats();
+  res.json({ ok: true, ...stats });
+});
+
+// Admin: user topics and events
+app.get("/api/admin/users/:id/topics", async (req, res) => {
+  if (!isAdminAuthorized(req)) {
+    return res.status(403).json({ ok: false, message: "forbidden" });
+  }
+  if (!pool) return res.status(500).json({ ok: false, message: "db_not_configured" });
+  await ensureSchemaOnce();
+  const topics = await getUserTopics(req.params.id);
+  res.json({ ok: true, topics });
+});
+
+app.get("/api/admin/topics/:id/events", async (req, res) => {
+  if (!isAdminAuthorized(req)) {
+    return res.status(403).json({ ok: false, message: "forbidden" });
+  }
+  if (!pool) return res.status(500).json({ ok: false, message: "db_not_configured" });
+  await ensureSchemaOnce();
+  const events = await getTopicEvents(req.params.id);
+  res.json({ ok: true, events });
+});
+
+app.get("/api/admin/topics/:id", async (req, res) => {
+  if (!isAdminAuthorized(req)) {
+    return res.status(403).json({ ok: false, message: "forbidden" });
+  }
+  if (!pool) return res.status(500).json({ ok: false, message: "db_not_configured" });
+  await ensureSchemaOnce();
+  const data = await getTopicDetailWithEvents(req.params.id);
+  if (!data) return res.status(404).json({ ok: false, message: "topic_not_found" });
+  res.json({ ok: true, ...data });
 });
 
 app.post("/api/tarot-reading", requireAuth, async (req, res) => {
@@ -351,6 +403,153 @@ Please use Markdown format for clear and elegant output.`;
       details: error.message
     });
   }
+});
+
+app.get("/api/topics", requireAuth, async (req, res) => {
+  if (!pool) return res.status(500).json({ ok: false, message: "db_not_configured" });
+  await ensureSchemaOnce();
+  const user = req.user;
+  const quota = await getPlanQuotaSummary(user);
+  const topicsRes = await pool.query(
+    `
+      select t.*,
+        (select count(*) from topic_events e where e.topic_id = t.id) as event_count
+      from topics t
+      where t.user_id=$1
+      order by t.created_at desc
+    `,
+    [user.id]
+  );
+  const topics = topicsRes.rows.map((row) => {
+    const count = Number(row.event_count || 0);
+    const remaining = quota?.event_quota_per_topic != null
+      ? Math.max(quota.event_quota_per_topic - count, 0)
+      : null;
+    return { ...row, event_remaining: remaining };
+  });
+  res.json({ ok: true, topics, quota });
+});
+
+app.post("/api/topics", requireAuth, async (req, res) => {
+  if (!pool) return res.status(500).json({ ok: false, message: "db_not_configured" });
+  await ensureSchemaOnce();
+  const user = req.user;
+  const { title, language = "zh", baseline_cards = null, baseline_reading = null } = req.body || {};
+
+  if (!title || !title.trim()) {
+    return res.status(400).json({ ok: false, message: "missing_title" });
+  }
+
+  const quota = await getPlanQuotaSummary(user);
+  if (quota && quota.topic_quota_remaining !== null && quota.topic_quota_remaining <= 0) {
+    return res.status(403).json({ ok: false, reason: "topic_quota_exhausted", quota });
+  }
+
+  const cycle = quota?.cycle || (await ensureActiveCycleForUser(user));
+  if (!cycle) return res.status(500).json({ ok: false, message: "cycle_unavailable" });
+
+  const insert = await pool.query(
+    `insert into topics (user_id, cycle_id, title, language, baseline_cards, baseline_reading)
+     values ($1,$2,$3,$4,$5,$6)
+     returning *`,
+    [user.id, cycle.id, title.trim(), language, baseline_cards, baseline_reading]
+  );
+
+  const updatedQuota = await getPlanQuotaSummary(user);
+  res.json({ ok: true, topic: insert.rows[0], quota: updatedQuota });
+});
+
+app.get("/api/topics/:id", requireAuth, async (req, res) => {
+  if (!pool) return res.status(500).json({ ok: false, message: "db_not_configured" });
+  await ensureSchemaOnce();
+  const user = req.user;
+  const topicId = req.params.id;
+
+  const topicRes = await pool.query(
+    `select * from topics where id=$1 and user_id=$2 limit 1`,
+    [topicId, user.id]
+  );
+  if (!topicRes.rows.length) {
+    return res.status(404).json({ ok: false, message: "topic_not_found" });
+  }
+
+  const eventsRes = await pool.query(
+    `select * from topic_events where topic_id=$1 order by created_at asc`,
+    [topicId]
+  );
+
+  const quota = await getPlanQuotaSummary(user);
+  const eventCount = eventsRes.rows.length;
+  res.json({
+    ok: true,
+    topic: topicRes.rows[0],
+    events: eventsRes.rows,
+    quota,
+    event_usage: {
+      used: eventCount,
+      remaining: quota?.event_quota_per_topic != null
+        ? Math.max(quota.event_quota_per_topic - eventCount, 0)
+        : null,
+    },
+  });
+});
+
+app.post("/api/topics/:id/events", requireAuth, async (req, res) => {
+  if (!pool) return res.status(500).json({ ok: false, message: "db_not_configured" });
+  await ensureSchemaOnce();
+  const user = req.user;
+  const topicId = req.params.id;
+  const { name, cards = null, reading = null } = req.body || {};
+
+  if (!name || !name.trim()) {
+    return res.status(400).json({ ok: false, message: "missing_event_name" });
+  }
+
+  const topicRes = await pool.query(
+    `select * from topics where id=$1 and user_id=$2 limit 1`,
+    [topicId, user.id]
+  );
+  if (!topicRes.rows.length) {
+    return res.status(404).json({ ok: false, message: "topic_not_found" });
+  }
+  const topic = topicRes.rows[0];
+
+  const quota = await getPlanQuotaSummary(user);
+  if (quota?.plan === "free" && quota?.downgrade_limited_topic_id && quota.downgrade_limited_topic_id !== topic.id) {
+    return res.status(403).json({ ok: false, reason: "downgraded_topic_locked", quota });
+  }
+
+  const eventCountRes = await pool.query(
+    `select count(*) as count from topic_events where topic_id=$1`,
+    [topicId]
+  );
+  const eventCount = Number(eventCountRes.rows[0]?.count ?? 0);
+
+  if (quota?.event_quota_per_topic != null && eventCount >= quota.event_quota_per_topic) {
+    return res.status(403).json({ ok: false, reason: "event_quota_exhausted", quota, used: eventCount });
+  }
+
+  const cycleId = topic.cycle_id || quota?.cycle?.id || null;
+  const insert = await pool.query(
+    `insert into topic_events (topic_id, cycle_id, user_id, name, cards, reading)
+     values ($1,$2,$3,$4,$5,$6)
+     returning *`,
+    [topicId, cycleId, user.id, name.trim(), cards, reading]
+  );
+
+  await pool.query(`update topics set updated_at=now() where id=$1`, [topicId]);
+
+  const newCount = eventCount + 1;
+  const remaining = quota?.event_quota_per_topic != null
+    ? Math.max(quota.event_quota_per_topic - newCount, 0)
+    : null;
+
+  res.json({
+    ok: true,
+    event: insert.rows[0],
+    event_usage: { used: newCount, remaining },
+    quota,
+  });
 });
 
 export { app };

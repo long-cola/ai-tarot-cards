@@ -1,5 +1,6 @@
 import crypto from "crypto";
 import { pool } from "./db.js";
+import { startMembershipCycle } from "./plan.js";
 
 const addDays = (date, days) => {
   const result = new Date(date);
@@ -35,6 +36,7 @@ export const redeemCode = async (code, userId) => {
   const newExpiry = addDays(baseDate, row.duration_days || 30);
 
   await pool.query(`update users set membership_expires_at=$1 where id=$2`, [newExpiry, userId]);
+  await startMembershipCycle({ userId, durationDays: row.duration_days || 30, source: "redeem" });
   await pool.query(
     `update redemption_codes set redeemed_by=$1, redeemed_at=now() where code=$2`,
     [userId, code]

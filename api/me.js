@@ -1,6 +1,7 @@
 import { getUserFromRequest } from "../server/jwt.js";
 import { getPool } from "../server/db.js";
 import { ensureSchema } from "../server/schema.js";
+import { getPlanQuotaSummary } from "../server/plan.js";
 
 let schemaEnsured = false;
 
@@ -53,6 +54,7 @@ export default async function handler(req, res) {
 
     const planInfo = getPlanInfo(user);
     const today = await getTodayUsage(user.id);
+    const quota = await getPlanQuotaSummary(user);
 
     res.status(200).json({
       user: {
@@ -62,11 +64,16 @@ export default async function handler(req, res) {
         avatar: user.avatar,
         membership_expires_at: user.membership_expires_at,
       },
-      plan: planInfo.plan,
+      plan: quota?.plan || planInfo.plan,
       membership_expires_at: user.membership_expires_at,
       daily_limit: planInfo.dailyLimit,
       used_today: today.count,
       remaining_today: Math.max(planInfo.dailyLimit - today.count, 0),
+      topic_quota_total: quota?.topic_quota_total ?? null,
+      topic_quota_remaining: quota?.topic_quota_remaining ?? null,
+      event_quota_per_topic: quota?.event_quota_per_topic ?? null,
+      cycle_expires_at: quota?.expires_at ?? null,
+      downgrade_limited_topic_id: quota?.downgrade_limited_topic_id ?? null,
     });
   } catch (error) {
     console.error("[/api/me] Error:", error);
