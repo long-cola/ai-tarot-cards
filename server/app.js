@@ -35,16 +35,24 @@ if (!SESSION_SECRET) {
   console.warn("[server] SESSION_SECRET is not set. Please configure it in .env.server.local or env vars.");
 }
 
-// Early health check endpoint (before middleware) for fast serverless warmup
+// Early health check endpoint (before any middleware) for fast serverless warmup
 app.get("/api/health", (_req, res) => {
   res.json({ ok: true, status: "healthy", timestamp: Date.now() });
 });
 
-configurePassport({
-  googleClientId: GOOGLE_CLIENT_ID,
-  googleClientSecret: GOOGLE_CLIENT_SECRET,
-  callbackURL: `${SERVER_URL}/api/auth/google/callback`,
-});
+// Lazy passport configuration - only initialize when needed
+let passportConfigured = false;
+const ensurePassportConfigured = () => {
+  if (passportConfigured) return;
+
+  configurePassport({
+    googleClientId: GOOGLE_CLIENT_ID,
+    googleClientSecret: GOOGLE_CLIENT_SECRET,
+    callbackURL: `${SERVER_URL}/api/auth/google/callback`,
+  });
+
+  passportConfigured = true;
+};
 
 app.use(
   cors({
@@ -57,23 +65,30 @@ app.use(
   })
 );
 app.use(express.json());
-// Session configuration optimized for serverless
-app.use(
-  session({
-    secret: SESSION_SECRET || "change-me",
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-      secure: process.env.NODE_ENV === "production",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    },
-    // Accept MemoryStore limitations in serverless (sessions won't persist across instances)
-    // For production, consider using @vercel/kv or similar
-  })
-);
-app.use(passport.initialize());
-app.use(passport.session());
+
+// Session middleware - only for auth routes
+const sessionMiddleware = session({
+  secret: SESSION_SECRET || "change-me",
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    secure: process.env.NODE_ENV === "production",
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+  },
+});
+
+// Apply session/passport middleware conditionally for auth routes
+const authMiddleware = (req, res, next) => {
+  ensurePassportConfigured();
+  sessionMiddleware(req, res, (err) => {
+    if (err) return next(err);
+    passport.initialize()(req, res, (err2) => {
+      if (err2) return next(err2);
+      passport.session()(req, res, next);
+    });
+  });
+};
 
 // Lazy schema initialization - only run on first database access
 let schemaInitialized = false;
@@ -89,14 +104,17 @@ const ensureSchemaOnce = async () => {
   }
 };
 
-const requireAuth = (req, res, next) => {
-  if (!req.isAuthenticated || !req.isAuthenticated()) {
-    return res.status(401).json({ ok: false, message: "not_authenticated" });
+const requireAuth = [
+  authMiddleware,
+  (req, res, next) => {
+    if (!req.isAuthenticated || !req.isAuthenticated()) {
+      return res.status(401).json({ ok: false, message: "not_authenticated" });
+    }
+    return next();
   }
-  return next();
-};
+];
 
-app.get("/api/me", async (req, res) => {
+app.get("/api/me", authMiddleware, async (req, res) => {
   if (!req.isAuthenticated || !req.isAuthenticated()) {
     return res.json({ user: null });
   }
@@ -114,7 +132,7 @@ app.get("/api/me", async (req, res) => {
   });
 });
 
-app.post("/api/logout", (req, res) => {
+app.post("/api/logout", authMiddleware, (req, res) => {
   req.logout(() => {
     req.session.destroy(() => {
       res.json({ ok: true });
@@ -122,11 +140,16 @@ app.post("/api/logout", (req, res) => {
   });
 });
 
-app.get("/api/auth/google", passport.authenticate("google", { scope: ["profile", "email"] }));
+app.get("/api/auth/google", authMiddleware, (req, res, next) => {
+  passport.authenticate("google", { scope: ["profile", "email"] })(req, res, next);
+});
 
 app.get(
   "/api/auth/google/callback",
-  passport.authenticate("google", { failureRedirect: `${CLIENT_ORIGIN}?auth=failure` }),
+  authMiddleware,
+  (req, res, next) => {
+    passport.authenticate("google", { failureRedirect: `${CLIENT_ORIGIN}?auth=failure` })(req, res, next);
+  },
   (_req, res) => {
     res.redirect(`${CLIENT_ORIGIN}?auth=success`);
   }
