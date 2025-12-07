@@ -1,11 +1,19 @@
 {
   "version": 2,
   "rewrites": [
+    { "source": "/api/health", "destination": "/api/health" },
+    { "source": "/api/me", "destination": "/api/me" },
     { "source": "/api/(.*)", "destination": "/api/server" }
   ],
   "functions": {
     "api/server.js": {
       "maxDuration": 30
+    },
+    "api/health.js": {
+      "maxDuration": 10
+    },
+    "api/me.js": {
+      "maxDuration": 10
     }
   }
 }
