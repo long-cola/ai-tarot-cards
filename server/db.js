@@ -31,13 +31,11 @@ export const getPool = () => {
     _pool = new Pool({
       connectionString,
       ssl: { rejectUnauthorized: false },
-      // Serverless-optimized settings
+      // Serverless-optimized settings for Neon pooled connections
       max: 1, // Minimize connections in serverless
       connectionTimeoutMillis: 5000,
       idleTimeoutMillis: 30000,
-      statement_timeout: 5000,
-      idle_in_transaction_session_timeout: 5000,
-      options: "-c statement_timeout=5000 -c idle_in_transaction_session_timeout=5000",
+      // Note: statement_timeout and options are not supported by Neon pooled connections
     });
   }
 
