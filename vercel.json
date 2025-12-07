@@ -3,17 +3,16 @@
   "rewrites": [
     { "source": "/api/health", "destination": "/api/health" },
     { "source": "/api/me", "destination": "/api/me" },
+    { "source": "/api/logout", "destination": "/api/logout" },
+    { "source": "/api/auth/google", "destination": "/api/auth-google" },
+    { "source": "/api/auth/google/callback", "destination": "/api/auth-google-callback" },
+    { "source": "/api/usage/consume", "destination": "/api/usage-consume" },
+    { "source": "/api/tarot-reading", "destination": "/api/tarot-reading" },
     { "source": "/api/(.*)", "destination": "/api/server" }
   ],
   "functions": {
-    "api/server.js": {
+    "api/*.js": {
       "maxDuration": 30
-    },
-    "api/health.js": {
-      "maxDuration": 10
-    },
-    "api/me.js": {
-      "maxDuration": 10
     }
   }
 }

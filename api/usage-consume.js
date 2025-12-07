@@ -4,7 +4,6 @@ import { ensureSchema } from "../server/schema.js";
 
 let schemaEnsured = false;
 
-// Get plan info for a user
 const getPlanInfo = (user) => {
   if (!user) return { plan: "guest", dailyLimit: 0 };
 
@@ -18,7 +17,6 @@ const getPlanInfo = (user) => {
   return { plan: "free", dailyLimit: 5 };
 };
 
-// Get today's usage for a user
 const getTodayUsage = async (userId) => {
   const pool = getPool();
   if (!pool) return { count: 0, date: new Date().toISOString().split('T')[0] };
@@ -35,18 +33,37 @@ const getTodayUsage = async (userId) => {
   };
 };
 
+const incrementUsage = async (userId, date) => {
+  const pool = getPool();
+  if (!pool) return;
+
+  await pool.query(
+    `INSERT INTO daily_usage (user_id, usage_date, count)
+     VALUES ($1, $2, 1)
+     ON CONFLICT (user_id, usage_date)
+     DO UPDATE SET count = daily_usage.count + 1`,
+    [userId, date]
+  );
+};
+
 export default async function handler(req, res) {
-  // Get user from JWT token
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
   const user = getUserFromRequest(req);
 
   if (!user) {
-    return res.status(200).json({ user: null });
+    return res.status(401).json({ ok: false, message: "not_authenticated" });
   }
 
   try {
-    // Ensure schema on first request
     const pool = getPool();
-    if (pool && !schemaEnsured) {
+    if (!pool) {
+      return res.status(500).json({ ok: false, message: "db_not_configured" });
+    }
+
+    if (!schemaEnsured) {
       await ensureSchema();
       schemaEnsured = true;
     }
@@ -54,23 +71,30 @@ export default async function handler(req, res) {
     const planInfo = getPlanInfo(user);
     const today = await getTodayUsage(user.id);
 
-    res.status(200).json({
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        avatar: user.avatar,
-        membership_expires_at: user.membership_expires_at,
-      },
+    if (today.count >= planInfo.dailyLimit) {
+      return res.status(429).json({
+        ok: false,
+        message: "daily_limit_reached",
+        plan: planInfo.plan,
+        used_today: today.count,
+        daily_limit: planInfo.dailyLimit,
+        requireRedemption: planInfo.plan === "free",
+      });
+    }
+
+    await incrementUsage(user.id, today.date);
+    const remaining = planInfo.dailyLimit - (today.count + 1);
+
+    res.json({
+      ok: true,
       plan: planInfo.plan,
-      membership_expires_at: user.membership_expires_at,
+      remaining,
       daily_limit: planInfo.dailyLimit,
-      used_today: today.count,
-      remaining_today: Math.max(planInfo.dailyLimit - today.count, 0),
+      membership_expires_at: user.membership_expires_at,
     });
   } catch (error) {
-    console.error("[/api/me] Error:", error);
-    res.status(500).json({ error: "Internal server error" });
+    console.error("[/api/usage/consume] Error:", error);
+    res.status(500).json({ ok: false, message: "internal_error" });
   }
 }
 
