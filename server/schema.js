@@ -1,86 +1,116 @@
-import { pool } from "./db.js";
+import { getPool } from "./db.js";
 
 export const ensureSchema = async () => {
-  if (!pool) return;
+  const pool = getPool();
+  if (!pool) {
+    console.warn("[Schema] Pool not available, skipping schema initialization");
+    return;
+  }
 
-  await pool.query(`create extension if not exists "pgcrypto";`);
+  console.log("[Schema] Starting schema initialization...");
 
-  await pool.query(`
-    create table if not exists users (
-      id uuid primary key default gen_random_uuid(),
-      provider text not null,
-      provider_id text not null unique,
-      email text,
-      name text,
-      avatar text,
-      membership_expires_at timestamptz,
-      created_at timestamptz default now(),
-      updated_at timestamptz default now()
-    );
-  `);
+  try {
+    // Try to create pgcrypto extension, but don't fail if it doesn't work
+    // (Neon pooled connections may not support this)
+    try {
+      await pool.query(`CREATE EXTENSION IF NOT EXISTS "pgcrypto";`);
+      console.log("[Schema] pgcrypto extension ensured");
+    } catch (extError) {
+      console.warn("[Schema] Could not create pgcrypto extension (may already exist or not needed):", extError.message);
+    }
 
-  await pool.query(`
-    create table if not exists daily_usage (
-      user_id uuid references users(id) on delete cascade,
-      usage_date date not null,
-      count int not null default 0,
-      primary key (user_id, usage_date)
-    );
-  `);
+    // Create all tables in a single transaction for better performance
+    console.log("[Schema] Creating tables...");
+    await pool.query(`
+      BEGIN;
 
-  await pool.query(`
-    create table if not exists redemption_codes (
-      code text primary key,
-      duration_days int not null default 30,
-      expires_at date,
-      redeemed_by uuid references users(id),
-      redeemed_at timestamptz,
-      created_at timestamptz default now()
-    );
-  `);
+      CREATE TABLE IF NOT EXISTS users (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        provider TEXT NOT NULL,
+        provider_id TEXT NOT NULL UNIQUE,
+        email TEXT,
+        name TEXT,
+        avatar TEXT,
+        membership_expires_at TIMESTAMPTZ,
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      );
 
-  await pool.query(`
-    create table if not exists membership_cycles (
-      id uuid primary key default gen_random_uuid(),
-      user_id uuid references users(id) on delete cascade,
-      plan text not null default 'free',
-      starts_at timestamptz not null default now(),
-      ends_at timestamptz not null,
-      topic_quota int not null default 1,
-      event_quota_per_topic int not null default 3,
-      source text default 'redeem',
-      created_at timestamptz default now()
-    );
-  `);
+      CREATE TABLE IF NOT EXISTS daily_usage (
+        user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+        usage_date DATE NOT NULL,
+        count INT NOT NULL DEFAULT 0,
+        PRIMARY KEY (user_id, usage_date)
+      );
 
-  await pool.query(`
-    create table if not exists topics (
-      id uuid primary key default gen_random_uuid(),
-      user_id uuid references users(id) on delete cascade,
-      cycle_id uuid references membership_cycles(id) on delete set null,
-      title text not null,
-      language text default 'zh',
-      baseline_cards jsonb,
-      baseline_reading text,
-      status text default 'active',
-      created_at timestamptz default now(),
-      updated_at timestamptz default now()
-    );
-  `);
+      CREATE TABLE IF NOT EXISTS redemption_codes (
+        code TEXT PRIMARY KEY,
+        duration_days INT NOT NULL DEFAULT 30,
+        expires_at DATE,
+        redeemed_by UUID REFERENCES users(id),
+        redeemed_at TIMESTAMPTZ,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
 
-  await pool.query(`
-    create table if not exists topic_events (
-      id uuid primary key default gen_random_uuid(),
-      topic_id uuid references topics(id) on delete cascade,
-      cycle_id uuid references membership_cycles(id) on delete set null,
-      user_id uuid references users(id) on delete cascade,
-      name text not null,
-      cards jsonb,
-      reading text,
-      created_at timestamptz default now()
-    );
-  `);
+      CREATE TABLE IF NOT EXISTS membership_cycles (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+        plan TEXT NOT NULL DEFAULT 'free',
+        starts_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        ends_at TIMESTAMPTZ NOT NULL,
+        topic_quota INT NOT NULL DEFAULT 1,
+        event_quota_per_topic INT NOT NULL DEFAULT 3,
+        source TEXT DEFAULT 'redeem',
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
 
-  await pool.query(`create index if not exists idx_topics_user on topics(user_id);`);
-  await pool.query(`create index if not exists idx_topic_events_topic on topic_events(topic_id);`);
+      CREATE TABLE IF NOT EXISTS topics (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+        cycle_id UUID REFERENCES membership_cycles(id) ON DELETE SET NULL,
+        title TEXT NOT NULL,
+        language TEXT DEFAULT 'zh',
+        baseline_cards JSONB,
+        baseline_reading TEXT,
+        status TEXT DEFAULT 'active',
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS topic_events (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        topic_id UUID REFERENCES topics(id) ON DELETE CASCADE,
+        cycle_id UUID REFERENCES membership_cycles(id) ON DELETE SET NULL,
+        user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+        name TEXT NOT NULL,
+        cards JSONB,
+        reading TEXT,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_topics_user ON topics(user_id);
+      CREATE INDEX IF NOT EXISTS idx_topic_events_topic ON topic_events(topic_id);
+
+      COMMIT;
+    `);
+
+    console.log("[Schema] Schema initialization completed successfully");
+  } catch (error) {
+    console.error("[Schema] Schema initialization failed:", error);
+    console.error("[Schema] Error details:", {
+      message: error.message,
+      code: error.code,
+      detail: error.detail,
+      hint: error.hint,
+    });
+
+    // Try to rollback if we're in a transaction
+    try {
+      await pool.query('ROLLBACK;');
+    } catch (rollbackError) {
+      // Ignore rollback errors
+    }
+
+    throw error;
+  }
 };
