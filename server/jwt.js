@@ -44,23 +44,30 @@ export const getUserFromRequest = (req) => {
 
 // Set auth cookie in response
 export const setAuthCookie = (res, token) => {
-  const cookie = serializeCookie(COOKIE_NAME, token, {
+  const isProduction = process.env.NODE_ENV === "production";
+
+  const cookieOptions = {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    secure: true, // Always true for production OAuth
+    sameSite: isProduction ? "none" : "lax",
     maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
     path: "/",
-  });
+  };
 
+  const cookie = serializeCookie(COOKIE_NAME, token, cookieOptions);
+
+  console.log("[JWT] Setting auth cookie with options:", cookieOptions);
   res.setHeader("Set-Cookie", cookie);
 };
 
 // Clear auth cookie
 export const clearAuthCookie = (res) => {
+  const isProduction = process.env.NODE_ENV === "production";
+
   const cookie = serializeCookie(COOKIE_NAME, "", {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    secure: true,
+    sameSite: isProduction ? "none" : "lax",
     maxAge: 0,
     path: "/",
   });
