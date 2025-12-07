@@ -215,7 +215,7 @@ const App: React.FC = () => {
   }, []);
 
   const loginWithGoogle = () => {
-    window.location.href = `${API_BASE_URL}/auth/google`;
+    window.location.href = `${API_BASE_URL}/api/auth/google`;
   };
 
   const handleLogout = async () => {

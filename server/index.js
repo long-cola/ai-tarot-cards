@@ -9,8 +9,18 @@ import { pool } from "./db.js";
 import { getPlanInfo, getTodayUsage, incrementUsage } from "./usage.js";
 import { redeemCode, generateCodes } from "./redemption.js";
 
-dotenv.config({ path: ".env.server.local" });
-dotenv.config(); // fallback to standard env files
+// --- 在现有 import 语句之后，添加路径和配置 ---
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// 【唯一且正确】加载你的自定义环境文件
+dotenv.config({ path: path.resolve(__dirname, ".env.server.local") });
+// --- 配置结束 ---
+
+
 
 const app = express();
 
@@ -31,7 +41,7 @@ if (!SESSION_SECRET) {
 configurePassport({
   googleClientId: GOOGLE_CLIENT_ID,
   googleClientSecret: GOOGLE_CLIENT_SECRET,
-  callbackURL: `${SERVER_URL}/auth/google/callback`,
+  callbackURL: `${SERVER_URL}/api/auth/google/callback`,
 });
 
 app.use(
@@ -92,12 +102,12 @@ app.post("/api/logout", (req, res) => {
 });
 
 app.get(
-  "/auth/google",
+  "/api/auth/google",
   passport.authenticate("google", { scope: ["profile", "email"] })
 );
 
 app.get(
-  "/auth/google/callback",
+  "/api/auth/google/callback",
   passport.authenticate("google", { failureRedirect: `${CLIENT_ORIGIN}?auth=failure` }),
   (_req, res) => {
     res.redirect(`${CLIENT_ORIGIN}?auth=success`);
