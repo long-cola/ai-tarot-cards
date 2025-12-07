@@ -25,6 +25,7 @@ const Header = ({
   authLoading,
   onOpenTopics,
   quota,
+  onRedeem,
 }: { 
   title: string, 
   onBack?: () => void, 
@@ -38,6 +39,7 @@ const Header = ({
   authLoading: boolean,
   onOpenTopics: () => void,
   quota: PlanQuota | null,
+  onRedeem: () => void,
 }) => (
   <div className="sticky top-0 z-40 w-full pt-4 pb-4 px-4 bg-slate-950/20 backdrop-blur-sm border-b border-white/5 flex items-center justify-between h-[64px] box-border transition-all duration-300">
      <div className="w-12 flex justify-start">
@@ -137,6 +139,14 @@ const Header = ({
                       className="flex-1 text-[11px] px-3 py-2 bg-amber-500 text-slate-900 font-semibold rounded-lg"
                     >
                       {language === 'zh' ? '升级/兑换' : 'Upgrade/Redeem'}
+                    </button>
+                  )}
+                  {plan === 'free' && (
+                    <button
+                      onClick={onRedeem}
+                      className="flex-1 text-[11px] px-3 py-2 bg-slate-800 text-amber-200 border border-amber-400/40 rounded-lg"
+                    >
+                      {language === 'zh' ? '兑换会员码' : 'Redeem code'}
                     </button>
                   )}
                 </div>
@@ -286,6 +296,9 @@ const App: React.FC = () => {
   const [redeemFeedback, setRedeemFeedback] = useState('');
   const [isSavingImage, setIsSavingImage] = useState(false);
   const [saveError, setSaveError] = useState('');
+  const [shareLink, setShareLink] = useState('');
+  const [shareError, setShareError] = useState('');
+  const [shareMode, setShareMode] = useState(false);
   const [topicQuota, setTopicQuota] = useState<PlanQuota | null>(null);
   const [topicModalOpen, setTopicModalOpen] = useState(false);
   const [topicsLoading, setTopicsLoading] = useState(false);
@@ -312,6 +325,7 @@ const App: React.FC = () => {
   const [isEventShuffling, setIsEventShuffling] = useState(false);
   const eventShuffleInterval = useRef<NodeJS.Timeout | null>(null);
   const eventShuffleTimeout = useRef<NodeJS.Timeout | null>(null);
+  const [shareDataLoaded, setShareDataLoaded] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const readingRef = useRef<HTMLDivElement>(null);
 
@@ -321,6 +335,28 @@ const App: React.FC = () => {
   useEffect(() => {
     setDeck([...MAJOR_ARCANA]);
   }, []);
+
+  // Parse分享链接
+  useEffect(() => {
+    if (shareDataLoaded) return;
+    const params = new URLSearchParams(window.location.search);
+    const share = params.get('share');
+    if (share) {
+      try {
+        const decoded = JSON.parse(atob(decodeURIComponent(share)));
+        if (decoded.question && decoded.reading && Array.isArray(decoded.cards)) {
+          setQuestion(decoded.question);
+          setReading(decoded.reading);
+          setDrawnCards(decoded.cards);
+          setPhase(AppPhase.ANALYSIS);
+          setShareMode(true);
+        }
+      } catch (e) {
+        console.error("parse share failed", e);
+      }
+    }
+    setShareDataLoaded(true);
+  }, [shareDataLoaded]);
 
   // Init event deck
   useEffect(() => {
@@ -532,64 +568,78 @@ const App: React.FC = () => {
     }
   }, [phase, drawnCards, question, language]);
 
-  // Auto-create topic after reading is ready
-  useEffect(() => {
-    const attemptSaveTopic = async () => {
-      if (
-        phase !== AppPhase.ANALYSIS ||
-        isReadingLoading ||
-        !reading ||
-        drawnCards.length < 3 ||
-        !user ||
-        createdTopicId ||
-        isSavingTopic
-      ) return;
-      try {
-        setIsSavingTopic(true);
-        const res = await createTopic({
-          title: question || t.appTitle,
-          language,
-          baseline_cards: drawnCards,
-          baseline_reading: reading,
-        });
-        setCreatedTopicId(res.topic.id);
-        if (res.quota) setTopicQuota(res.quota);
-        setTopicSaveMessage(t.topicSaved);
-      } catch (err: any) {
-        console.error("auto topic save failed", err);
-        const reason = err?.data?.reason;
-        if (reason === 'topic_quota_exhausted') {
-          setTopicError(t.topicSaveFailed);
-          setUpgradeHint(language === 'zh' ? '命题额度已用尽，请升级会员或兑换会员码。' : 'Topic quota reached. Upgrade or redeem to continue.');
-          setShowPaywall(true);
-        } else {
-          setTopicError(t.topicSaveFailed);
-        }
-      } finally {
-        setIsSavingTopic(false);
+  const handleSaveTopic = async () => {
+    if (!user) {
+      setTopicError(language === 'zh' ? '请先登录后再创建命题。' : 'Please log in to save as a topic.');
+      return;
+    }
+    if (!reading || drawnCards.length < 3) {
+      setTopicError(language === 'zh' ? '请先完成抽牌并获取解读。' : 'Finish the reading first.');
+      return;
+    }
+    if (createdTopicId) {
+      setTopicSaveMessage(language === 'zh' ? '已创建命题' : 'Topic already created');
+      return;
+    }
+    setTopicError('');
+    setTopicSaveMessage('');
+    try {
+      setIsSavingTopic(true);
+      const res = await createTopic({
+        title: question || t.appTitle,
+        language,
+        baseline_cards: drawnCards,
+        baseline_reading: reading,
+      });
+      setCreatedTopicId(res.topic.id);
+      if (res.quota) setTopicQuota(res.quota);
+      setTopicSaveMessage(t.topicSaved);
+    } catch (err: any) {
+      console.error("topic save failed", err);
+      const reason = err?.data?.reason;
+      if (reason === 'topic_quota_exhausted') {
+        setTopicError(language === 'zh' ? '命题额度已用尽，请稍后重试或升级会员。' : 'Topic quota reached. Please retry or upgrade.');
+        setUpgradeHint(language === 'zh' ? '命题额度已用尽，请升级会员或兑换会员码。' : 'Topic quota reached. Upgrade or redeem.');
+        setShowPaywall(true);
+      } else {
+        setTopicError(language === 'zh' ? '保存失败，请稍后重试或升级会员。' : 'Save failed, retry or upgrade.');
       }
-    };
-    attemptSaveTopic();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [phase, isReadingLoading, reading, drawnCards, user, createdTopicId, language, question]);
+    } finally {
+      setIsSavingTopic(false);
+    }
+  };
 
   const handleSaveImage = async () => {
     if (!readingRef.current) return;
     setIsSavingImage(true);
     setSaveError('');
+    setShareError('');
     try {
       const dataUrl = await toPng(readingRef.current, {
         cacheBust: true,
         backgroundColor: '#0f172a',
         pixelRatio: 2,
+        useCors: true,
       });
       const link = document.createElement('a');
       link.download = 'tarot-reading.png';
       link.href = dataUrl;
       link.click();
+      setShareError('');
     } catch (err) {
       console.error("save image failed", err);
-      setSaveError(language === 'zh' ? '保存图片失败，请重试。' : 'Failed to save image. Please try again.');
+      try {
+        const dataUrl = await toPng(readingRef.current!, {
+          cacheBust: true,
+          backgroundColor: '#0f172a',
+          pixelRatio: 1.5,
+          useCors: true,
+        });
+        window.open(dataUrl, '_blank');
+        setSaveError(language === 'zh' ? '已在新标签打开图片，请手动保存。' : 'Opened image in new tab for manual save.');
+      } catch (e2) {
+        setSaveError(language === 'zh' ? '保存图片失败，请重试。' : 'Failed to save image. Please try again.');
+      }
     } finally {
       setIsSavingImage(false);
     }
@@ -612,6 +662,9 @@ const App: React.FC = () => {
     setEventCard(null);
     setEventReading('');
     setEventError('');
+    setShareMode(false);
+    setShareLink('');
+    setShareError('');
   };
 
   const toggleLanguage = () => {
@@ -817,6 +870,7 @@ Card drawn: ${currentCardStr}`;
       setEventReading('');
       setEventError('');
       setEventCanDraw(false);
+      setEventDeck([...MAJOR_ARCANA]);
     } catch (err: any) {
       console.error("create event failed", err);
       const reason = err?.data?.reason;
@@ -882,6 +936,7 @@ Card drawn: ${currentCardStr}`;
         authLoading={authLoading}
         onOpenTopics={openTopicsModal}
         quota={topicQuota}
+        onRedeem={() => setShowRedeem(true)}
       />
 
       {/* Expiry banner */}
@@ -909,7 +964,7 @@ Card drawn: ${currentCardStr}`;
                   : `${t.topicsQuota}: ${topicQuota.topic_quota_remaining}/${topicQuota.topic_quota_total}`}
               </span>
             </div>
-            {topicQuota.expires_at && (
+            {topicQuota.expires_at && topicQuota.plan === 'member' && (
               <div className="text-xs text-slate-400">
                 {language === 'zh'
                   ? `到期：${new Date(topicQuota.expires_at).toLocaleDateString()}`
@@ -1159,7 +1214,27 @@ Card drawn: ${currentCardStr}`;
                     {reading}
                   </ReactMarkdown>
 
-                  <div className="mt-6">
+                  <div className="mt-6 space-y-2">
+                    <div className="flex flex-wrap gap-3">
+                      <button
+                        onClick={handleSaveTopic}
+                        disabled={isSavingTopic || !!createdTopicId}
+                        className="px-4 py-2 text-xs bg-amber-500 text-slate-900 rounded-lg font-semibold disabled:opacity-60"
+                      >
+                        {createdTopicId
+                          ? (language === 'zh' ? '已创建命题' : 'Topic created')
+                          : isSavingTopic
+                          ? (language === 'zh' ? '保存中...' : 'Saving...')
+                          : (language === 'zh' ? '创建为命题' : 'Save as Topic')}
+                      </button>
+                      <button
+                        onClick={viewCreatedTopic}
+                        disabled={!createdTopicId}
+                        className="px-4 py-2 text-xs bg-slate-800 text-slate-200 rounded-lg border border-white/10 disabled:opacity-50"
+                      >
+                        {t.viewTopic}
+                      </button>
+                    </div>
                     {isSavingTopic && (
                       <div className="border border-amber-500/40 bg-amber-500/10 text-amber-200 text-sm rounded-xl px-4 py-3">
                         {t.savingTopic}
@@ -1204,7 +1279,35 @@ Card drawn: ${currentCardStr}`;
               >
                 {isSavingImage ? (language === 'zh' ? '保存中...' : 'Saving...') : (language === 'zh' ? '保存解读为图片' : 'Save reading as image')}
               </button>
-              {saveError && <span className="text-xs text-red-400">{saveError}</span>}
+              <button
+                onClick={async () => {
+                  if (!reading || drawnCards.length === 0) {
+                    setShareError(language === 'zh' ? '暂无可分享的解读' : 'Nothing to share');
+                    return;
+                  }
+                  try {
+                    const payload = {
+                      question,
+                      reading,
+                      cards: drawnCards,
+                      language,
+                    };
+                    const url = `${window.location.origin}${window.location.pathname}?share=${encodeURIComponent(btoa(JSON.stringify(payload)))}`;
+                    await navigator.clipboard.writeText(url);
+                    setShareLink(url);
+                    setShareError('');
+                  } catch (err) {
+                    console.error("copy share failed", err);
+                    setShareError(language === 'zh' ? '复制分享链接失败，请手动复制地址栏。' : 'Failed to copy share link. Copy the URL manually.');
+                  }
+                }}
+                className="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-amber-100 rounded-full border border-white/10 text-sm disabled:opacity-50"
+                disabled={!reading}
+              >
+                {language === 'zh' ? '复制分享链接' : 'Copy share link'}
+              </button>
+              {(saveError || shareError) && <span className="text-xs text-red-400">{saveError || shareError}</span>}
+              {shareLink && <span className="text-xs text-amber-200 break-all max-w-xs">{shareLink}</span>}
             </div>
           </div>
         )}
