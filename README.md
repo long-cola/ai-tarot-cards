@@ -15,12 +15,12 @@ View your app in AI Studio: https://ai.studio/apps/drive/1PoGsmQxIAxGlh8RCaxYR9L
 
 1. Install dependencies:
    `npm install`
-2. Set `VITE_BAILIAN_API_KEY` in your environment (or `.env.local`) to your Alibaba Bailian API key
-3. Configure server env in `.env.server.local` (see `.env.server.example`):
+2. Configure server env in `.env.server.local` (see `.env.server.example`):
    - `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`
    - `DATABASE_URL` (Neon)
    - `SESSION_SECRET`, `CLIENT_ORIGIN`, `SERVER_URL`, `ADMIN_CODE_SECRET`
-4. Start backend (auth + quotas): `npm run server`
-5. Start frontend: `npm run dev`
+   - `BAILIAN_API_KEY` (your Alibaba Bailian API key)
+3. Start backend (auth + quotas): `npm run server`
+4. Start frontend: `npm run dev`
 
-API base defaults to `http://localhost:3001`; override with `VITE_API_BASE_URL` if needed.
+API base defaults to `http://localhost:3001` in dev; override with `VITE_API_BASE` if needed.
