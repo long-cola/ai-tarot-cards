@@ -19,10 +19,16 @@ const {
   GOOGLE_CLIENT_ID,
   GOOGLE_CLIENT_SECRET,
   SESSION_SECRET,
+  CLIENT_ORIGINS, // comma-separated list for prod
   CLIENT_ORIGIN = "http://localhost:5173",
   SERVER_URL = "http://localhost:3001",
   ADMIN_CODE_SECRET,
 } = process.env;
+
+const allowedOrigins = (CLIENT_ORIGINS || CLIENT_ORIGIN || "")
+  .split(",")
+  .map(o => o.trim())
+  .filter(Boolean);
 
 if (!SESSION_SECRET) {
   console.warn("[server] SESSION_SECRET is not set. Please configure it in .env.server.local or env vars.");
@@ -36,7 +42,11 @@ configurePassport({
 
 app.use(
   cors({
-    origin: CLIENT_ORIGIN,
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true); // allow same-origin or non-browser
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      return callback(new Error("Not allowed by CORS"));
+    },
     credentials: true,
   })
 );
