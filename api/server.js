@@ -1,8 +1,9 @@
 import serverlessHttp from "serverless-http";
 import { app } from "../server/app.js";
 
+// Vercel serverless function configuration
+// Note: runtime must be "nodejs" (not "nodejs20.x")
 export const config = {
-  runtime: "nodejs20.x",
   maxDuration: 30,
 };
 
