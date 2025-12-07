@@ -42,11 +42,22 @@ export default async function handler(req, res) {
         return res.status(500).json({ ok: false, message: "cycle_unavailable" });
       }
 
+      // Parse baseline_cards if it's a string, otherwise use as-is
+      let parsedCards = baseline_cards;
+      if (typeof baseline_cards === 'string') {
+        try {
+          parsedCards = JSON.parse(baseline_cards);
+        } catch (e) {
+          console.error("[/api/topics] Failed to parse baseline_cards:", e);
+          parsedCards = null;
+        }
+      }
+
       const insert = await pool.query(
         `INSERT INTO topics (user_id, cycle_id, title, language, baseline_cards, baseline_reading)
          VALUES ($1,$2,$3,$4,$5,$6)
          RETURNING *`,
-        [user.id, cycle.id, title.trim(), language, baseline_cards, baseline_reading]
+        [user.id, cycle.id, title.trim(), language, parsedCards, baseline_reading]
       );
 
       const updatedQuota = await getPlanQuotaSummary(user);

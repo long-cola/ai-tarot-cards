@@ -69,11 +69,22 @@ export default async function handler(req, res) {
 
     const cycleId = topic.cycle_id || quota?.cycle?.id || null;
 
+    // Parse cards if it's a string, otherwise use as-is
+    let parsedCards = cards;
+    if (typeof cards === 'string') {
+      try {
+        parsedCards = JSON.parse(cards);
+      } catch (e) {
+        console.error("[/api/topics-add-event] Failed to parse cards:", e);
+        parsedCards = null;
+      }
+    }
+
     const insert = await pool.query(
       `INSERT INTO topic_events (topic_id, cycle_id, user_id, name, cards, reading)
        VALUES ($1,$2,$3,$4,$5,$6)
        RETURNING *`,
-      [topicId, cycleId, user.id, name.trim(), cards, reading]
+      [topicId, cycleId, user.id, name.trim(), parsedCards, reading]
     );
 
     await pool.query(`UPDATE topics SET updated_at=NOW() WHERE id=$1`, [topicId]);
