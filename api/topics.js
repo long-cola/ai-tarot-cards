@@ -27,6 +27,10 @@ export default async function handler(req, res) {
     if (req.method === 'POST') {
       const { title, language = "zh", baseline_cards = null, baseline_reading = null } = req.body || {};
 
+      console.log("[/api/topics] Received baseline_cards type:", typeof baseline_cards);
+      console.log("[/api/topics] Received baseline_cards (first 200 chars):",
+        typeof baseline_cards === 'string' ? baseline_cards.substring(0, 200) : JSON.stringify(baseline_cards)?.substring(0, 200));
+
       if (!title || !title.trim()) {
         return res.status(400).json({ ok: false, message: "missing_title" });
       }
@@ -47,11 +51,16 @@ export default async function handler(req, res) {
       if (typeof baseline_cards === 'string') {
         try {
           parsedCards = JSON.parse(baseline_cards);
+          console.log("[/api/topics] Successfully parsed baseline_cards");
         } catch (e) {
-          console.error("[/api/topics] Failed to parse baseline_cards:", e);
+          console.error("[/api/topics] Failed to parse baseline_cards:", e.message);
+          console.error("[/api/topics] Raw value:", baseline_cards.substring(0, 500));
           parsedCards = null;
         }
       }
+
+      console.log("[/api/topics] Final parsedCards type:", typeof parsedCards);
+      console.log("[/api/topics] Final parsedCards:", JSON.stringify(parsedCards)?.substring(0, 200));
 
       const insert = await pool.query(
         `INSERT INTO topics (user_id, cycle_id, title, language, baseline_cards, baseline_reading)
