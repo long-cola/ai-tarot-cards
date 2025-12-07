@@ -69,22 +69,33 @@ export default async function handler(req, res) {
 
     const cycleId = topic.cycle_id || quota?.cycle?.id || null;
 
-    // Parse cards if it's a string, otherwise use as-is
+    // Parse cards - handle multiple levels of encoding
     let parsedCards = cards;
-    if (typeof cards === 'string') {
+    console.log("[/api/topics-add-event] Received cards type:", typeof cards);
+
+    // Keep parsing if it's a string until we get an object or fail
+    while (typeof parsedCards === 'string' && parsedCards) {
       try {
-        parsedCards = JSON.parse(cards);
+        const temp = JSON.parse(parsedCards);
+        console.log("[/api/topics-add-event] Parsed one level, new type:", typeof temp);
+        parsedCards = temp;
       } catch (e) {
-        console.error("[/api/topics-add-event] Failed to parse cards:", e);
+        console.error("[/api/topics-add-event] Failed to parse, using null. Error:", e.message);
         parsedCards = null;
+        break;
       }
     }
 
+    console.log("[/api/topics-add-event] Final parsedCards type:", typeof parsedCards);
+
+    // Always stringify to JSON, then let PostgreSQL parse it with ::jsonb
+    const cardsJson = parsedCards ? JSON.stringify(parsedCards) : null;
+
     const insert = await pool.query(
       `INSERT INTO topic_events (topic_id, cycle_id, user_id, name, cards, reading)
-       VALUES ($1,$2,$3,$4,$5,$6)
+       VALUES ($1,$2,$3,$4,$5::jsonb,$6)
        RETURNING *`,
-      [topicId, cycleId, user.id, name.trim(), parsedCards, reading]
+      [topicId, cycleId, user.id, name.trim(), cardsJson, reading]
     );
 
     await pool.query(`UPDATE topics SET updated_at=NOW() WHERE id=$1`, [topicId]);

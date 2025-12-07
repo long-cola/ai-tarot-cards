@@ -46,27 +46,35 @@ export default async function handler(req, res) {
         return res.status(500).json({ ok: false, message: "cycle_unavailable" });
       }
 
-      // Parse baseline_cards if it's a string, otherwise use as-is
+      // Parse baseline_cards - handle multiple levels of encoding
       let parsedCards = baseline_cards;
-      if (typeof baseline_cards === 'string') {
+      console.log("[/api/topics] Received baseline_cards type:", typeof baseline_cards);
+
+      // Keep parsing if it's a string until we get an object or fail
+      while (typeof parsedCards === 'string' && parsedCards) {
         try {
-          parsedCards = JSON.parse(baseline_cards);
-          console.log("[/api/topics] Successfully parsed baseline_cards");
+          const temp = JSON.parse(parsedCards);
+          console.log("[/api/topics] Parsed one level, new type:", typeof temp);
+          parsedCards = temp;
         } catch (e) {
-          console.error("[/api/topics] Failed to parse baseline_cards:", e.message);
-          console.error("[/api/topics] Raw value:", baseline_cards.substring(0, 500));
+          console.error("[/api/topics] Failed to parse, using null. Error:", e.message);
+          console.error("[/api/topics] Problematic value (first 300):", parsedCards.substring(0, 300));
           parsedCards = null;
+          break;
         }
       }
 
       console.log("[/api/topics] Final parsedCards type:", typeof parsedCards);
-      console.log("[/api/topics] Final parsedCards:", JSON.stringify(parsedCards)?.substring(0, 200));
+      console.log("[/api/topics] Final parsedCards:", parsedCards ? JSON.stringify(parsedCards).substring(0, 200) : 'null');
+
+      // Always stringify to JSON, then let PostgreSQL parse it with ::jsonb
+      const cardsJson = parsedCards ? JSON.stringify(parsedCards) : null;
 
       const insert = await pool.query(
         `INSERT INTO topics (user_id, cycle_id, title, language, baseline_cards, baseline_reading)
-         VALUES ($1,$2,$3,$4,$5,$6)
+         VALUES ($1,$2,$3,$4,$5::jsonb,$6)
          RETURNING *`,
-        [user.id, cycle.id, title.trim(), language, parsedCards, baseline_reading]
+        [user.id, cycle.id, title.trim(), language, cardsJson, baseline_reading]
       );
 
       const updatedQuota = await getPlanQuotaSummary(user);
