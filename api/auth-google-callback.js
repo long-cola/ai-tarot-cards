@@ -5,6 +5,13 @@ import { signToken, setAuthCookie } from "../server/jwt.js";
 let schemaEnsured = false;
 
 export default async function handler(req, res) {
+  // FIRST LOG - at the very start to confirm function is called
+  console.log("[OAuth Callback] ===== FUNCTION INVOKED =====");
+  console.log("[OAuth Callback] Method:", req.method);
+  console.log("[OAuth Callback] URL:", req.url);
+  console.log("[OAuth Callback] Headers:", JSON.stringify(req.headers, null, 2));
+  console.log("[OAuth Callback] Query:", JSON.stringify(req.query, null, 2));
+
   const { code } = req.query;
 
   const {
@@ -17,6 +24,8 @@ export default async function handler(req, res) {
   const clientOrigin = CLIENT_ORIGINS?.split(',')[0] || 'https://ai-tarot-cards.vercel.app';
 
   console.log("[OAuth Callback] Started, code present:", !!code);
+  console.log("[OAuth Callback] SERVER_URL:", SERVER_URL);
+  console.log("[OAuth Callback] CLIENT_ORIGINS:", CLIENT_ORIGINS);
 
   if (!code) {
     console.error("[OAuth Callback] No code in query");
