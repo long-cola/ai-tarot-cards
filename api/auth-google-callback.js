@@ -117,12 +117,22 @@ export default async function handler(req, res) {
     console.log("[OAuth Callback] Signing JWT for user:", user.id);
     const token = signToken(user);
     setAuthCookie(res, token);
-    console.log("[OAuth Callback] Cookie set with token (length:", token?.length, "), redirecting to success");
+    console.log("[OAuth Callback] Cookie set with token (length:", token?.length, ")");
     console.log("[OAuth Callback] User agent:", req.headers['user-agent']);
     console.log("[OAuth Callback] Client origin:", clientOrigin);
 
-    // Redirect to frontend with success
-    return res.redirect(302, `${clientOrigin}?auth=success`);
+    // For mobile browsers, also pass token in URL as fallback
+    // The frontend will store it in localStorage and use Authorization header
+    const isMobile = /Mobile|Android|iPhone|iPad|iPod/i.test(req.headers['user-agent']);
+    console.log("[OAuth Callback] Is mobile:", isMobile);
+
+    if (isMobile) {
+      // Pass token in URL for mobile browsers (cookie may not work reliably)
+      return res.redirect(302, `${clientOrigin}?auth=success&token=${encodeURIComponent(token)}`);
+    } else {
+      // Desktop: use cookie-based auth
+      return res.redirect(302, `${clientOrigin}?auth=success`);
+    }
   } catch (error) {
     console.error("[OAuth Callback] Unexpected error:", error);
     console.error("[OAuth Callback] Error stack:", error.stack);

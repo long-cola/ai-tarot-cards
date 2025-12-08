@@ -32,12 +32,30 @@ export const verifyToken = (token) => {
   }
 };
 
-// Get user from request (via cookie)
+// Get user from request (via cookie or Authorization header)
 export const getUserFromRequest = (req) => {
-  const cookies = parseCookie(req.headers.cookie || "");
-  const token = cookies[COOKIE_NAME];
+  let token = null;
 
-  if (!token) return null;
+  // First, try to get token from Authorization header (mobile browsers)
+  const authHeader = req.headers.authorization || req.headers.Authorization;
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    token = authHeader.substring(7);
+    console.log("[JWT] Using token from Authorization header");
+  }
+
+  // Fallback to cookie (desktop browsers)
+  if (!token) {
+    const cookies = parseCookie(req.headers.cookie || "");
+    token = cookies[COOKIE_NAME];
+    if (token) {
+      console.log("[JWT] Using token from cookie");
+    }
+  }
+
+  if (!token) {
+    console.log("[JWT] No token found in Authorization header or cookie");
+    return null;
+  }
 
   return verifyToken(token);
 };

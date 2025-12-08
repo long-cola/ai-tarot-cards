@@ -416,11 +416,19 @@ const App: React.FC = () => {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const authStatus = params.get('auth');
+    const token = params.get('token');
 
     if (authStatus === 'success') {
-      // Remove auth parameter from URL
+      // Store token in localStorage if provided (mobile fallback)
+      if (token) {
+        console.log("[OAuth] Received token in URL, storing in localStorage (mobile mode)");
+        localStorage.setItem('auth_token', token);
+      }
+
+      // Remove auth parameter and token from URL
       const newUrl = new URL(window.location.href);
       newUrl.searchParams.delete('auth');
+      newUrl.searchParams.delete('token');
       window.history.replaceState({}, '', newUrl.toString());
 
       // Reload session to get updated user info
@@ -524,6 +532,8 @@ const App: React.FC = () => {
       setPlan('guest');
       setRemainingToday(null);
       setTopicQuota(null);
+      // Clear token from localStorage
+      localStorage.removeItem('auth_token');
     } catch (e) {
       console.error("logout failed", e);
     }

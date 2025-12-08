@@ -7,13 +7,24 @@ const defaultHeaders = {
 };
 
 const handle = async (path: string, options: RequestInit = {}) => {
+  // Get token from localStorage (mobile fallback)
+  const token = typeof window !== "undefined" ? localStorage.getItem('auth_token') : null;
+
+  // Prepare headers
+  const headers: Record<string, string> = {
+    ...defaultHeaders,
+    ...(options.headers || {}),
+  };
+
+  // Add Authorization header if token exists
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
   const res = await fetch(`${API_BASE}${path}`, {
     ...options,
-    headers: {
-      ...defaultHeaders,
-      ...(options.headers || {}),
-    },
-    credentials: "include",
+    headers,
+    credentials: "include", // Still include cookies for desktop browsers
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
