@@ -72,6 +72,8 @@ export const isAdminAuthorized = async (req) => {
 
 export const getUserStats = async () => {
   if (!pool) return { total: 0, users: [] };
+
+  // Optimized query using LEFT JOIN instead of subqueries for better performance
   const res = await pool.query(`
     select
       u.id,
@@ -80,9 +82,19 @@ export const getUserStats = async () => {
       u.created_at,
       u.membership_expires_at,
       (case when u.membership_expires_at is not null and u.membership_expires_at > now() then 'member' else 'free' end) as plan,
-      (select count(*) from topics t where t.user_id = u.id) as topic_count,
-      (select count(*) from topic_events e where e.user_id = u.id) as event_count
+      coalesce(t.topic_count, 0) as topic_count,
+      coalesce(e.event_count, 0) as event_count
     from users u
+    left join (
+      select user_id, count(*) as topic_count
+      from topics
+      group by user_id
+    ) t on t.user_id = u.id
+    left join (
+      select user_id, count(*) as event_count
+      from topic_events
+      group by user_id
+    ) e on e.user_id = u.id
     order by u.created_at desc
   `);
   return { total: res.rows.length, users: res.rows };
@@ -90,10 +102,17 @@ export const getUserStats = async () => {
 
 export const getUserTopics = async (userId) => {
   if (!pool) return [];
+
+  // Optimized query using LEFT JOIN instead of subquery
   const res = await pool.query(
-    `select t.*, 
-      (select count(*) from topic_events e where e.topic_id = t.id) as event_count
+    `select t.*,
+      coalesce(e.event_count, 0) as event_count
      from topics t
+     left join (
+       select topic_id, count(*) as event_count
+       from topic_events
+       group by topic_id
+     ) e on e.topic_id = t.id
      where t.user_id=$1
      order by t.created_at desc`,
     [userId]
