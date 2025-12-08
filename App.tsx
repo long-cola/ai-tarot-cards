@@ -372,8 +372,11 @@ const App: React.FC = () => {
   // Load session
   useEffect(() => {
     const loadSession = async () => {
+      console.log("[Session] Loading initial session, user agent:", navigator.userAgent);
+      console.log("[Session] Cookies available:", document.cookie ? "yes" : "no");
       try {
         const data = await getSession();
+        console.log("[Session] Got session data:", data?.user ? "user found" : "no user", "plan:", data?.plan);
         if (data?.user) {
           setUser(data.user);
           setPlan((data.plan as Plan) || 'free');
@@ -392,6 +395,7 @@ const App: React.FC = () => {
           }
           setUpgradeHint('');
         } else {
+          console.log("[Session] No user found, setting guest mode");
           setUser(null);
           setPlan('guest');
           setRemainingToday(null);
@@ -420,10 +424,20 @@ const App: React.FC = () => {
       window.history.replaceState({}, '', newUrl.toString());
 
       // Reload session to get updated user info
-      const reloadSession = async () => {
+      // Add retry logic for mobile browsers where cookie may not be immediately available
+      const reloadSession = async (retryCount = 0) => {
+        const maxRetries = 3;
+        const retryDelay = 500; // 500ms between retries
+
         setAuthLoading(true);
         try {
+          // Add a small delay before first attempt to allow cookie to be set
+          if (retryCount === 0) {
+            await new Promise(resolve => setTimeout(resolve, 300));
+          }
+
           const data = await getSession();
+          console.log("[OAuth] getSession returned:", data?.user ? "user found" : "no user", "attempt:", retryCount + 1);
           if (data?.user) {
             setUser(data.user);
             setPlan((data.plan as Plan) || 'free');
@@ -441,11 +455,27 @@ const App: React.FC = () => {
               setTopicQuota(null);
             }
             setUpgradeHint('');
+            console.log("[OAuth] Session reloaded successfully after", retryCount, "retries");
+          } else if (retryCount < maxRetries) {
+            // No user data, retry after delay
+            console.log("[OAuth] No user data, retrying in", retryDelay, "ms (attempt", retryCount + 1, "of", maxRetries, ")");
+            setTimeout(() => reloadSession(retryCount + 1), retryDelay);
+            return; // Don't clear loading state yet
+          } else {
+            console.error("[OAuth] Failed to load session after", maxRetries, "retries");
           }
         } catch (e) {
           console.error("Session reload error after OAuth", e);
+          if (retryCount < maxRetries) {
+            console.log("[OAuth] Retrying in", retryDelay, "ms (attempt", retryCount + 1, "of", maxRetries, ")");
+            setTimeout(() => reloadSession(retryCount + 1), retryDelay);
+            return; // Don't clear loading state yet
+          }
         } finally {
-          setAuthLoading(false);
+          // Only clear loading state on final attempt
+          if (retryCount >= maxRetries) {
+            setAuthLoading(false);
+          }
         }
       };
       reloadSession();
@@ -457,6 +487,7 @@ const App: React.FC = () => {
 
       // Show error message
       console.error("OAuth authentication failed");
+      setAuthLoading(false);
     }
   }, []);
 

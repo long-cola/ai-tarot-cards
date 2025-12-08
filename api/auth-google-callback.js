@@ -114,10 +114,12 @@ export default async function handler(req, res) {
     }
 
     // Sign JWT and set cookie
-    console.log("[OAuth Callback] Signing JWT...");
+    console.log("[OAuth Callback] Signing JWT for user:", user.id);
     const token = signToken(user);
     setAuthCookie(res, token);
-    console.log("[OAuth Callback] Cookie set, redirecting to success");
+    console.log("[OAuth Callback] Cookie set with token (length:", token?.length, "), redirecting to success");
+    console.log("[OAuth Callback] User agent:", req.headers['user-agent']);
+    console.log("[OAuth Callback] Client origin:", clientOrigin);
 
     // Redirect to frontend with success
     return res.redirect(302, `${clientOrigin}?auth=success`);

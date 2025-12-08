@@ -46,10 +46,12 @@ export const getUserFromRequest = (req) => {
 export const setAuthCookie = (res, token) => {
   const isProduction = process.env.NODE_ENV === "production";
 
+  // For production, use 'lax' instead of 'none' for better mobile browser compatibility
+  // 'lax' works for most same-site scenarios while 'none' can be blocked by mobile browsers
   const cookieOptions = {
     httpOnly: true,
     secure: true, // Always true for production OAuth
-    sameSite: isProduction ? "none" : "lax",
+    sameSite: "lax", // Changed from 'none' to 'lax' for better mobile support
     maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
     path: "/",
   };
@@ -62,12 +64,10 @@ export const setAuthCookie = (res, token) => {
 
 // Clear auth cookie
 export const clearAuthCookie = (res) => {
-  const isProduction = process.env.NODE_ENV === "production";
-
   const cookie = serializeCookie(COOKIE_NAME, "", {
     httpOnly: true,
     secure: true,
-    sameSite: isProduction ? "none" : "lax",
+    sameSite: "lax", // Match the setting in setAuthCookie
     maxAge: 0,
     path: "/",
   });
