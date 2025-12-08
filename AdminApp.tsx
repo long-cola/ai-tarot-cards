@@ -15,8 +15,8 @@ const fetchJson = async (path: string, authHeader: string) => {
 };
 
 const AdminApp: React.FC = () => {
-  const [email, setEmail] = useState('catadioptric19941@gmail.com');
-  const [password, setPassword] = useState('Admin@!23');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -25,6 +25,7 @@ const AdminApp: React.FC = () => {
   const [events, setEvents] = useState<TopicEvent[]>([]);
   const [loadingTopics, setLoadingTopics] = useState(false);
   const [loadingEvents, setLoadingEvents] = useState(false);
+  const [activeTopic, setActiveTopic] = useState<AdminTopic | null>(null);
 
   const loadUsers = async () => {
     if (!email.trim() || !password.trim()) {

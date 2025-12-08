@@ -9,7 +9,7 @@ import { pool } from "./db.js";
 import { getPlanInfo, getTodayUsage, incrementUsage } from "./usage.js";
 import { redeemCode, generateCodes } from "./redemption.js";
 import { ensureActiveCycleForUser, getPlanQuotaSummary } from "./plan.js";
-import { getUserStats, getUserTopics, getTopicEvents, isAdminAuthorized } from "./admin.js";
+import { getUserStats, getUserTopics, getTopicEvents, isAdminAuthorized, createAdminUser } from "./admin.js";
 import { getTopicDetailWithEvents } from "./topics.js";
 
 // Load env for local/dev; on Vercel, env is injected automatically
@@ -223,9 +223,30 @@ app.post("/api/codes/generate", async (req, res) => {
   res.json({ ok: true, codes });
 });
 
+// Admin: create admin user (protected by ADMIN_CODE_SECRET)
+app.post("/api/admin/create", async (req, res) => {
+  if (!ADMIN_CODE_SECRET || req.headers["x-admin-secret"] !== ADMIN_CODE_SECRET) {
+    return res.status(403).json({ ok: false, message: "forbidden" });
+  }
+  if (!pool) return res.status(500).json({ ok: false, message: "db_not_configured" });
+  await ensureSchemaOnce();
+
+  const { email, password, name } = req.body || {};
+  if (!email || !password) {
+    return res.status(400).json({ ok: false, message: "email and password required" });
+  }
+
+  try {
+    const admin = await createAdminUser(email, password, name);
+    res.json({ ok: true, admin });
+  } catch (err) {
+    res.status(400).json({ ok: false, message: err.message });
+  }
+});
+
 // Admin: user stats
 app.get("/api/admin/users", async (req, res) => {
-  if (!isAdminAuthorized(req)) {
+  if (!(await isAdminAuthorized(req))) {
     return res.status(403).json({ ok: false, message: "forbidden" });
   }
   if (!pool) return res.status(500).json({ ok: false, message: "db_not_configured" });
@@ -236,7 +257,7 @@ app.get("/api/admin/users", async (req, res) => {
 
 // Admin: user topics and events
 app.get("/api/admin/users/:id/topics", async (req, res) => {
-  if (!isAdminAuthorized(req)) {
+  if (!(await isAdminAuthorized(req))) {
     return res.status(403).json({ ok: false, message: "forbidden" });
   }
   if (!pool) return res.status(500).json({ ok: false, message: "db_not_configured" });
@@ -246,7 +267,7 @@ app.get("/api/admin/users/:id/topics", async (req, res) => {
 });
 
 app.get("/api/admin/topics/:id/events", async (req, res) => {
-  if (!isAdminAuthorized(req)) {
+  if (!(await isAdminAuthorized(req))) {
     return res.status(403).json({ ok: false, message: "forbidden" });
   }
   if (!pool) return res.status(500).json({ ok: false, message: "db_not_configured" });
@@ -256,7 +277,7 @@ app.get("/api/admin/topics/:id/events", async (req, res) => {
 });
 
 app.get("/api/admin/topics/:id", async (req, res) => {
-  if (!isAdminAuthorized(req)) {
+  if (!(await isAdminAuthorized(req))) {
     return res.status(403).json({ ok: false, message: "forbidden" });
   }
   if (!pool) return res.status(500).json({ ok: false, message: "db_not_configured" });
