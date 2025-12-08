@@ -11,11 +11,19 @@
     { "source": "/api/topics/:id/events", "destination": "/api/topics-add-event?id=:id" },
     { "source": "/api/topics/:id", "destination": "/api/topics-detail?id=:id" },
     { "source": "/api/topics", "destination": "/api/topics" },
+    { "source": "/api/admin/create", "destination": "/api/admin/create" },
+    { "source": "/api/admin/users", "destination": "/api/admin/users" },
+    { "source": "/api/admin/users/:id/topics", "destination": "/api/admin/user-topics?id=:id" },
+    { "source": "/api/admin/topics/:id/events", "destination": "/api/admin/topic-events?id=:id" },
+    { "source": "/api/admin/topics/:id", "destination": "/api/admin/topic-detail?id=:id" },
     { "source": "/api/(.*)", "destination": "/api/server" },
-    { "source": "/admin", "destination": "/" }
+    { "source": "/admin", "destination": "/admin.html" }
   ],
   "functions": {
     "api/*.js": {
+      "maxDuration": 30
+    },
+    "api/admin/*.js": {
       "maxDuration": 30
     }
   }
