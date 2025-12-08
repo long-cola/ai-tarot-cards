@@ -408,6 +408,58 @@ const App: React.FC = () => {
     loadSession();
   }, []);
 
+  // Handle OAuth callback - reload session when auth=success is detected
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const authStatus = params.get('auth');
+
+    if (authStatus === 'success') {
+      // Remove auth parameter from URL
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.delete('auth');
+      window.history.replaceState({}, '', newUrl.toString());
+
+      // Reload session to get updated user info
+      const reloadSession = async () => {
+        setAuthLoading(true);
+        try {
+          const data = await getSession();
+          if (data?.user) {
+            setUser(data.user);
+            setPlan((data.plan as Plan) || 'free');
+            setRemainingToday(data.remaining_today ?? null);
+            if (data.topic_quota_total) {
+              setTopicQuota({
+                plan: (data.plan as Plan) || 'free',
+                topic_quota_total: data.topic_quota_total,
+                topic_quota_remaining: data.topic_quota_remaining ?? data.topic_quota_total,
+                event_quota_per_topic: data.event_quota_per_topic ?? 0,
+                expires_at: data.cycle_expires_at ?? data.membership_expires_at,
+                downgrade_limited_topic_id: data.downgrade_limited_topic_id ?? null,
+              });
+            } else {
+              setTopicQuota(null);
+            }
+            setUpgradeHint('');
+          }
+        } catch (e) {
+          console.error("Session reload error after OAuth", e);
+        } finally {
+          setAuthLoading(false);
+        }
+      };
+      reloadSession();
+    } else if (authStatus === 'failure') {
+      // Remove auth parameter from URL
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.delete('auth');
+      window.history.replaceState({}, '', newUrl.toString());
+
+      // Show error message
+      console.error("OAuth authentication failed");
+    }
+  }, []);
+
   // 登录后恢复未登录时缓存的基准占卜请求
   useEffect(() => {
     const runPending = async () => {
