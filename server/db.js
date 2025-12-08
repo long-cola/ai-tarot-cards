@@ -21,14 +21,15 @@ if (!connectionString) {
   console.warn("[db] DATABASE_URL is not set. Database features will be unavailable until configured.");
 }
 
-// Lazy pool initialization for serverless environments
-let _pool = null;
-
+// Use globalThis to persist pool across serverless function invocations
+// This prevents creating new connections on every request (critical for Neon)
 export const getPool = () => {
   if (!connectionString) return null;
 
-  if (!_pool) {
-    _pool = new Pool({
+  // Use globalThis to cache the pool across function invocations
+  if (!globalThis.__pgPool) {
+    console.log("[db] Creating new Neon connection pool");
+    globalThis.__pgPool = new Pool({
       connectionString,
       ssl: { rejectUnauthorized: false },
       // Serverless-optimized settings for Neon pooled connections
@@ -39,7 +40,7 @@ export const getPool = () => {
     });
   }
 
-  return _pool;
+  return globalThis.__pgPool;
 };
 
 // For backwards compatibility

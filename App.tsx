@@ -369,11 +369,23 @@ const App: React.FC = () => {
     };
   }, []);
 
+  // Debug: Log authentication state on mount
+  useEffect(() => {
+    console.log("=== APP MOUNTED ===");
+    console.log("URL:", window.location.href);
+    console.log("localStorage.auth_token:", localStorage.getItem('auth_token') ? "present" : "absent");
+    console.log("document.cookie:", document.cookie || "empty");
+    console.log("User-Agent:", navigator.userAgent);
+    console.log("==================");
+  }, []);
+
   // Load session
   useEffect(() => {
     const loadSession = async () => {
       console.log("[Session] Loading initial session, user agent:", navigator.userAgent);
       console.log("[Session] Cookies available:", document.cookie ? "yes" : "no");
+      const token = localStorage.getItem('auth_token');
+      console.log("[Session] Token in localStorage:", token ? `yes (length: ${token.length})` : "no");
       try {
         const data = await getSession();
         console.log("[Session] Got session data:", data?.user ? "user found" : "no user", "plan:", data?.plan);
@@ -414,15 +426,21 @@ const App: React.FC = () => {
 
   // Handle OAuth callback - reload session when auth=success is detected
   useEffect(() => {
+    console.log("[OAuth] Checking for OAuth callback, URL:", window.location.href);
     const params = new URLSearchParams(window.location.search);
     const authStatus = params.get('auth');
     const token = params.get('token');
+    console.log("[OAuth] Auth status:", authStatus, "Token present:", !!token);
 
     if (authStatus === 'success') {
+      console.log("[OAuth] ✅ OAuth success detected!");
       // Store token in localStorage if provided (mobile fallback)
       if (token) {
-        console.log("[OAuth] Received token in URL, storing in localStorage (mobile mode)");
+        console.log("[OAuth] Received token in URL (length:", token.length, "), storing in localStorage (mobile mode)");
         localStorage.setItem('auth_token', token);
+        console.log("[OAuth] Token stored in localStorage successfully");
+      } else {
+        console.log("[OAuth] No token in URL, relying on cookie (desktop mode)");
       }
 
       // Remove auth parameter and token from URL
@@ -430,6 +448,7 @@ const App: React.FC = () => {
       newUrl.searchParams.delete('auth');
       newUrl.searchParams.delete('token');
       window.history.replaceState({}, '', newUrl.toString());
+      console.log("[OAuth] URL cleaned, new URL:", newUrl.toString());
 
       // Reload session to get updated user info
       // Add retry logic for mobile browsers where cookie may not be immediately available
