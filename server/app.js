@@ -93,18 +93,12 @@ const authMiddleware = (req, res, next) => {
   });
 };
 
-// Lazy schema initialization - only run on first database access
-let schemaInitialized = false;
+// Schema initialization is disabled in production to avoid timeouts
+// Schema should be initialized manually using: node server/create-admin.js
+// or by running ensureSchema() once during deployment
 const ensureSchemaOnce = async () => {
-  if (schemaInitialized || !pool) return;
-  try {
-    await ensureSchema();
-    schemaInitialized = true;
-    console.log("[server] Database schema ensured");
-  } catch (err) {
-    console.error("[server] Failed to ensure schema", err);
-    throw err;
-  }
+  // No-op in production - schema should already exist
+  return;
 };
 
 const requireAuth = [
