@@ -80,72 +80,97 @@
   </div>
 
   <script>
-    const api = (path) => {
+    const api = async (path) => {
       const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
       const headers = {
         'Authorization': 'Basic ' + btoa(`${email}:${password}`)
       };
-      return fetch(path, { headers }).then(r => r.json());
+      const response = await fetch(path, { headers });
+
+      if (!response.ok) {
+        const error = await response.text();
+        throw new Error(`请求失败 (${response.status}): ${error}`);
+      }
+
+      return response.json();
     };
 
     async function loadUsers() {
-      const data = await api('/api/admin/users');
-      const tbody = document.querySelector('#userTable tbody');
-      tbody.innerHTML = '';
-      document.getElementById('userCount').innerText = `总用户：${data.total || 0}`;
-      (data.users || []).forEach(u => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${u.id}</td>
-          <td>${u.email || ''}</td>
-          <td>${u.plan}</td>
-          <td>${u.membership_expires_at || ''}</td>
-          <td>${u.created_at || ''}</td>
-          <td>${u.topic_count || 0}</td>
-          <td>${u.event_count || 0}</td>
-          <td><button data-id="${u.id}">查看命题</button></td>
-        `;
-        tr.querySelector('button').onclick = () => loadTopics(u.id, secret);
-        tbody.appendChild(tr);
-      });
+      try {
+        const data = await api('/api/admin/users');
+        const tbody = document.querySelector('#userTable tbody');
+        tbody.innerHTML = '';
+        document.getElementById('userCount').innerText = `总用户：${data.total || 0}`;
+        (data.users || []).forEach(u => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${u.id}</td>
+            <td>${u.email || ''}</td>
+            <td>${u.plan}</td>
+            <td>${u.membership_expires_at || ''}</td>
+            <td>${u.created_at || ''}</td>
+            <td>${u.topic_count || 0}</td>
+            <td>${u.event_count || 0}</td>
+            <td><button data-id="${u.id}">查看命题</button></td>
+          `;
+          tr.querySelector('button').onclick = () => loadTopics(u.id);
+          tbody.appendChild(tr);
+        });
+        // 登录成功后显示成功消息
+        console.log('登录成功，已加载用户列表');
+      } catch (error) {
+        console.error('加载失败:', error);
+        alert('登录失败：' + error.message + '\n请检查邮箱和密码是否正确');
+        document.querySelector('#userTable tbody').innerHTML = '<tr><td colspan="8">登录失败，请重新输入正确的邮箱和密码</td></tr>';
+      }
     }
 
     async function loadTopics(userId) {
-      const data = await api(`/api/admin/users/${userId}/topics`);
-      const tbody = document.querySelector('#topicTable tbody');
-      tbody.innerHTML = '';
-      (data.topics || []).forEach(t => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${t.title}</td>
-          <td>${t.created_at || ''}</td>
-          <td>${t.event_count || 0}</td>
-          <td><button data-id="${t.id}">查看</button></td>
-        `;
-        tr.querySelector('button').onclick = () => loadEvents(t.id, secret);
-        tbody.appendChild(tr);
-      });
-      document.getElementById('topics').style.display = 'block';
-      document.getElementById('events').style.display = 'none';
+      try {
+        const data = await api(`/api/admin/users/${userId}/topics`);
+        const tbody = document.querySelector('#topicTable tbody');
+        tbody.innerHTML = '';
+        (data.topics || []).forEach(t => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${t.title}</td>
+            <td>${t.created_at || ''}</td>
+            <td>${t.event_count || 0}</td>
+            <td><button data-id="${t.id}">查看</button></td>
+          `;
+          tr.querySelector('button').onclick = () => loadEvents(t.id);
+          tbody.appendChild(tr);
+        });
+        document.getElementById('topics').style.display = 'block';
+        document.getElementById('events').style.display = 'none';
+      } catch (error) {
+        console.error('加载命题失败:', error);
+        alert('加载命题失败：' + error.message);
+      }
     }
 
     async function loadEvents(topicId) {
-      const data = await api(`/api/admin/topics/${topicId}/events`);
-      const tbody = document.querySelector('#eventTable tbody');
-      tbody.innerHTML = '';
-      (data.events || []).forEach(e => {
-        const cards = (e.cards || []).map(c => c.name || c.nameCn || '').join(', ');
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${e.name}</td>
-          <td>${e.created_at || ''}</td>
-          <td>${cards}</td>
-          <td><pre>${e.reading || ''}</pre></td>
-        `;
-        tbody.appendChild(tr);
-      });
-      document.getElementById('events').style.display = 'block';
+      try {
+        const data = await api(`/api/admin/topics/${topicId}/events`);
+        const tbody = document.querySelector('#eventTable tbody');
+        tbody.innerHTML = '';
+        (data.events || []).forEach(e => {
+          const cards = (e.cards || []).map(c => c.name || c.nameCn || '').join(', ');
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${e.name}</td>
+            <td>${e.created_at || ''}</td>
+            <td>${cards}</td>
+            <td><pre>${e.reading || ''}</pre></td>
+          `;
+          tbody.appendChild(tr);
+        });
+        document.getElementById('events').style.display = 'block';
+      } catch (error) {
+        console.error('加载事件失败:', error);
+        alert('加载事件失败：' + error.message);
+      }
     }
   </script>
 </body>
