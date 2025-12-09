@@ -249,7 +249,7 @@ const markdownComponents = {
     <strong className="text-amber-300 font-semibold">{children}</strong>
   ),
   p: ({ children }: { children: React.ReactNode }) => (
-    <p className="leading-relaxed text-slate-200/90">{children}</p>
+    <p className="leading-relaxed text-slate-200/90 break-words mb-2">{children}</p>
   ),
 };
 
@@ -1606,7 +1606,7 @@ Card drawn: ${currentCardStr}`;
                   </div>
                 )}
                 {selectedTopic.baseline_reading && (
-                  <div className="bg-slate-800/60 border border-white/5 rounded-xl p-4 text-sm text-slate-200">
+                  <div className="bg-slate-800/60 border border-white/5 rounded-xl p-4 text-sm text-slate-200 break-words whitespace-pre-wrap overflow-wrap-anywhere">
                     <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
                       {selectedTopic.baseline_reading}
                     </ReactMarkdown>
@@ -1707,7 +1707,7 @@ Card drawn: ${currentCardStr}`;
                       <div className="w-20">
                         <Card card={eventCard} isRevealed language={language} />
                       </div>
-                      <div className="flex-1 text-sm text-slate-200">
+                      <div className="flex-1 text-sm text-slate-200 break-words whitespace-pre-wrap overflow-wrap-anywhere">
                         <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
                           {eventReading}
                         </ReactMarkdown>
@@ -1751,7 +1751,7 @@ Card drawn: ${currentCardStr}`;
                             </div>
                           )}
                           {ev.reading && (
-                            <div className="mt-2 text-sm text-slate-200">
+                            <div className="mt-2 text-sm text-slate-200 break-words whitespace-pre-wrap overflow-wrap-anywhere">
                               <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
                                 {ev.reading}
                               </ReactMarkdown>
