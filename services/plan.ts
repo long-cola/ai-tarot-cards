@@ -1,5 +1,5 @@
-import { getPool } from './db';
-import { User } from './jwt';
+import { getPool } from './db.js';
+import { User } from './jwt.js';
 
 const addDays = (date: Date, days: number): Date => {
   const copy = new Date(date);

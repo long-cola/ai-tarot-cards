@@ -1,5 +1,5 @@
-import { getPool } from '../services/db';
-import { signToken, setAuthCookie } from '../services/jwt';
+import { getPool } from '../services/db.js';
+import { signToken, setAuthCookie } from '../services/jwt.js';
 
 export default async function handler(req: any, res: any) {
   // Strip query string

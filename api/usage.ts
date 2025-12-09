@@ -1,5 +1,5 @@
-import { getUserFromRequest } from '../services/jwt';
-import { getPlanInfo, getTodayUsage, incrementUsage } from '../services/usage';
+import { getUserFromRequest } from '../services/jwt.js';
+import { getPlanInfo, getTodayUsage, incrementUsage } from '../services/usage.js';
 
 export default async function handler(req: any, res: any) {
   // Strip query string

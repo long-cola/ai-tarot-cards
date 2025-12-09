@@ -1,5 +1,5 @@
-import { getPool } from './db';
-import { User } from './jwt';
+import { getPool } from './db.js';
+import { User } from './jwt.js';
 
 export function getPlanInfo(user: User | null) {
   if (!user) return { plan: 'guest', dailyLimit: 0, membershipValid: false };

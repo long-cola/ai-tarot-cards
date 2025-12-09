@@ -4,8 +4,8 @@ import {
   getUserStats,
   getUserTopics,
   getTopicEvents,
-} from '../services/admin';
-import { getPool } from '../services/db';
+} from '../services/admin.js';
+import { getPool } from '../services/db.js';
 
 export default async function handler(req: any, res: any) {
   // Strip query string for clean path matching

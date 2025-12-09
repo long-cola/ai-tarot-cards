@@ -1,4 +1,4 @@
-import { DrawnCard, Language } from "../types";
+import { DrawnCard, Language } from "../types.js";
 
 // Get API base URL from environment or default to current origin
 const getApiBase = (): string => {

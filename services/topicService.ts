@@ -1,5 +1,5 @@
-import { apiClient } from "./apiClient";
-import { DrawnCard, Language, Topic, TopicEvent, PlanQuota, TopicWithUsage } from "../types";
+import { apiClient } from "./apiClient.js";
+import { DrawnCard, Language, Topic, TopicEvent, PlanQuota, TopicWithUsage } from "../types.js";
 
 export interface TopicDetailResponse {
   topic: Topic;

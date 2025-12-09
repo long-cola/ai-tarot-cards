@@ -1,6 +1,6 @@
 import crypto from 'crypto';
-import { getPool } from './db';
-import { startMembershipCycle } from './plan';
+import { getPool } from './db.js';
+import { startMembershipCycle } from './plan.js';
 
 const addDays = (date: Date, days: number): Date => {
   const result = new Date(date);

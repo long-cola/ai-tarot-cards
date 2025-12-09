@@ -1,4 +1,4 @@
-import { getPool } from './db';
+import { getPool } from './db.js';
 import bcrypt from 'bcryptjs';
 
 // Verify admin credentials against database

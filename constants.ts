@@ -1,4 +1,4 @@
-import { TarotCardData } from './types';
+import { TarotCardData } from './types.js';
 
 export const MAJOR_ARCANA: TarotCardData[] = [
   { id: 0, name: "The Fool", nameCn: "愚人", meaningUpright: "新的开始，天真，自发性", meaningReversed: "鲁莽，冒险，甚至愚蠢", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/9/90/RWS_Tarot_00_Fool.jpg" },

@@ -1,4 +1,4 @@
-import { getUserFromRequest } from '../services/jwt';
+import { getUserFromRequest } from '../services/jwt.js';
 
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') {

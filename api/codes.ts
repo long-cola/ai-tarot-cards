@@ -1,5 +1,5 @@
-import { getUserFromRequest } from '../services/jwt';
-import { redeemCode, generateCodes } from '../services/redemption';
+import { getUserFromRequest } from '../services/jwt.js';
+import { redeemCode, generateCodes } from '../services/redemption.js';
 
 export default async function handler(req: any, res: any) {
   // Strip query string

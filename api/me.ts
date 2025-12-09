@@ -1,6 +1,6 @@
-import { getUserFromRequest } from '../services/jwt';
-import { getPlanInfo, getTodayUsage } from '../services/usage';
-import { getPlanQuotaSummary } from '../services/plan';
+import { getUserFromRequest } from '../services/jwt.js';
+import { getPlanInfo, getTodayUsage } from '../services/usage.js';
+import { getPlanQuotaSummary } from '../services/plan.js';
 
 export default async function handler(req: any, res: any) {
   // Get user from JWT token

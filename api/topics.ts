@@ -1,6 +1,6 @@
-import { getUserFromRequest } from '../services/jwt';
-import { getPool } from '../services/db';
-import { getPlanQuotaSummary, ensureActiveCycleForUser } from '../services/plan';
+import { getUserFromRequest } from '../services/jwt.js';
+import { getPool } from '../services/db.js';
+import { getPlanQuotaSummary, ensureActiveCycleForUser } from '../services/plan.js';
 
 export default async function handler(req: any, res: any) {
   const user = getUserFromRequest(req);
