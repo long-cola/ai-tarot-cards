@@ -17,6 +17,7 @@
     .flex { display: flex; gap: 8px; align-items: center; }
     .mt { margin-top: 8px; }
     pre { white-space: pre-wrap; word-break: break-all; background: #0b1220; padding: 8px; border-radius: 8px; }
+    code { background: #1e293b; padding: 2px 6px; border-radius: 4px; font-family: monospace; color: #22d3ee; }
   </style>
 </head>
 <body>
@@ -25,8 +26,43 @@
     <div class="flex">
       <input id="email" type="text" placeholder="邮箱" value="catadioptric19941@gmail.com" style="flex:1;">
       <input id="password" type="password" placeholder="密码" value="Admin123456" style="flex:1;">
-      <button onclick="loadUsers()">登录并加载</button>
+      <button onclick="loadUsers()">登录并加载用户</button>
+      <button onclick="loadCodes()">加载兑换码</button>
     </div>
+  </div>
+
+  <div id="codes" class="card" style="display:none;">
+    <h2 style="font-size:16px;">兑换码管理</h2>
+
+    <div class="card" style="background:#0f172a;margin-bottom:12px;">
+      <h3 style="font-size:14px;margin-bottom:8px;">生成新兑换码</h3>
+      <div class="flex">
+        <input id="codeCount" type="number" placeholder="数量" value="1" min="1" max="50" style="width:80px;">
+        <input id="codeDurationDays" type="number" placeholder="会员天数" value="30" min="1" style="width:100px;">
+        <input id="codeValidDays" type="number" placeholder="有效期(天)" value="365" min="1" style="width:100px;">
+        <button onclick="generateCodes()">生成兑换码</button>
+      </div>
+      <div id="generatedCodes" class="mt" style="display:none;">
+        <strong>生成的兑换码：</strong>
+        <pre id="generatedCodesList" style="margin-top:4px;"></pre>
+      </div>
+    </div>
+
+    <div id="codeCount"></div>
+    <table id="codeTable">
+      <thead>
+        <tr>
+          <th>兑换码</th>
+          <th>状态</th>
+          <th>会员天数</th>
+          <th>有效期至</th>
+          <th>使用者</th>
+          <th>使用时间</th>
+          <th>创建时间</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
   </div>
 
   <div id="users" class="card">
@@ -117,7 +153,9 @@
           tr.querySelector('button').onclick = () => loadTopics(u.id);
           tbody.appendChild(tr);
         });
-        // 登录成功后显示成功消息
+        // 登录成功后显示成功消息和用户列表
+        document.getElementById('users').style.display = 'block';
+        document.getElementById('codes').style.display = 'none';
         console.log('登录成功，已加载用户列表');
       } catch (error) {
         console.error('加载失败:', error);
@@ -170,6 +208,94 @@
       } catch (error) {
         console.error('加载事件失败:', error);
         alert('加载事件失败：' + error.message);
+      }
+    }
+
+    async function loadCodes() {
+      try {
+        const data = await api('/api/admin/codes');
+        const tbody = document.querySelector('#codeTable tbody');
+        tbody.innerHTML = '';
+
+        const stats = { total: 0, active: 0, used: 0, expired: 0 };
+        (data.codes || []).forEach(c => {
+          stats.total++;
+          stats[c.status]++;
+
+          const statusText = {
+            active: '🟢 可用',
+            used: '🔴 已使用',
+            expired: '⚫ 已过期'
+          }[c.status] || c.status;
+
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td><code>${c.code}</code></td>
+            <td>${statusText}</td>
+            <td>${c.duration_days} 天</td>
+            <td>${c.expires_at ? new Date(c.expires_at).toLocaleDateString('zh-CN') : '永久'}</td>
+            <td>${c.redeemed_by_email || '-'}</td>
+            <td>${c.redeemed_at ? new Date(c.redeemed_at).toLocaleString('zh-CN') : '-'}</td>
+            <td>${new Date(c.created_at).toLocaleString('zh-CN')}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+
+        document.getElementById('codeCount').innerText =
+          `总计：${stats.total} | 可用：${stats.active} | 已使用：${stats.used} | 已过期：${stats.expired}`;
+
+        document.getElementById('codes').style.display = 'block';
+        document.getElementById('users').style.display = 'none';
+        console.log('兑换码加载成功');
+      } catch (error) {
+        console.error('加载兑换码失败:', error);
+        alert('加载兑换码失败：' + error.message);
+      }
+    }
+
+    async function generateCodes() {
+      try {
+        const count = parseInt(document.getElementById('codeCount').value) || 1;
+        const durationDays = parseInt(document.getElementById('codeDurationDays').value) || 30;
+        const validDays = parseInt(document.getElementById('codeValidDays').value) || 365;
+
+        if (count < 1 || count > 50) {
+          alert('数量必须在 1-50 之间');
+          return;
+        }
+
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const headers = {
+          'Authorization': 'Basic ' + btoa(`${email}:${password}`),
+          'Content-Type': 'application/json'
+        };
+
+        const response = await fetch('/api/admin/codes/generate', {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({ count, durationDays, validDays })
+        });
+
+        if (!response.ok) {
+          throw new Error(`生成失败 (${response.status})`);
+        }
+
+        const data = await response.json();
+
+        // 显示生成的兑换码
+        const generatedDiv = document.getElementById('generatedCodes');
+        const codesList = document.getElementById('generatedCodesList');
+        codesList.textContent = data.codes.join('\n');
+        generatedDiv.style.display = 'block';
+
+        alert(`成功生成 ${data.codes.length} 个兑换码！`);
+
+        // 重新加载列表
+        loadCodes();
+      } catch (error) {
+        console.error('生成兑换码失败:', error);
+        alert('生成兑换码失败：' + error.message);
       }
     }
   </script>

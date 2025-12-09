@@ -123,3 +123,29 @@ export async function getTopicEvents(topicId: string) {
   );
   return res.rows;
 }
+
+export async function getRedemptionCodes() {
+  const pool = getPool();
+
+  const res = await pool.query(`
+    SELECT
+      rc.code,
+      rc.duration_days,
+      rc.expires_at,
+      rc.redeemed_by,
+      rc.redeemed_at,
+      rc.created_at,
+      u.email as redeemed_by_email,
+      u.name as redeemed_by_name,
+      CASE
+        WHEN rc.redeemed_by IS NOT NULL THEN 'used'
+        WHEN rc.expires_at IS NOT NULL AND rc.expires_at < NOW() THEN 'expired'
+        ELSE 'active'
+      END as status
+    FROM redemption_codes rc
+    LEFT JOIN users u ON u.id = rc.redeemed_by
+    ORDER BY rc.created_at DESC
+  `);
+
+  return res.rows;
+}

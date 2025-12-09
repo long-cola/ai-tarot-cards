@@ -4,8 +4,10 @@ import {
   getUserStats,
   getUserTopics,
   getTopicEvents,
+  getRedemptionCodes,
 } from '../services/admin.js';
 import { getPool } from '../services/db.js';
+import { generateCodes } from '../services/redemption.js';
 
 export default async function handler(req: any, res: any) {
   // Strip query string for clean path matching
@@ -27,6 +29,16 @@ export default async function handler(req: any, res: any) {
   }
 
   console.log('[admin] Authorization passed');
+
+  // GET /api/admin/codes - Get redemption codes
+  if (path === '/api/admin/codes' && method === 'GET') {
+    return handleGetCodes(req, res);
+  }
+
+  // POST /api/admin/codes/generate - Generate codes
+  if (path.includes('/codes/generate') && method === 'POST') {
+    return handleGenerateCodes(req, res);
+  }
 
   // GET /api/admin/users - Get user stats (must check before users/:id/topics)
   if (path === '/api/admin/users' && method === 'GET') {
@@ -131,6 +143,33 @@ async function handleGetTopicDetail(req: any, res: any, topicId: string) {
     });
   } catch (error: any) {
     console.error('[/api/admin/topics/:id] Error:', error);
+    res.status(500).json({ ok: false, message: 'internal_error' });
+  }
+}
+
+// Get all redemption codes
+async function handleGetCodes(req: any, res: any) {
+  try {
+    const codes = await getRedemptionCodes();
+    res.json({ ok: true, codes });
+  } catch (error: any) {
+    console.error('[/api/admin/codes] Error:', error);
+    res.status(500).json({ ok: false, message: 'internal_error' });
+  }
+}
+
+// Generate redemption codes
+async function handleGenerateCodes(req: any, res: any) {
+  try {
+    const { count = 1, durationDays = 30, validDays = 365 } = req.body || {};
+    const codes = await generateCodes({
+      count: Math.min(count, 50),
+      durationDays,
+      validDays,
+    });
+    res.json({ ok: true, codes });
+  } catch (error: any) {
+    console.error('[/api/admin/codes/generate] Error:', error);
     res.status(500).json({ ok: false, message: 'internal_error' });
   }
 }
