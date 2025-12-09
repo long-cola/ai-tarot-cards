@@ -24,9 +24,15 @@ export default async function handler(req: any, res: any) {
     question,
     cards,
     language,
-    promptKey = 'tarot_initial_reading',
+    promptKey,
     variables = {}
   } = req.body;
+
+  // Determine the prompt key based on language and type
+  // Default to 'first' (initial reading) if not specified
+  const isZh = language === 'zh';
+  const defaultPromptKey = isZh ? 'prompt_first_zh' : 'prompt_first_en';
+  const finalPromptKey = promptKey || defaultPromptKey;
 
   if (!question || !cards || !Array.isArray(cards) || cards.length === 0) {
     return res.status(400).json({
@@ -36,10 +42,8 @@ export default async function handler(req: any, res: any) {
   }
 
   try {
-    const isZh = language === 'zh';
-
     // Try to get prompt from database
-    let systemInstruction = await getRenderedPrompt(promptKey, language, variables);
+    let systemInstruction = await getRenderedPrompt(finalPromptKey, language, variables);
 
     // Fallback to default prompts if not found in database
     if (!systemInstruction) {
