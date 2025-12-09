@@ -1,4 +1,8 @@
+import { config } from 'dotenv';
 import { getPool } from '../services/db.js';
+
+// 加载环境变量
+config({ path: '.env.server.local' });
 
 /**
  * 迁移现有提示词到数据库
