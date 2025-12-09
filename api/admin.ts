@@ -1,0 +1,140 @@
+import {
+  isAdminAuthorized,
+  createAdminUser,
+  getUserStats,
+  getUserTopics,
+  getTopicEvents,
+} from '../services/admin';
+import { getPool } from '../services/db';
+
+export default async function handler(req: any, res: any) {
+  // Strip query string for clean path matching
+  const fullPath = req.url || '';
+  const path = fullPath.split('?')[0];
+  const method = req.method;
+
+  console.log('[admin] Request:', method, path);
+
+  // POST /api/admin/create - Create admin user
+  if (path.includes('/create') && method === 'POST') {
+    return handleCreateAdmin(req, res);
+  }
+
+  // Check admin authorization for all other endpoints
+  if (!(await isAdminAuthorized(req))) {
+    console.log('[admin] Authorization failed');
+    return res.status(403).json({ ok: false, message: 'forbidden' });
+  }
+
+  console.log('[admin] Authorization passed');
+
+  // GET /api/admin/users - Get user stats (must check before users/:id/topics)
+  if (path === '/api/admin/users' && method === 'GET') {
+    return handleGetUsers(req, res);
+  }
+
+  // GET /api/admin/users/:id/topics - Get user's topics
+  const userIdMatch = path.match(/\/admin\/users\/([^/]+)\/topics/);
+  if (userIdMatch && method === 'GET') {
+    return handleGetUserTopics(req, res, userIdMatch[1]);
+  }
+
+  // GET /api/admin/topics/:id/events - Get topic events
+  const topicEventsMatch = path.match(/\/admin\/topics\/([^/]+)\/events/);
+  if (topicEventsMatch && method === 'GET') {
+    return handleGetTopicEvents(req, res, topicEventsMatch[1]);
+  }
+
+  // GET /api/admin/topics/:id - Get topic detail
+  const topicIdMatch = path.match(/\/admin\/topics\/([^/]+)/);
+  if (topicIdMatch && method === 'GET' && !path.includes('/events')) {
+    return handleGetTopicDetail(req, res, topicIdMatch[1]);
+  }
+
+  console.log('[admin] No route matched for:', path);
+  return res.status(404).json({ ok: false, message: 'not_found' });
+}
+
+// Create admin user (requires ADMIN_CODE_SECRET)
+async function handleCreateAdmin(req: any, res: any) {
+  const { ADMIN_CODE_SECRET } = process.env;
+
+  if (!ADMIN_CODE_SECRET || req.headers['x-admin-secret'] !== ADMIN_CODE_SECRET) {
+    return res.status(403).json({ ok: false, message: 'forbidden' });
+  }
+
+  const { email, password, name } = req.body || {};
+  if (!email || !password) {
+    return res.status(400).json({ ok: false, message: 'email and password required' });
+  }
+
+  try {
+    const admin = await createAdminUser(email, password, name);
+    res.json({ ok: true, admin });
+  } catch (err: any) {
+    res.status(400).json({ ok: false, message: err.message });
+  }
+}
+
+// Get all users with stats
+async function handleGetUsers(req: any, res: any) {
+  try {
+    const stats = await getUserStats();
+    res.json({ ok: true, ...stats });
+  } catch (error: any) {
+    console.error('[/api/admin/users] Error:', error);
+    res.status(500).json({ ok: false, message: 'internal_error' });
+  }
+}
+
+// Get user's topics
+async function handleGetUserTopics(req: any, res: any, userId: string) {
+  try {
+    const topics = await getUserTopics(userId);
+    res.json({ ok: true, topics });
+  } catch (error: any) {
+    console.error('[/api/admin/users/:id/topics] Error:', error);
+    res.status(500).json({ ok: false, message: 'internal_error' });
+  }
+}
+
+// Get topic events
+async function handleGetTopicEvents(req: any, res: any, topicId: string) {
+  try {
+    const events = await getTopicEvents(topicId);
+    res.json({ ok: true, events });
+  } catch (error: any) {
+    console.error('[/api/admin/topics/:id/events] Error:', error);
+    res.status(500).json({ ok: false, message: 'internal_error' });
+  }
+}
+
+// Get topic detail with events
+async function handleGetTopicDetail(req: any, res: any, topicId: string) {
+  try {
+    const pool = getPool();
+
+    const topicRes = await pool.query(`SELECT * FROM topics WHERE id=$1 LIMIT 1`, [topicId]);
+    if (!topicRes.rows.length) {
+      return res.status(404).json({ ok: false, message: 'topic_not_found' });
+    }
+
+    const eventsRes = await pool.query(
+      `SELECT * FROM topic_events WHERE topic_id=$1 ORDER BY created_at ASC`,
+      [topicId]
+    );
+
+    res.json({
+      ok: true,
+      topic: topicRes.rows[0],
+      events: eventsRes.rows,
+    });
+  } catch (error: any) {
+    console.error('[/api/admin/topics/:id] Error:', error);
+    res.status(500).json({ ok: false, message: 'internal_error' });
+  }
+}
+
+export const config = {
+  maxDuration: 10,
+};

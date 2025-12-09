@@ -4,18 +4,16 @@
     { "source": "/api/health", "destination": "/api/health" },
     { "source": "/api/me", "destination": "/api/me" },
     { "source": "/api/logout", "destination": "/api/logout" },
-    { "source": "/api/auth/google", "destination": "/api/auth-google" },
-    { "source": "/api/auth/google/callback", "destination": "/api/auth-google-callback" },
-    { "source": "/api/usage/consume", "destination": "/api/usage-consume" },
+    { "source": "/api/auth/(.*)", "destination": "/api/auth" },
     { "source": "/api/tarot-reading", "destination": "/api/tarot-reading" },
-    { "source": "/api/topics/:id/events", "destination": "/api/topics-add-event?id=:id" },
-    { "source": "/api/topics/:id", "destination": "/api/topics-detail?id=:id" },
-    { "source": "/api/topics", "destination": "/api/topics" },
-    { "source": "/api/(.*)", "destination": "/api/server" },
+    { "source": "/api/topics/(.*)", "destination": "/api/topics" },
+    { "source": "/api/usage/(.*)", "destination": "/api/usage" },
+    { "source": "/api/codes/(.*)", "destination": "/api/codes" },
+    { "source": "/api/admin/(.*)", "destination": "/api/admin" },
     { "source": "/admin", "destination": "/admin.html" }
   ],
   "functions": {
-    "api/*.js": {
+    "api/*.ts": {
       "maxDuration": 30
     }
   }
