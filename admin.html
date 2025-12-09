@@ -28,6 +28,7 @@
       <input id="password" type="password" placeholder="密码" style="flex:1;">
       <button onclick="loadUsers()">登录并加载用户</button>
       <button onclick="loadCodes()">加载兑换码</button>
+      <button onclick="loadPrompts()">加载 Prompts</button>
     </div>
   </div>
 
@@ -113,6 +114,91 @@
       </thead>
       <tbody></tbody>
     </table>
+  </div>
+
+  <div id="prompts" class="card" style="display:none;">
+    <h2 style="font-size:16px;">Prompt 模板管理</h2>
+
+    <div class="card" style="background:#0f172a;margin-bottom:12px;">
+      <h3 style="font-size:14px;margin-bottom:8px;">创建新 Prompt</h3>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <input id="promptKey" type="text" placeholder="Key (如 tarot_event_reading)" style="width:100%;">
+        <div class="flex">
+          <select id="promptLanguage" style="width:100px;">
+            <option value="zh">中文</option>
+            <option value="en">English</option>
+          </select>
+          <select id="promptTriggerType" style="width:150px;">
+            <option value="initial">首次请求</option>
+            <option value="event">事件请求</option>
+          </select>
+        </div>
+        <div style="font-size:12px;color:#94a3b8;">选择变量（多选）：</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;font-size:12px;">
+          <label><input type="checkbox" class="prompt-variable" value="question"> question (我的问题)</label>
+          <label><input type="checkbox" class="prompt-variable" value="baseline_cards"> baseline_cards (基础抽牌)</label>
+          <label><input type="checkbox" class="prompt-variable" value="baseline_reading"> baseline_reading (基础解读)</label>
+          <label><input type="checkbox" class="prompt-variable" value="history"> history (历史事件)</label>
+          <label><input type="checkbox" class="prompt-variable" value="event_name"> event_name (事件名称)</label>
+          <label><input type="checkbox" class="prompt-variable" value="current_card"> current_card (当前抽牌)</label>
+          <label><input type="checkbox" class="prompt-variable" value="reading_structure"> reading_structure (解读结构)</label>
+        </div>
+        <textarea id="promptTemplate" placeholder="模板内容，使用 {{variable}} 占位符" style="width:100%;height:200px;font-family:monospace;font-size:12px;"></textarea>
+        <button onclick="createPrompt()">创建 Prompt</button>
+      </div>
+    </div>
+
+    <div id="promptCount"></div>
+    <table id="promptTable">
+      <thead>
+        <tr>
+          <th>Key</th>
+          <th>语言</th>
+          <th>触发时机</th>
+          <th>变量</th>
+          <th>状态</th>
+          <th>创建时间</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <div id="editPromptModal" class="card" style="display:none;position:fixed;top:50px;left:50%;transform:translateX(-50%);width:80%;max-width:800px;z-index:1000;max-height:90vh;overflow-y:auto;">
+    <h3 style="font-size:14px;margin-bottom:8px;">编辑 Prompt</h3>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <input id="editPromptKey" type="text" placeholder="Key" style="width:100%;">
+      <div class="flex">
+        <select id="editPromptLanguage" style="width:100px;">
+          <option value="zh">中文</option>
+          <option value="en">English</option>
+        </select>
+        <select id="editPromptTriggerType" style="width:150px;">
+          <option value="initial">首次请求</option>
+          <option value="event">事件请求</option>
+        </select>
+        <select id="editPromptIsActive" style="width:100px;">
+          <option value="true">启用</option>
+          <option value="false">禁用</option>
+        </select>
+      </div>
+      <div style="font-size:12px;color:#94a3b8;">选择变量（多选）：</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;font-size:12px;">
+        <label><input type="checkbox" class="edit-prompt-variable" value="question"> question</label>
+        <label><input type="checkbox" class="edit-prompt-variable" value="baseline_cards"> baseline_cards</label>
+        <label><input type="checkbox" class="edit-prompt-variable" value="baseline_reading"> baseline_reading</label>
+        <label><input type="checkbox" class="edit-prompt-variable" value="history"> history</label>
+        <label><input type="checkbox" class="edit-prompt-variable" value="event_name"> event_name</label>
+        <label><input type="checkbox" class="edit-prompt-variable" value="current_card"> current_card</label>
+        <label><input type="checkbox" class="edit-prompt-variable" value="reading_structure"> reading_structure</label>
+      </div>
+      <textarea id="editPromptTemplate" placeholder="模板内容" style="width:100%;height:250px;font-family:monospace;font-size:12px;"></textarea>
+      <div class="flex">
+        <button onclick="savePrompt()" style="flex:1;">保存</button>
+        <button onclick="closeEditModal()" style="flex:1;background:#334155;">取消</button>
+      </div>
+    </div>
   </div>
 
   <script>
@@ -296,6 +382,211 @@
       } catch (error) {
         console.error('生成兑换码失败:', error);
         alert('生成兑换码失败：' + error.message);
+      }
+    }
+
+    // Prompt 管理相关函数
+    let currentEditingPromptId = null;
+
+    async function loadPrompts() {
+      try {
+        const data = await api('/api/admin/prompts');
+        const tbody = document.querySelector('#promptTable tbody');
+        tbody.innerHTML = '';
+
+        document.getElementById('promptCount').innerText = `总计：${data.prompts?.length || 0} 个模板`;
+
+        (data.prompts || []).forEach(p => {
+          const triggerText = p.trigger_type === 'initial' ? '首次请求' : '事件请求';
+          const statusText = p.is_active ? '🟢 启用' : '⚫ 禁用';
+          const variables = Array.isArray(p.variables) ? p.variables.join(', ') : '无';
+
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td><code>${p.key}</code></td>
+            <td>${p.language}</td>
+            <td>${triggerText}</td>
+            <td style="font-size:10px;">${variables}</td>
+            <td>${statusText}</td>
+            <td>${new Date(p.created_at).toLocaleString('zh-CN')}</td>
+            <td>
+              <button onclick="editPrompt('${p.id}')">编辑</button>
+              <button onclick="deletePromptConfirm('${p.id}')" style="background:#dc2626;">删除</button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+
+        document.getElementById('prompts').style.display = 'block';
+        document.getElementById('users').style.display = 'none';
+        document.getElementById('codes').style.display = 'none';
+        console.log('Prompts 加载成功');
+      } catch (error) {
+        console.error('加载 Prompts 失败:', error);
+        alert('加载 Prompts 失败：' + error.message);
+      }
+    }
+
+    async function createPrompt() {
+      try {
+        const key = document.getElementById('promptKey').value.trim();
+        const language = document.getElementById('promptLanguage').value;
+        const trigger_type = document.getElementById('promptTriggerType').value;
+        const template = document.getElementById('promptTemplate').value;
+
+        if (!key || !template) {
+          alert('请填写 Key 和模板内容');
+          return;
+        }
+
+        // 获取选中的变量
+        const variables = Array.from(document.querySelectorAll('.prompt-variable:checked')).map(cb => cb.value);
+
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const headers = {
+          'Authorization': 'Basic ' + btoa(`${email}:${password}`),
+          'Content-Type': 'application/json'
+        };
+
+        const response = await fetch('/api/admin/prompts', {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({ key, language, trigger_type, variables, template })
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || `创建失败 (${response.status})`);
+        }
+
+        alert('Prompt 创建成功！');
+
+        // 清空表单
+        document.getElementById('promptKey').value = '';
+        document.getElementById('promptTemplate').value = '';
+        document.querySelectorAll('.prompt-variable').forEach(cb => cb.checked = false);
+
+        // 重新加载列表
+        loadPrompts();
+      } catch (error) {
+        console.error('创建 Prompt 失败:', error);
+        alert('创建 Prompt 失败：' + error.message);
+      }
+    }
+
+    async function editPrompt(promptId) {
+      try {
+        const data = await api('/api/admin/prompts');
+        const prompt = data.prompts.find(p => p.id === promptId);
+
+        if (!prompt) {
+          alert('找不到该 Prompt');
+          return;
+        }
+
+        currentEditingPromptId = promptId;
+
+        // 填充表单
+        document.getElementById('editPromptKey').value = prompt.key;
+        document.getElementById('editPromptLanguage').value = prompt.language;
+        document.getElementById('editPromptTriggerType').value = prompt.trigger_type;
+        document.getElementById('editPromptIsActive').value = prompt.is_active.toString();
+        document.getElementById('editPromptTemplate').value = prompt.template;
+
+        // 设置变量复选框
+        document.querySelectorAll('.edit-prompt-variable').forEach(cb => {
+          cb.checked = Array.isArray(prompt.variables) && prompt.variables.includes(cb.value);
+        });
+
+        // 显示编辑模态框
+        document.getElementById('editPromptModal').style.display = 'block';
+      } catch (error) {
+        console.error('加载 Prompt 详情失败:', error);
+        alert('加载 Prompt 详情失败：' + error.message);
+      }
+    }
+
+    async function savePrompt() {
+      try {
+        if (!currentEditingPromptId) {
+          alert('无效的操作');
+          return;
+        }
+
+        const key = document.getElementById('editPromptKey').value.trim();
+        const language = document.getElementById('editPromptLanguage').value;
+        const trigger_type = document.getElementById('editPromptTriggerType').value;
+        const is_active = document.getElementById('editPromptIsActive').value === 'true';
+        const template = document.getElementById('editPromptTemplate').value;
+
+        if (!key || !template) {
+          alert('请填写 Key 和模板内容');
+          return;
+        }
+
+        // 获取选中的变量
+        const variables = Array.from(document.querySelectorAll('.edit-prompt-variable:checked')).map(cb => cb.value);
+
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const headers = {
+          'Authorization': 'Basic ' + btoa(`${email}:${password}`),
+          'Content-Type': 'application/json'
+        };
+
+        const response = await fetch(`/api/admin/prompts/${currentEditingPromptId}`, {
+          method: 'PUT',
+          headers,
+          body: JSON.stringify({ key, language, trigger_type, variables, template, is_active })
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || `更新失败 (${response.status})`);
+        }
+
+        alert('Prompt 更新成功！');
+
+        closeEditModal();
+        loadPrompts();
+      } catch (error) {
+        console.error('更新 Prompt 失败:', error);
+        alert('更新 Prompt 失败：' + error.message);
+      }
+    }
+
+    function closeEditModal() {
+      document.getElementById('editPromptModal').style.display = 'none';
+      currentEditingPromptId = null;
+    }
+
+    async function deletePromptConfirm(promptId) {
+      if (!confirm('确定要删除这个 Prompt 吗？此操作不可撤销。')) {
+        return;
+      }
+
+      try {
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const headers = {
+          'Authorization': 'Basic ' + btoa(`${email}:${password}`)
+        };
+
+        const response = await fetch(`/api/admin/prompts/${promptId}`, {
+          method: 'DELETE',
+          headers
+        });
+
+        if (!response.ok) {
+          throw new Error(`删除失败 (${response.status})`);
+        }
+
+        alert('Prompt 删除成功！');
+        loadPrompts();
+      } catch (error) {
+        console.error('删除 Prompt 失败:', error);
+        alert('删除 Prompt 失败：' + error.message);
       }
     }
   </script>

@@ -1,4 +1,5 @@
 import { getUserFromRequest } from '../services/jwt.js';
+import { getRenderedPrompt } from '../services/promptService.js';
 
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') {
@@ -19,7 +20,13 @@ export default async function handler(req: any, res: any) {
     });
   }
 
-  const { question, cards, language } = req.body;
+  const {
+    question,
+    cards,
+    language,
+    promptKey = 'tarot_initial_reading',
+    variables = {}
+  } = req.body;
 
   if (!question || !cards || !Array.isArray(cards) || cards.length === 0) {
     return res.status(400).json({
@@ -31,20 +38,27 @@ export default async function handler(req: any, res: any) {
   try {
     const isZh = language === 'zh';
 
-    // Format cards based on language
-    const cardsString = cards
-      .map((c: any) => {
-        const posName = isZh
-          ? ['过去', '现在', '未来'][c.position]
-          : ['The Past', 'The Present', 'The Future'][c.position];
-        const cardName = isZh ? c.nameCn : c.name;
-        const status = isZh ? (c.isReversed ? '逆位' : '正位') : c.isReversed ? 'Reversed' : 'Upright';
-        return `${posName}: ${cardName} (${status})`;
-      })
-      .join(isZh ? '，' : ', ');
+    // Try to get prompt from database
+    let systemInstruction = await getRenderedPrompt(promptKey, language, variables);
 
-    // System instructions
-    const TAROT_SYSTEM_INSTRUCTION_ZH = `你是一位专业的塔罗师AI助手，精通78张塔罗牌的象征意义、正逆位解读、牌阵应用和灵性指导。你以温和、中立且富有洞察力的方式为用户提供塔罗解读服务，注重启发而非预言，强调个人能动性和内在成长。
+    // Fallback to default prompts if not found in database
+    if (!systemInstruction) {
+      console.warn(`[tarot-reading] Prompt not found in DB: ${promptKey}/${language}, using fallback`);
+
+      // Format cards based on language
+      const cardsString = cards
+        .map((c: any) => {
+          const posName = isZh
+            ? ['过去', '现在', '未来'][c.position]
+            : ['The Past', 'The Present', 'The Future'][c.position];
+          const cardName = isZh ? c.nameCn : c.name;
+          const status = isZh ? (c.isReversed ? '逆位' : '正位') : c.isReversed ? 'Reversed' : 'Upright';
+          return `${posName}: ${cardName} (${status})`;
+        })
+        .join(isZh ? '，' : ', ');
+
+      // System instructions (fallback)
+      const TAROT_SYSTEM_INSTRUCTION_ZH = `你是一位专业的塔罗师AI助手，精通78张塔罗牌的象征意义、正逆位解读、牌阵应用和灵性指导。你以温和、中立且富有洞察力的方式为用户提供塔罗解读服务，注重启发而非预言，强调个人能动性和内在成长。
 
 你将按照下面的结构进行解读：
 
@@ -67,7 +81,7 @@ export default async function handler(req: any, res: any) {
 
 请使用Markdown格式输出，保持排版清晰优雅。`;
 
-    const TAROT_SYSTEM_INSTRUCTION_EN = `You are a professional AI Tarot Reader, expert in the symbolism of the 78 Tarot cards, upright and reversed meanings, spread applications, and spiritual guidance. You provide readings in a gentle, neutral, and insightful manner, focusing on inspiration rather than fortune-telling, emphasizing personal agency and inner growth.
+      const TAROT_SYSTEM_INSTRUCTION_EN = `You are a professional AI Tarot Reader, expert in the symbolism of the 78 Tarot cards, upright and reversed meanings, spread applications, and spiritual guidance. You provide readings in a gentle, neutral, and insightful manner, focusing on inspiration rather than fortune-telling, emphasizing personal agency and inner growth.
 
 Please follow this structure for your reading:
 
@@ -90,15 +104,16 @@ When dealing with relationship questions, please use this philosophy for deep in
 
 Please use Markdown format for clear and elegant output.`;
 
-    const formatHint = isZh
-      ? '请使用Markdown富文本输出，包含分节小标题、列表和重点加粗，不要只用纯文本段落。'
-      : 'Please use Markdown rich text with section headings, bullet lists, and bold emphasis—avoid plain unstructured text.';
+      const formatHint = isZh
+        ? '请使用Markdown富文本输出，包含分节小标题、列表和重点加粗，不要只用纯文本段落。'
+        : 'Please use Markdown rich text with section headings, bullet lists, and bold emphasis—avoid plain unstructured text.';
 
-    const prompt = isZh
-      ? `我给你的牌：{${cardsString}}，我的问题：{${question}}。\n\n${formatHint}`
-      : `Cards drawn: {${cardsString}}, My question: {${question}}.\n\n${formatHint}`;
+      const prompt = isZh
+        ? `我给你的牌：{${cardsString}}，我的问题：{${question}}。\n\n${formatHint}`
+        : `Cards drawn: {${cardsString}}, My question: {${question}}.\n\n${formatHint}`;
 
-    const systemInstruction = isZh ? TAROT_SYSTEM_INSTRUCTION_ZH : TAROT_SYSTEM_INSTRUCTION_EN;
+      systemInstruction = (isZh ? TAROT_SYSTEM_INSTRUCTION_ZH : TAROT_SYSTEM_INSTRUCTION_EN) + '\n\n' + prompt;
+    }
 
     // Call Bailian API
     const response = await fetch('https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions', {
@@ -110,8 +125,7 @@ Please use Markdown format for clear and elegant output.`;
       body: JSON.stringify({
         model: 'qwen-flash',
         messages: [
-          { role: 'system', content: systemInstruction },
-          { role: 'user', content: prompt },
+          { role: 'user', content: systemInstruction },
         ],
         temperature: 0.7,
         max_tokens: 2000,

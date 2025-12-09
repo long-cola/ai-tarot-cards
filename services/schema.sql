@@ -82,6 +82,20 @@ CREATE TABLE IF NOT EXISTS topic_events (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- AI Prompts (configurable prompt templates)
+CREATE TABLE IF NOT EXISTS prompts (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  key TEXT NOT NULL,
+  language TEXT NOT NULL DEFAULT 'zh',
+  trigger_type TEXT NOT NULL,
+  variables JSONB NOT NULL DEFAULT '[]',
+  template TEXT NOT NULL,
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(key, language)
+);
+
 -- Indexes for performance
 CREATE INDEX IF NOT EXISTS idx_users_provider ON users(provider, provider_id);
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
@@ -90,3 +104,5 @@ CREATE INDEX IF NOT EXISTS idx_topic_events_topic ON topic_events(topic_id);
 CREATE INDEX IF NOT EXISTS idx_topic_events_user ON topic_events(user_id);
 CREATE INDEX IF NOT EXISTS idx_membership_cycles_user ON membership_cycles(user_id);
 CREATE INDEX IF NOT EXISTS idx_daily_usage_user_date ON daily_usage(user_id, usage_date);
+CREATE INDEX IF NOT EXISTS idx_prompts_key_language ON prompts(key, language);
+CREATE INDEX IF NOT EXISTS idx_prompts_trigger_type ON prompts(trigger_type);

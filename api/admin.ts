@@ -8,6 +8,12 @@ import {
 } from '../services/admin.js';
 import { getPool } from '../services/db.js';
 import { generateCodes } from '../services/redemption.js';
+import {
+  getAllPrompts,
+  createPrompt,
+  updatePrompt,
+  deletePrompt,
+} from '../services/promptService.js';
 
 export default async function handler(req: any, res: any) {
   // Strip query string for clean path matching
@@ -38,6 +44,28 @@ export default async function handler(req: any, res: any) {
   // POST /api/admin/codes/generate - Generate codes
   if (path.includes('/codes/generate') && method === 'POST') {
     return handleGenerateCodes(req, res);
+  }
+
+  // GET /api/admin/prompts - Get all prompts
+  if (path === '/api/admin/prompts' && method === 'GET') {
+    return handleGetPrompts(req, res);
+  }
+
+  // POST /api/admin/prompts - Create prompt
+  if (path === '/api/admin/prompts' && method === 'POST') {
+    return handleCreatePrompt(req, res);
+  }
+
+  // PUT /api/admin/prompts/:id - Update prompt
+  const promptUpdateMatch = path.match(/\/admin\/prompts\/([^/]+)$/);
+  if (promptUpdateMatch && method === 'PUT') {
+    return handleUpdatePrompt(req, res, promptUpdateMatch[1]);
+  }
+
+  // DELETE /api/admin/prompts/:id - Delete prompt
+  const promptDeleteMatch = path.match(/\/admin\/prompts\/([^/]+)$/);
+  if (promptDeleteMatch && method === 'DELETE') {
+    return handleDeletePrompt(req, res, promptDeleteMatch[1]);
   }
 
   // GET /api/admin/users - Get user stats (must check before users/:id/topics)
@@ -170,6 +198,101 @@ async function handleGenerateCodes(req: any, res: any) {
     res.json({ ok: true, codes });
   } catch (error: any) {
     console.error('[/api/admin/codes/generate] Error:', error);
+    res.status(500).json({ ok: false, message: 'internal_error' });
+  }
+}
+
+// Get all prompts
+async function handleGetPrompts(req: any, res: any) {
+  try {
+    const prompts = await getAllPrompts();
+    res.json({ ok: true, prompts });
+  } catch (error: any) {
+    console.error('[/api/admin/prompts] Error:', error);
+    res.status(500).json({ ok: false, message: 'internal_error' });
+  }
+}
+
+// Create prompt
+async function handleCreatePrompt(req: any, res: any) {
+  try {
+    const { key, language, trigger_type, variables, template } = req.body || {};
+
+    if (!key || !language || !trigger_type || !template) {
+      return res.status(400).json({
+        ok: false,
+        message: 'key, language, trigger_type and template are required'
+      });
+    }
+
+    if (!['initial', 'event'].includes(trigger_type)) {
+      return res.status(400).json({
+        ok: false,
+        message: 'trigger_type must be "initial" or "event"'
+      });
+    }
+
+    const prompt = await createPrompt({
+      key,
+      language,
+      trigger_type,
+      variables: variables || [],
+      template,
+    });
+
+    res.json({ ok: true, prompt });
+  } catch (error: any) {
+    console.error('[/api/admin/prompts] Create error:', error);
+    res.status(500).json({ ok: false, message: error.message || 'internal_error' });
+  }
+}
+
+// Update prompt
+async function handleUpdatePrompt(req: any, res: any, promptId: string) {
+  try {
+    const { key, language, trigger_type, variables, template, is_active } = req.body || {};
+
+    const updateData: any = {};
+    if (key !== undefined) updateData.key = key;
+    if (language !== undefined) updateData.language = language;
+    if (trigger_type !== undefined) {
+      if (!['initial', 'event'].includes(trigger_type)) {
+        return res.status(400).json({
+          ok: false,
+          message: 'trigger_type must be "initial" or "event"'
+        });
+      }
+      updateData.trigger_type = trigger_type;
+    }
+    if (variables !== undefined) updateData.variables = variables;
+    if (template !== undefined) updateData.template = template;
+    if (is_active !== undefined) updateData.is_active = is_active;
+
+    const prompt = await updatePrompt(promptId, updateData);
+
+    if (!prompt) {
+      return res.status(404).json({ ok: false, message: 'prompt_not_found' });
+    }
+
+    res.json({ ok: true, prompt });
+  } catch (error: any) {
+    console.error('[/api/admin/prompts/:id] Update error:', error);
+    res.status(500).json({ ok: false, message: error.message || 'internal_error' });
+  }
+}
+
+// Delete prompt
+async function handleDeletePrompt(req: any, res: any, promptId: string) {
+  try {
+    const deleted = await deletePrompt(promptId);
+
+    if (!deleted) {
+      return res.status(404).json({ ok: false, message: 'prompt_not_found' });
+    }
+
+    res.json({ ok: true });
+  } catch (error: any) {
+    console.error('[/api/admin/prompts/:id] Delete error:', error);
     res.status(500).json({ ok: false, message: 'internal_error' });
   }
 }
