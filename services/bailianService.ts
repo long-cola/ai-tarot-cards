@@ -12,7 +12,13 @@ const getApiBase = (): string => {
   return window.location.origin;
 };
 
-export const getTarotReading = async (question: string, cards: DrawnCard[], language: Language): Promise<string> => {
+export const getTarotReading = async (
+  question: string,
+  cards: DrawnCard[],
+  language: Language,
+  promptKey?: string,
+  variables?: Record<string, any>
+): Promise<string> => {
   const isZh = language === 'zh';
 
   try {
@@ -27,7 +33,9 @@ export const getTarotReading = async (question: string, cards: DrawnCard[], lang
       body: JSON.stringify({
         question,
         cards,
-        language
+        language,
+        promptKey,
+        variables
       })
     });
 

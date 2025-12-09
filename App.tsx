@@ -963,8 +963,43 @@ Card drawn: ${currentCardStr}`;
     setIsEventLoading(true);
     setIsEventSaving(false);
     try {
-      const q = buildEventQuestion(eventCard, selectedTopic, topicEvents);
-      const readingText = await getTarotReading(q, [eventCard], language);
+      // Prepare variables for prompt template
+      const isZh = language === 'zh';
+      const baselineCards = selectedTopic?.baseline_cards || [];
+      const baselineCardsStr = baselineCards.length
+        ? baselineCards.map(c => formatCardLabel(c, language)).join(isZh ? "，" : ", ")
+        : (isZh ? "暂无" : "None");
+
+      const historyStr = topicEvents.length
+        ? topicEvents.map(ev => {
+            const dateStr = ev.created_at ? new Date(ev.created_at).toLocaleDateString() : '';
+            const cardStr = ev.cards?.map(c => formatCardLabel(c as DrawnCard, language)).join(isZh ? "，" : ", ");
+            return isZh
+              ? `${dateStr}、${ev.name}${cardStr ? `、${cardStr}` : ""}`
+              : `${dateStr}: ${ev.name}${cardStr ? ` | ${cardStr}` : ""}`;
+          }).join(isZh ? "；" : "; ")
+        : (isZh ? "暂无历史事件" : "No past events");
+
+      const currentCardStr = formatCardLabel(eventCard, language);
+
+      // Use prompt_case_zh or prompt_case_en
+      const promptKey = isZh ? 'prompt_case_zh' : 'prompt_case_en';
+      const variables = {
+        question: selectedTopic?.title || question,
+        baseline_cards: baselineCardsStr,
+        baseline_reading: selectedTopic?.baseline_reading || '',
+        history: historyStr,
+        event_name: eventName.trim(),
+        current_card: currentCardStr
+      };
+
+      const readingText = await getTarotReading(
+        selectedTopic?.title || question,
+        [eventCard],
+        language,
+        promptKey,
+        variables
+      );
       // If API returns generic reading, still store
       setEventReading(readingText);
       setIsEventSaving(true);
