@@ -1021,6 +1021,18 @@ Card drawn: ${currentCardStr}`;
         current_card: currentCardStr
       };
 
+      console.log('[Event Reading] Sending to API:', {
+        promptKey,
+        variables: {
+          question: variables.question,
+          baseline_cards: variables.baseline_cards.substring(0, 50) + '...',
+          baseline_reading: variables.baseline_reading.substring(0, 50) + '...',
+          history: variables.history.substring(0, 50) + '...',
+          event_name: variables.event_name,
+          current_card: variables.current_card
+        }
+      });
+
       const readingText = await getTarotReading(
         selectedTopic?.title || question,
         [eventCard],

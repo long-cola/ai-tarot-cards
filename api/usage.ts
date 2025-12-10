@@ -30,7 +30,24 @@ async function handleConsumeUsage(req: any, res: any) {
     const planInfo = getPlanInfo(user);
     const today = await getTodayUsage(user.id);
 
+    console.log('[/api/usage/consume] User quota check:', {
+      userId: user.id,
+      email: user.email,
+      membershipExpiresAt: user.membership_expires_at,
+      now: new Date().toISOString(),
+      plan: planInfo.plan,
+      membershipValid: planInfo.membershipValid,
+      dailyLimit: planInfo.dailyLimit,
+      todayCount: today.count,
+      todayDate: today.date,
+    });
+
     if (today.count >= planInfo.dailyLimit) {
+      console.warn('[/api/usage/consume] Daily limit reached:', {
+        plan: planInfo.plan,
+        used: today.count,
+        limit: planInfo.dailyLimit,
+      });
       return res.status(429).json({
         ok: false,
         message: 'daily_limit_reached',
@@ -43,6 +60,11 @@ async function handleConsumeUsage(req: any, res: any) {
 
     await incrementUsage(user.id, today.date);
     const remaining = planInfo.dailyLimit - (today.count + 1);
+
+    console.log('[/api/usage/consume] Usage incremented successfully:', {
+      newCount: today.count + 1,
+      remaining,
+    });
 
     res.json({
       ok: true,
