@@ -1,5 +1,6 @@
-import { getUserFromRequest } from '../services/jwt.js';
+import { getUserFromRequest, signToken, setAuthCookie } from '../services/jwt.js';
 import { redeemCode, generateCodes } from '../services/redemption.js';
+import { getPool } from '../services/db.js';
 
 export default async function handler(req: any, res: any) {
   // Strip query string
@@ -63,10 +64,36 @@ async function handleRedeemCode(req: any, res: any) {
       return res.status(400).json({ ok: false, reason: result.reason });
     }
 
+    // Fetch updated user data from database to get the new membership_expires_at
+    const pool = getPool();
+    const userRes = await pool.query(
+      `SELECT id, email, name, avatar, membership_expires_at FROM users WHERE id=$1 LIMIT 1`,
+      [user.id]
+    );
+
+    if (!userRes.rows.length) {
+      return res.status(500).json({ ok: false, message: 'user_not_found' });
+    }
+
+    const updatedUser = userRes.rows[0];
+
+    // Generate new JWT token with updated membership info
+    const newToken = signToken(updatedUser);
+
+    // Set the new token in cookie
+    setAuthCookie(res, newToken);
+
+    console.log('[/api/codes/redeem] Successfully redeemed code and updated JWT token:', {
+      userId: user.id,
+      email: user.email,
+      newMembershipExpiresAt: result.membership_expires_at,
+    });
+
     res.json({
       ok: true,
       membership_expires_at: result.membership_expires_at,
       plan: 'member',
+      token: newToken, // Also return token for mobile apps using localStorage
     });
   } catch (error: any) {
     console.error('[/api/codes/redeem] Error:', error);

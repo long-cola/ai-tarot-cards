@@ -589,10 +589,20 @@ const App: React.FC = () => {
     if (!redeemCodeInput.trim()) return;
     try {
       const res = await redeemMembership(redeemCodeInput.trim());
+
+      // Save new token to localStorage if provided (for mobile browsers)
+      if (res.token) {
+        localStorage.setItem('auth_token', res.token);
+        console.log('[Redeem] Updated auth token in localStorage');
+      }
+
       setRedeemFeedback(language === 'zh' ? '兑换成功，会员已开通！' : 'Redeemed successfully. Membership activated!');
       setPlan('member');
       setRemainingToday(50);
       setShowRedeem(false);
+
+      // Refresh session to get updated user info
+      fetchSession();
     } catch (err: any) {
       const reason = err?.data?.reason;
       const msg = {
