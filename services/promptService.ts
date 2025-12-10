@@ -27,12 +27,22 @@ export interface PromptVariables {
  */
 export async function getPrompt(key: string, language: string = 'zh'): Promise<Prompt | null> {
   const pool = getPool();
+
+  console.log('[PromptService] Querying database:', { key, language });
+
   const result = await pool.query(
     `SELECT * FROM prompts
      WHERE key = $1 AND language = $2 AND is_active = true
      LIMIT 1`,
     [key, language]
   );
+
+  console.log('[PromptService] Query result:', {
+    found: result.rows.length > 0,
+    rowCount: result.rows.length,
+    hasTemplate: result.rows[0]?.template ? 'yes' : 'no',
+    templatePreview: result.rows[0]?.template?.substring(0, 100) + '...'
+  });
 
   return result.rows[0] || null;
 }
@@ -41,18 +51,35 @@ export async function getPrompt(key: string, language: string = 'zh'): Promise<P
  * 渲染 Prompt 模板，替换变量
  */
 export function renderPrompt(template: string, variables: PromptVariables): string {
+  console.log('[PromptService] renderPrompt called with:', {
+    templateLength: template.length,
+    templatePreview: template.substring(0, 150) + '...',
+    variables: Object.keys(variables),
+    variableValues: variables
+  });
+
   let rendered = template;
 
   // 替换所有 {{variable}} 占位符
   Object.entries(variables).forEach(([key, value]) => {
     if (value !== undefined && value !== null) {
       const regex = new RegExp(`\\{\\{${key}\\}\\}`, 'g');
+      const beforeCount = (rendered.match(regex) || []).length;
       rendered = rendered.replace(regex, String(value));
+      const afterCount = (rendered.match(regex) || []).length;
+      console.log(`[PromptService] Replaced {{${key}}}: ${beforeCount} occurrences -> ${afterCount} remaining`);
     }
   });
 
   // 移除未提供值的占位符（保留空行）
+  const remainingPlaceholders = rendered.match(/\{\{[^}]+\}\}/g);
+  if (remainingPlaceholders) {
+    console.log('[PromptService] Removing unused placeholders:', remainingPlaceholders);
+  }
   rendered = rendered.replace(/\{\{[^}]+\}\}/g, '');
+
+  console.log('[PromptService] Final rendered length:', rendered.length);
+  console.log('[PromptService] Final rendered preview:', rendered.substring(0, 200) + '...');
 
   return rendered.trim();
 }
