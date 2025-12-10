@@ -674,7 +674,27 @@ const App: React.FC = () => {
           setIsReadingLoading(false);
           return;
         }
-        const result = await getTarotReading(question, drawnCards, language);
+
+        // Prepare variables for first reading
+        const isZh = language === 'zh';
+        const baselineCardsStr = drawnCards
+          .map(c => formatCardLabel(c, language))
+          .join(isZh ? '，' : ', ');
+
+        const promptKey = isZh ? 'prompt_first_zh' : 'prompt_first_en';
+        const variables = {
+          question: question,
+          baseline_cards: baselineCardsStr
+        };
+
+        console.log('[First Reading] Sending to API:', {
+          promptKey,
+          question,
+          baselineCardsStr,
+          variables
+        });
+
+        const result = await getTarotReading(question, drawnCards, language, promptKey, variables);
         setReading(result);
         setIsReadingLoading(false);
       }, 3500);
@@ -943,6 +963,14 @@ Card drawn: ${currentCardStr}`;
       return;
     }
     // Pre-check downgrade restriction
+    console.log('[Event] Quota check:', {
+      plan: topicQuota?.plan,
+      downgrade_limited_topic_id: topicQuota?.downgrade_limited_topic_id,
+      selectedTopicId: selectedTopic.id,
+      event_quota_per_topic: topicQuota?.event_quota_per_topic,
+      topicEventUsage
+    });
+
     if (topicQuota?.plan === 'free' && topicQuota?.downgrade_limited_topic_id && topicQuota.downgrade_limited_topic_id !== selectedTopic.id) {
       setEventError(language === 'zh' ? '降级后仅可在最近的命题继续添加事件，请升级会员。' : 'After downgrade, only the latest topic can receive events. Please upgrade.');
       setShowPaywall(true);

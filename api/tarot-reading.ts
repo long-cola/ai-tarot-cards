@@ -42,12 +42,25 @@ export default async function handler(req: any, res: any) {
   }
 
   try {
+    // Log the variables being passed
+    console.log('[tarot-reading] Request params:', {
+      promptKey: finalPromptKey,
+      language,
+      variables,
+      question: question.substring(0, 50) + '...'
+    });
+
     // Try to get prompt from database
     let systemInstruction = await getRenderedPrompt(finalPromptKey, language, variables);
 
+    // Log the rendered prompt (first 200 chars)
+    if (systemInstruction) {
+      console.log('[tarot-reading] Rendered prompt preview:', systemInstruction.substring(0, 200) + '...');
+    }
+
     // Fallback to default prompts if not found in database
     if (!systemInstruction) {
-      console.warn(`[tarot-reading] Prompt not found in DB: ${promptKey}/${language}, using fallback`);
+      console.warn(`[tarot-reading] Prompt not found in DB: ${finalPromptKey}/${language}, using fallback`);
 
       // Format cards based on language
       const cardsString = cards
