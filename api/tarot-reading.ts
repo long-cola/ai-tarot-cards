@@ -55,12 +55,18 @@ export default async function handler(req: any, res: any) {
 
     // Log the rendered prompt (first 200 chars)
     if (systemInstruction) {
-      console.log('[tarot-reading] Rendered prompt preview:', systemInstruction.substring(0, 200) + '...');
+      console.log('[tarot-reading] ✅ Prompt loaded from database');
+      console.log('[tarot-reading] Rendered prompt preview:', systemInstruction.substring(0, 300) + '...');
+      console.log('[tarot-reading] Checking if variables were replaced:');
+      console.log('[tarot-reading] - Contains {{question}}?', systemInstruction.includes('{{question}}'));
+      console.log('[tarot-reading] - Contains {{baseline_cards}}?', systemInstruction.includes('{{baseline_cards}}'));
+      console.log('[tarot-reading] - Contains actual question?', systemInstruction.includes(question.substring(0, 10)));
     }
 
     // Fallback to default prompts if not found in database
     if (!systemInstruction) {
-      console.warn(`[tarot-reading] Prompt not found in DB: ${finalPromptKey}/${language}, using fallback`);
+      console.warn(`[tarot-reading] ❌ Prompt not found in DB: ${finalPromptKey}/${language}, using fallback`);
+      console.warn('[tarot-reading] Please create this prompt in the admin panel!');
 
       // Format cards based on language
       const cardsString = cards
