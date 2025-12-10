@@ -138,50 +138,73 @@ Please use Markdown format for clear and elegant output.`;
       systemInstruction = (isZh ? TAROT_SYSTEM_INSTRUCTION_ZH : TAROT_SYSTEM_INSTRUCTION_EN) + '\n\n' + prompt;
     }
 
-    // Call Bailian API
-    const response = await fetch('https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${BAILIAN_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: 'qwen-flash',
-        messages: [
-          { role: 'user', content: systemInstruction },
-        ],
-        temperature: 0.7,
-        max_tokens: 2000,
-      }),
-    });
+    // Call Bailian API with extended timeout
+    console.log('[tarot-reading] Calling Bailian API...');
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 25000); // 25 seconds timeout
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Bailian API error:', response.status, errorText);
-      return res.status(500).json({
-        ok: false,
-        message: 'ai_api_error',
-        details: `${response.status}: ${errorText}`,
+    try {
+      const response = await fetch('https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${BAILIAN_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: 'qwen-flash',
+          messages: [
+            { role: 'user', content: systemInstruction },
+          ],
+          temperature: 0.7,
+          max_tokens: 2000,
+        }),
+        signal: controller.signal,
       });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('[tarot-reading] Bailian API error:', response.status, errorText);
+        return res.status(500).json({
+          ok: false,
+          message: 'ai_api_error',
+          details: `${response.status}: ${errorText}`,
+        });
+      }
+
+      const data = await response.json();
+      const messageContent = data?.choices?.[0]?.message?.content;
+      const text = Array.isArray(messageContent)
+        ? messageContent
+            .map((part: any) => (typeof part === 'string' ? part : part?.text ?? ''))
+            .join('')
+            .trim()
+        : messageContent ?? '';
+
+      if (!text) {
+        return res.status(500).json({
+          ok: false,
+          message: 'empty_response',
+        });
+      }
+
+      console.log('[tarot-reading] ✅ Successfully got response from Bailian API');
+      res.json({ ok: true, reading: text });
+    } catch (fetchError: any) {
+      clearTimeout(timeoutId);
+      console.error('[tarot-reading] Fetch error:', fetchError.message);
+
+      if (fetchError.name === 'AbortError') {
+        return res.status(504).json({
+          ok: false,
+          message: 'ai_api_timeout',
+          details: 'Request to AI service timed out after 25 seconds',
+        });
+      }
+
+      throw fetchError; // Re-throw to be caught by outer catch
     }
-
-    const data = await response.json();
-    const messageContent = data?.choices?.[0]?.message?.content;
-    const text = Array.isArray(messageContent)
-      ? messageContent
-          .map((part: any) => (typeof part === 'string' ? part : part?.text ?? ''))
-          .join('')
-          .trim()
-      : messageContent ?? '';
-
-    if (!text) {
-      return res.status(500).json({
-        ok: false,
-        message: 'empty_response',
-      });
-    }
-
-    res.json({ ok: true, reading: text });
   } catch (error: any) {
     console.error('Tarot reading error:', error);
     res.status(500).json({
