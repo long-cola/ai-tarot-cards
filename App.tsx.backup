@@ -4,9 +4,6 @@ import { MAJOR_ARCANA, TRANSLATIONS } from './constants';
 import { getTarotReading } from './services/bailianService';
 import { Card } from './components/Card';
 import { StarryBackground } from './components/StarryBackground';
-import { Navbar } from './components/Navbar';
-import { HomePage } from './components/HomePage';
-import { QuickQuestionCard } from './components/ui';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { API_BASE_URL } from './services/apiClient';
@@ -1125,13 +1122,21 @@ Card drawn: ${currentCardStr}`;
     <div className="min-h-full flex flex-col items-center overflow-x-hidden font-sans relative">
       <StarryBackground />
 
-      <Navbar
-        onLoginClick={loginWithGoogle}
-        onLogoutClick={handleLogout}
-        onLanguageToggle={toggleLanguage}
+      <Header 
+        title={t.appTitle} 
+        showBack={phase !== AppPhase.INPUT} 
+        onBack={resetApp} 
         language={language}
+        onToggleLanguage={toggleLanguage}
         user={user}
-        isAuthenticated={!!user}
+        plan={plan}
+        onLogin={loginWithGoogle}
+        onLogout={handleLogout}
+        authLoading={authLoading}
+        onOpenTopics={openTopicsModal}
+        quota={topicQuota}
+        onRedeem={() => setShowRedeem(true)}
+        onUpgrade={() => setShowPaywall(true)}
       />
 
       {/* Expiry banner */}
@@ -1174,20 +1179,74 @@ Card drawn: ${currentCardStr}`;
             {upgradeHint}
           </div>
         )}
-
+        
         {/* Phase: INPUT */}
         {phase === AppPhase.INPUT && (
-          <HomePage
-            language={language}
-            onQuestionSubmit={(q) => {
-              setQuestion(q);
-              handleStart();
-            }}
-            onQuickQuestionClick={(q) => {
-              setQuestion(q);
-              handleStart();
-            }}
-          />
+          <div className="w-full max-w-md animate-fade-in flex flex-col justify-center flex-1 space-y-12">
+            <div className="text-center space-y-6">
+              <div className="w-32 h-32 mx-auto bg-purple-900/20 rounded-full flex items-center justify-center border border-purple-500/30 shadow-[0_0_50px_rgba(168,85,247,0.2)] relative group">
+                <div className="absolute inset-0 rounded-full border border-purple-400/20 animate-ping opacity-20"></div>
+                <div className="absolute inset-0 bg-gradient-to-tr from-purple-500/10 to-amber-500/10 rounded-full animate-spin-slow opacity-50"></div>
+                <span className="text-6xl drop-shadow-[0_0_15px_rgba(255,255,255,0.6)] transform group-hover:scale-110 transition-transform duration-500">🔮</span>
+              </div>
+              <div>
+                 <h2 className="text-3xl font-mystic font-light text-purple-50 tracking-wide drop-shadow-md">{t.startTitle}</h2>
+                 <p className="text-sm text-purple-300/70 mt-3 font-mystic tracking-widest">{t.startSubtitle}</p>
+              </div>
+            </div>
+            
+            <div className="space-y-6 px-4">
+              <div className="relative">
+                <input
+                  type="text"
+                  value={question}
+                  onChange={(e) => {
+                    setQuestion(e.target.value);
+                    if (errorMsg) setErrorMsg('');
+                  }}
+                  placeholder={t.placeholder}
+                  className={`w-full bg-slate-900/40 backdrop-blur-md border ${errorMsg ? 'border-red-500/50' : 'border-purple-500/30'} rounded-2xl px-6 py-5 text-center text-lg focus:outline-none focus:border-amber-500/60 focus:bg-slate-900/60 transition-all placeholder:text-slate-500 text-amber-50 shadow-inner`}
+                  onKeyDown={(e) => e.key === 'Enter' && handleStart()}
+                  ref={inputRef}
+                />
+                {errorMsg && (
+                  <div className="absolute -bottom-6 left-0 w-full text-center text-red-400 text-xs tracking-wider animate-pulse">
+                    {errorMsg}
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.2em] text-slate-400/80 font-cinzel">
+                  <span>{t.suggestionsLabel}</span>
+                  <span className="text-[10px] normal-case tracking-wide text-amber-300/80 font-sans">{t.suggestionsHint}</span>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {QUESTION_SUGGESTIONS[language].map((item) => (
+                    <button
+                      key={item}
+                      onClick={() => handleSuggestionClick(item)}
+                      className="px-3 py-2 rounded-full bg-slate-900/60 border border-purple-500/30 text-[12px] text-slate-200/90 hover:border-amber-400/60 hover:text-amber-100 transition-all shadow-inner"
+                    >
+                      {item}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              
+              <button
+                onClick={handleStart}
+                disabled={!question.trim()}
+                className="w-full bg-gradient-to-br from-purple-800 to-indigo-900 hover:from-purple-700 hover:to-indigo-800 disabled:opacity-50 disabled:cursor-not-allowed text-amber-100 font-bold tracking-[0.2em] py-5 rounded-2xl shadow-[0_8px_30px_rgba(88,28,135,0.3)] border border-white/5 transition-all transform active:scale-95"
+              >
+                {t.startBtn}
+              </button>
+            </div>
+            
+            <div className="text-center opacity-40 text-[10px] tracking-[0.3em] text-slate-400 font-cinzel pt-12">
+               Mystic Tarot AI
+            </div>
+          </div>
         )}
 
         {/* Phase: SHUFFLING */}
