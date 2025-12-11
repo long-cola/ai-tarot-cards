@@ -53,21 +53,21 @@ export const HomePage: React.FC<HomePageProps> = ({
           <div className="w-[500px] h-[320px] flex items-center justify-center relative">
             {/* Left card */}
             <img
-              src="/img/塔罗牌背面.png"
+              src="/img/tarot-card-back.png"
               alt="Tarot Card"
               className="absolute left-[60px] top-1/2 -translate-y-1/2 w-[140px] h-auto transform -rotate-[20deg] z-10 drop-shadow-2xl"
             />
 
             {/* Center card */}
             <img
-              src="/img/塔罗牌背面.png"
+              src="/img/tarot-card-back.png"
               alt="Tarot Card"
               className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[160px] h-auto transform rotate-0 z-30 drop-shadow-2xl"
             />
 
             {/* Right card */}
             <img
-              src="/img/塔罗牌背面.png"
+              src="/img/tarot-card-back.png"
               alt="Tarot Card"
               className="absolute right-[60px] top-1/2 -translate-y-1/2 w-[140px] h-auto transform rotate-[20deg] z-10 drop-shadow-2xl"
             />
