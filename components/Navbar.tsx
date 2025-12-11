@@ -5,6 +5,8 @@ interface NavbarProps {
   onLoginClick?: () => void;
   onLogoutClick?: () => void;
   onLanguageToggle?: () => void;
+  onQuickReadingClick?: () => void;
+  onTopicsClick?: () => void;
   language: 'zh' | 'en';
   user: any;
   isAuthenticated: boolean;
@@ -14,6 +16,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   onLoginClick,
   onLogoutClick,
   onLanguageToggle,
+  onQuickReadingClick,
+  onTopicsClick,
   language,
   user,
   isAuthenticated,
@@ -32,10 +36,16 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Center Navigation */}
         <div className="hidden md:flex items-center gap-8">
-          <button className="text-white/80 hover:text-white transition-colors text-sm font-medium">
+          <button
+            onClick={onQuickReadingClick}
+            className="text-white/80 hover:text-white transition-colors text-sm font-medium"
+          >
             {isZh ? '遇事占卜' : 'Quick Reading'}
           </button>
-          <button className="text-white/80 hover:text-white transition-colors text-sm font-medium">
+          <button
+            onClick={onTopicsClick}
+            className="text-white/80 hover:text-white transition-colors text-sm font-medium"
+          >
             {isZh ? '人生命题' : 'Life Topics'}
           </button>
         </div>

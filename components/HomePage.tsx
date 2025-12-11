@@ -3,17 +3,26 @@ import { Button, Input, QuickQuestionCard } from './ui';
 
 interface HomePageProps {
   language: 'zh' | 'en';
+  question?: string;
   onQuestionSubmit: (question: string) => void;
   onQuickQuestionClick: (question: string) => void;
 }
 
 export const HomePage: React.FC<HomePageProps> = ({
   language,
+  question = '',
   onQuestionSubmit,
   onQuickQuestionClick,
 }) => {
   const [localQuestion, setLocalQuestion] = React.useState('');
   const isZh = language === 'zh';
+
+  // Sync with parent question prop
+  React.useEffect(() => {
+    if (question) {
+      setLocalQuestion(question);
+    }
+  }, [question]);
 
   const quickQuestions = isZh
     ? [

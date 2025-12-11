@@ -6,6 +6,8 @@ import { Card } from './components/Card';
 import { StarryBackground } from './components/StarryBackground';
 import { Navbar } from './components/Navbar';
 import { HomePage } from './components/HomePage';
+import { TopicListPage } from './components/TopicListPage';
+import { ReadingResultPage } from './components/ReadingResultPage';
 import { QuickQuestionCard } from './components/ui';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -331,6 +333,7 @@ const App: React.FC = () => {
   const eventShuffleInterval = useRef<NodeJS.Timeout | null>(null);
   const eventShuffleTimeout = useRef<NodeJS.Timeout | null>(null);
   const [shareDataLoaded, setShareDataLoaded] = useState(false);
+  const [showTopicListPage, setShowTopicListPage] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const readingRef = useRef<HTMLDivElement>(null);
 
@@ -812,6 +815,7 @@ const App: React.FC = () => {
     setShareMode(false);
     setShareLink('');
     setShareError('');
+    setShowTopicListPage(false);
   };
 
   const toggleLanguage = () => {
@@ -1129,6 +1133,25 @@ Card drawn: ${currentCardStr}`;
         onLoginClick={loginWithGoogle}
         onLogoutClick={handleLogout}
         onLanguageToggle={toggleLanguage}
+        onQuickReadingClick={() => {
+          setShowTopicListPage(false);
+          resetApp();
+        }}
+        onTopicsClick={async () => {
+          setShowTopicListPage(true);
+          setTopicError('');
+          setTopicsLoading(true);
+          try {
+            const res = await listTopics();
+            setTopicList(res.topics || []);
+            if (res.quota) setTopicQuota(res.quota);
+          } catch (err) {
+            console.error("load topics failed", err);
+            setTopicError(language === 'zh' ? '加载命题列表失败' : 'Failed to load topics');
+          } finally {
+            setTopicsLoading(false);
+          }
+        }}
         language={language}
         user={user}
         isAuthenticated={!!user}
@@ -1175,23 +1198,42 @@ Card drawn: ${currentCardStr}`;
           </div>
         )}
 
+        {/* Topic List Page */}
+        {showTopicListPage && (
+          <TopicListPage
+            topics={topicList}
+            language={language}
+            quota={topicQuota}
+            onCreateNewTopic={() => {
+              setShowTopicListPage(false);
+              resetApp();
+            }}
+            onTopicClick={(topicId) => {
+              loadTopicDetail(topicId);
+              setTopicModalOpen(true);
+              setShowTopicListPage(false);
+            }}
+          />
+        )}
+
         {/* Phase: INPUT */}
-        {phase === AppPhase.INPUT && (
+        {phase === AppPhase.INPUT && !showTopicListPage && (
           <HomePage
             language={language}
+            question={question}
             onQuestionSubmit={(q) => {
               setQuestion(q);
               handleStart();
             }}
             onQuickQuestionClick={(q) => {
               setQuestion(q);
-              handleStart();
+              // Don't auto-start, just fill the input
             }}
           />
         )}
 
         {/* Phase: SHUFFLING */}
-        {phase === AppPhase.SHUFFLING && (
+        {phase === AppPhase.SHUFFLING && !showTopicListPage && (
           <div className="flex flex-col items-center justify-center flex-1 animate-fade-in w-full">
              <div className="relative w-40 h-64">
                 {[0, 1, 2, 3, 4, 5].map((i) => (
@@ -1218,7 +1260,7 @@ Card drawn: ${currentCardStr}`;
         )}
 
         {/* Phase: DRAWING */}
-        {phase === AppPhase.DRAWING && (
+        {phase === AppPhase.DRAWING && !showTopicListPage && (
           <div className="w-full h-full flex flex-col animate-fade-in relative pt-4">
             <div className="text-center z-20 mb-4">
                <h2 className="text-xl text-purple-100 mb-1 tracking-widest font-mystic">{t.drawTitle}</h2>
@@ -1295,162 +1337,18 @@ Card drawn: ${currentCardStr}`;
         )}
 
         {/* Phase: REVEAL & ANALYSIS */}
-        {(phase === AppPhase.REVEAL || phase === AppPhase.ANALYSIS) && (
-          <div className="w-full flex flex-col items-center space-y-6 animate-fade-in pb-20">
-             
-             <div ref={readingRef} className="w-full flex flex-col items-center">
-             <div className="text-center w-full px-4 py-6 bg-gradient-to-b from-purple-900/10 to-transparent rounded-b-3xl -mt-4 mb-4">
-                <span className="block text-xs font-bold text-amber-600/80 uppercase tracking-widest mb-2 font-cinzel">{t.questionLabel}</span>
-                <p className="text-lg text-slate-200 font-mystic leading-relaxed">“{question}”</p>
-                <div className="mt-4 flex flex-col items-center gap-2 text-xs text-slate-400">
-                  <div className="flex items-center gap-2">
-                    <span className="px-2 py-1 rounded-full bg-slate-800/60 border border-white/5 text-amber-200/80">
-                      {plan === 'member' ? (language === 'zh' ? '会员' : 'Member') : plan === 'free' ? (language === 'zh' ? '普通用户' : 'Free User') : (language === 'zh' ? '游客' : 'Guest')}
-                    </span>
-                    {remainingToday !== null && (
-                      <span className="px-2 py-1 rounded-full bg-slate-800/60 border border-white/5">
-                        {language === 'zh' ? `今日剩余：${remainingToday} 次` : `Remaining today: ${remainingToday}`}
-                      </span>
-                    )}
-                  </div>
-                  {usageError && (
-                    <div className="text-red-400 text-xs">{usageError}</div>
-                  )}
-                  {user && plan === 'free' && (
-                    <button
-                      onClick={() => setShowRedeem(true)}
-                      className="text-[11px] px-3 py-1 bg-amber-500/80 text-slate-900 rounded-md hover:bg-amber-500"
-                    >
-                      {language === 'zh' ? '输入兑换码开通会员' : 'Redeem code for membership'}
-                    </button>
-                  )}
-                </div>
-              </div>
-
-            <div className="flex justify-center gap-3 md:gap-6 px-2 w-full max-w-3xl">
-              {drawnCards.map((card, idx) => (
-                <div key={card.id} className="flex flex-col items-center gap-3 flex-1 max-w-[120px]">
-                  <div className="animate-card-flip shadow-2xl shadow-purple-900/40 rounded-lg w-full aspect-[2/3.5] relative" style={{ animationDelay: `${idx * 0.8}s`, animationFillMode: 'both' }}>
-                    <Card card={card} isRevealed={true} className="w-full h-full" language={language} />
-                  </div>
-                  <div className="w-full opacity-0 animate-fade-in" style={{ animationDelay: `${idx * 0.8 + 0.5}s`, animationFillMode: 'forwards' }}>
-                    <span className="text-[10px] md:text-xs uppercase tracking-[0.1em] text-amber-500/80 text-center font-bold border-t border-amber-500/20 pt-2 font-mystic block w-full">
-                       {language === 'zh' ? ['过去', '现在', '未来'][card.position] : ['The Past', 'The Present', 'The Future'][card.position]}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="w-full max-w-2xl mt-4 bg-slate-900/80 backdrop-blur-xl rounded-2xl border border-white/5 p-6 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.8)] relative overflow-hidden mx-4 animate-fade-in" style={{ animationDelay: '3s' }}>
-              {isReadingLoading ? (
-                 <WisdomLoader language={language} />
-              ) : (
-                <div className="prose prose-invert prose-sm sm:prose-base prose-p:text-slate-300 prose-p:leading-loose prose-headings:text-amber-100 prose-strong:text-amber-400 max-w-none font-mystic">
-                  <ReactMarkdown 
-                    remarkPlugins={[remarkGfm]} 
-                    components={markdownComponents} 
-                    linkTarget="_blank"
-                  >
-                    {reading}
-                  </ReactMarkdown>
-
-                  <div className="mt-6 space-y-2">
-                    <div className="flex flex-wrap gap-3">
-                      <button
-                        onClick={handleSaveTopic}
-                        disabled={isSavingTopic || !!createdTopicId}
-                        className="px-4 py-2 text-xs bg-amber-500 text-slate-900 rounded-lg font-semibold disabled:opacity-60"
-                      >
-                        {createdTopicId
-                          ? (language === 'zh' ? '已创建命题' : 'Topic created')
-                          : isSavingTopic
-                          ? (language === 'zh' ? '保存中...' : 'Saving...')
-                          : (language === 'zh' ? '创建为命题' : 'Save as Topic')}
-                      </button>
-                      <button
-                        onClick={viewCreatedTopic}
-                        disabled={!createdTopicId}
-                        className="px-4 py-2 text-xs bg-slate-800 text-slate-200 rounded-lg border border-white/10 disabled:opacity-50"
-                      >
-                        {t.viewTopic}
-                      </button>
-                    </div>
-                    {isSavingTopic && (
-                      <div className="border border-amber-500/40 bg-amber-500/10 text-amber-200 text-sm rounded-xl px-4 py-3">
-                        {t.savingTopic}
-                      </div>
-                    )}
-                    {topicSaveMessage && (
-                      <div className="border border-amber-500/60 bg-amber-500/10 text-amber-100 text-sm rounded-xl px-4 py-3 flex items-center justify-between gap-3">
-                        <span>{topicSaveMessage}</span>
-                        <button
-                          onClick={viewCreatedTopic}
-                          className="px-3 py-2 text-xs bg-amber-500 text-slate-900 rounded-lg font-semibold"
-                        >
-                          {t.viewTopic}
-                        </button>
-                      </div>
-                    )}
-                    {topicError && (
-                      <div className="border border-red-500/40 bg-red-500/10 text-red-200 text-sm rounded-xl px-4 py-3">
-                        {topicError}
-                      </div>
-                    )}
-                  </div>
-                  
-                  <div className="pt-8 pb-2 flex justify-center">
-                    <button 
-                      onClick={resetApp}
-                      className="px-8 py-3 bg-purple-900/40 hover:bg-purple-800/60 border border-purple-500/30 rounded-full text-xs text-purple-100 uppercase tracking-[0.2em] transition-all"
-                    >
-                      {t.againBtn}
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-             </div>
-
-            <div className="flex items-center gap-3">
-              <button
-                onClick={handleSaveImage}
-                disabled={isReadingLoading || isSavingImage || !reading}
-                className="px-6 py-3 bg-amber-500/80 hover:bg-amber-500 disabled:opacity-50 disabled:cursor-not-allowed text-slate-900 font-semibold rounded-full shadow-lg border border-amber-300/50"
-              >
-                {isSavingImage ? (language === 'zh' ? '保存中...' : 'Saving...') : (language === 'zh' ? '保存解读为图片' : 'Save reading as image')}
-              </button>
-              <button
-                onClick={async () => {
-                  if (!reading || drawnCards.length === 0) {
-                    setShareError(language === 'zh' ? '暂无可分享的解读' : 'Nothing to share');
-                    return;
-                  }
-                  try {
-                    const payload = {
-                      question,
-                      reading,
-                      cards: drawnCards,
-                      language,
-                    };
-                    const url = `${window.location.origin}${window.location.pathname}?share=${encodeURIComponent(btoa(JSON.stringify(payload)))}`;
-                    await navigator.clipboard.writeText(url);
-                    setShareLink(url);
-                    setShareError('');
-                  } catch (err) {
-                    console.error("copy share failed", err);
-                    setShareError(language === 'zh' ? '复制分享链接失败，请手动复制地址栏。' : 'Failed to copy share link. Copy the URL manually.');
-                  }
-                }}
-                className="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-amber-100 rounded-full border border-white/10 text-sm disabled:opacity-50"
-                disabled={!reading}
-              >
-                {language === 'zh' ? '复制分享链接' : 'Copy share link'}
-              </button>
-              {(saveError || shareError) && <span className="text-xs text-red-400">{saveError || shareError}</span>}
-              {shareLink && <span className="text-xs text-amber-200 break-all max-w-xs">{shareLink}</span>}
-            </div>
-          </div>
+        {(phase === AppPhase.REVEAL || phase === AppPhase.ANALYSIS) && !showTopicListPage && (
+          <ReadingResultPage
+            question={question}
+            cards={drawnCards}
+            reading={reading}
+            language={language}
+            isLoading={isReadingLoading}
+            onSaveTopic={handleSaveTopic}
+            onTryAgain={resetApp}
+            isSaving={isSavingTopic}
+            topicCreated={!!createdTopicId}
+          />
         )}
 
       </main>
