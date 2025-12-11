@@ -21,13 +21,17 @@ export const Input: React.FC<InputProps> = ({
         )}
         <input
           className={`
-            w-full px-6 py-4
-            bg-white/5 backdrop-blur-sm
-            border-2 border-white/10
-            rounded-full
-            text-white placeholder:text-white/40
-            focus:outline-none focus:border-white/30
+            w-full max-w-[800px] mx-auto
+            h-[80px]
+            px-[147px] py-[23px]
+            bg-[rgba(168,85,247,0.1)]
+            border border-[rgba(168,85,247,0.3)]
+            rounded-2xl
+            text-white placeholder:text-white/40 text-center
+            focus:outline-none focus:border-[rgba(168,85,247,0.5)]
             transition-all duration-200
+            backdrop-blur-[12px]
+            shadow-[inset_0px_2px_4px_1px_rgba(0,0,0,0.05)]
             ${icon ? 'pl-12' : ''}
             ${error ? 'border-red-400' : ''}
             ${className}

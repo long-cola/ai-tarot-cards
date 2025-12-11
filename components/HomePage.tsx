@@ -48,129 +48,37 @@ export const HomePage: React.FC<HomePageProps> = ({
       {/* Main Content Container */}
       <div className="w-full max-w-3xl mx-auto flex flex-col items-center gap-8">
 
-        {/* Tarot Cards Illustration - Three cards in fan layout */}
+        {/* Tarot Cards Illustration - Three cards in fan layout using real image */}
         <div className="mb-8 relative">
-          <div className="w-[400px] h-[280px] flex items-center justify-center relative">
+          <div className="w-[500px] h-[320px] flex items-center justify-center relative">
             {/* Left card */}
-            <div className="absolute left-[50px] top-1/2 -translate-y-1/2 w-[120px] h-[200px] transform -rotate-[25deg] z-10">
-              <div className="w-full h-full rounded-2xl bg-[#1a0f2e] border-2 border-[#d4af37] shadow-2xl relative overflow-hidden">
-                {/* Corner decorations */}
-                <div className="absolute top-2 left-2 w-3 h-3 border-l-2 border-t-2 border-[#d4af37] opacity-80"></div>
-                <div className="absolute top-2 right-2 w-3 h-3 border-r-2 border-t-2 border-[#d4af37] opacity-80"></div>
-                <div className="absolute bottom-2 left-2 w-3 h-3 border-l-2 border-b-2 border-[#d4af37] opacity-80"></div>
-                <div className="absolute bottom-2 right-2 w-3 h-3 border-r-2 border-b-2 border-[#d4af37] opacity-80"></div>
-
-                {/* Stars decoration */}
-                <div className="absolute top-4 left-1/2 -translate-x-1/2 flex gap-1">
-                  <span className="text-[#d4af37] text-xs">✦</span>
-                  <span className="text-[#d4af37] text-xs">✦</span>
-                  <span className="text-[#d4af37] text-xs">✦</span>
-                </div>
-
-                {/* Center content */}
-                <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-purple-900/80 to-purple-950/80">
-                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center shadow-lg">
-                    <span className="text-2xl">🔮</span>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <img
+              src="/img/塔罗牌背面.png"
+              alt="Tarot Card"
+              className="absolute left-[60px] top-1/2 -translate-y-1/2 w-[140px] h-auto transform -rotate-[20deg] z-10 drop-shadow-2xl"
+            />
 
             {/* Center card */}
-            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[130px] h-[220px] transform rotate-0 z-30">
-              <div className="w-full h-full rounded-2xl bg-[#1a0f2e] border-[3px] border-[#d4af37] shadow-2xl relative overflow-hidden">
-                {/* Ornate corner decorations */}
-                <div className="absolute top-2 left-2">
-                  <svg width="16" height="16" viewBox="0 0 16 16" className="fill-[#d4af37]">
-                    <circle cx="3" cy="3" r="1.5"/>
-                    <path d="M0,3 L3,3 M3,0 L3,3"/>
-                  </svg>
-                </div>
-                <div className="absolute top-2 right-2 transform rotate-90">
-                  <svg width="16" height="16" viewBox="0 0 16 16" className="fill-[#d4af37]">
-                    <circle cx="3" cy="3" r="1.5"/>
-                    <path d="M0,3 L3,3 M3,0 L3,3"/>
-                  </svg>
-                </div>
-                <div className="absolute bottom-2 left-2 transform -rotate-90">
-                  <svg width="16" height="16" viewBox="0 0 16 16" className="fill-[#d4af37]">
-                    <circle cx="3" cy="3" r="1.5"/>
-                    <path d="M0,3 L3,3 M3,0 L3,3"/>
-                  </svg>
-                </div>
-                <div className="absolute bottom-2 right-2 transform rotate-180">
-                  <svg width="16" height="16" viewBox="0 0 16 16" className="fill-[#d4af37]">
-                    <circle cx="3" cy="3" r="1.5"/>
-                    <path d="M0,3 L3,3 M3,0 L3,3"/>
-                  </svg>
-                </div>
-
-                {/* Stars around the frame */}
-                <div className="absolute top-3 left-1/2 -translate-x-1/2 flex gap-1">
-                  <span className="text-[#d4af37] text-sm">✦</span>
-                  <span className="text-[#d4af37] text-sm">✦</span>
-                  <span className="text-[#d4af37] text-sm">✦</span>
-                </div>
-
-                {/* Center illustration */}
-                <div className="absolute inset-0 flex flex-col items-center justify-center p-4">
-                  <div className="relative">
-                    {/* Radial background */}
-                    <div className="absolute inset-0 rounded-full bg-gradient-to-br from-purple-500/40 via-purple-600/40 to-purple-800/40 blur-xl"></div>
-
-                    {/* Crystal ball with wing */}
-                    <div className="relative w-20 h-20 flex items-center justify-center">
-                      <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-400 to-purple-700 shadow-2xl flex items-center justify-center border-2 border-purple-300/30">
-                        <span className="text-3xl">🔮</span>
-                      </div>
-                      {/* Golden wing decoration */}
-                      <div className="absolute -right-2 top-1/2 -translate-y-1/2 text-2xl opacity-90">✨</div>
-                    </div>
-
-                    {/* Rose decoration */}
-                    <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 text-xl">🌹</div>
-                  </div>
-
-                  {/* Bottom text */}
-                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-full">
-                    <div className="text-center text-[#d4af37] text-[8px] font-bold tracking-wider border-t border-b border-[#d4af37]/30 py-1">
-                      TAROT CARD APP
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <img
+              src="/img/塔罗牌背面.png"
+              alt="Tarot Card"
+              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[160px] h-auto transform rotate-0 z-30 drop-shadow-2xl"
+            />
 
             {/* Right card */}
-            <div className="absolute right-[50px] top-1/2 -translate-y-1/2 w-[120px] h-[200px] transform rotate-[25deg] z-10">
-              <div className="w-full h-full rounded-2xl bg-[#1a0f2e] border-2 border-[#d4af37] shadow-2xl relative overflow-hidden">
-                {/* Corner decorations */}
-                <div className="absolute top-2 left-2 w-3 h-3 border-l-2 border-t-2 border-[#d4af37] opacity-80"></div>
-                <div className="absolute top-2 right-2 w-3 h-3 border-r-2 border-t-2 border-[#d4af37] opacity-80"></div>
-                <div className="absolute bottom-2 left-2 w-3 h-3 border-l-2 border-b-2 border-[#d4af37] opacity-80"></div>
-                <div className="absolute bottom-2 right-2 w-3 h-3 border-r-2 border-b-2 border-[#d4af37] opacity-80"></div>
-
-                {/* Stars decoration */}
-                <div className="absolute top-4 left-1/2 -translate-x-1/2 flex gap-1">
-                  <span className="text-[#d4af37] text-xs">✦</span>
-                  <span className="text-[#d4af37] text-xs">✦</span>
-                  <span className="text-[#d4af37] text-xs">✦</span>
-                </div>
-
-                {/* Center content */}
-                <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-purple-900/80 to-purple-950/80">
-                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center shadow-lg">
-                    <span className="text-2xl">🔮</span>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <img
+              src="/img/塔罗牌背面.png"
+              alt="Tarot Card"
+              className="absolute right-[60px] top-1/2 -translate-y-1/2 w-[140px] h-auto transform rotate-[20deg] z-10 drop-shadow-2xl"
+            />
 
             {/* Floating golden stars around the cards */}
-            <div className="absolute top-0 left-[30%] text-[#d4af37] text-lg animate-pulse">✦</div>
-            <div className="absolute top-[10%] right-[25%] text-[#d4af37] text-sm animate-pulse" style={{ animationDelay: '0.5s' }}>✦</div>
-            <div className="absolute bottom-[15%] left-[20%] text-[#d4af37] text-sm animate-pulse" style={{ animationDelay: '1s' }}>✦</div>
-            <div className="absolute bottom-[10%] right-[30%] text-[#d4af37] text-lg animate-pulse" style={{ animationDelay: '1.5s' }}>✦</div>
+            <div className="absolute top-[5%] left-[25%] text-[#d4af37] text-lg animate-pulse">✦</div>
+            <div className="absolute top-[15%] right-[20%] text-[#d4af37] text-sm animate-pulse" style={{ animationDelay: '0.5s' }}>✦</div>
+            <div className="absolute bottom-[20%] left-[15%] text-[#d4af37] text-sm animate-pulse" style={{ animationDelay: '1s' }}>✦</div>
+            <div className="absolute bottom-[15%] right-[25%] text-[#d4af37] text-lg animate-pulse" style={{ animationDelay: '1.5s' }}>✦</div>
+            <div className="absolute top-[40%] left-[10%] text-[#d4af37] text-xs animate-pulse" style={{ animationDelay: '2s' }}>✦</div>
+            <div className="absolute top-[45%] right-[12%] text-[#d4af37] text-xs animate-pulse" style={{ animationDelay: '2.5s' }}>✦</div>
           </div>
         </div>
 
@@ -189,7 +97,6 @@ export const HomePage: React.FC<HomePageProps> = ({
               size="lg"
               onClick={handleSubmit}
               disabled={!localQuestion.trim()}
-              className="min-w-[200px]"
             >
               {isZh ? '开始占卜' : 'Start Reading'}
             </Button>
