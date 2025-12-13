@@ -671,10 +671,14 @@ const App: React.FC = () => {
       setRedeemFeedback(language === 'zh' ? '兑换成功，会员已开通！' : 'Redeemed successfully. Membership activated!');
       setPlan('member');
       setRemainingToday(50);
-      setShowRedeem(false);
 
       // Refresh session to get updated user info
-      fetchSession();
+      await fetchSession();
+
+      // Close both paywall and redeem modal
+      setShowRedeem(false);
+      setShowPaywall(false);
+      console.log('[Redeem] Membership activated, paywall closed');
     } catch (err: any) {
       const reason = err?.data?.reason;
       const msg = {
