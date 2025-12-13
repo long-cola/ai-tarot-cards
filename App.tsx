@@ -1233,6 +1233,9 @@ Card drawn: ${currentCardStr}`;
               setSelectedTopic(null);
               setTopicEvents([]);
             }}
+            onEventAdded={(newEvent) => {
+              setTopicEvents(prev => [...prev, newEvent]);
+            }}
           />
         )}
 

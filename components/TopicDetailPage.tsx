@@ -1,5 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Topic, TopicEvent, DrawnCard, Language } from '../types';
+import { MAJOR_ARCANA } from '../constants';
+import { getTarotReading } from '../services/bailianService';
+import { addTopicEvent } from '../services/topicService';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
@@ -8,6 +11,7 @@ interface TopicDetailPageProps {
   events: TopicEvent[];
   language: Language;
   onBack: () => void;
+  onEventAdded?: (event: TopicEvent) => void;
 }
 
 const markdownComponents = {
@@ -43,9 +47,34 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
   events,
   language,
   onBack,
+  onEventAdded,
 }) => {
   const isZh = language === 'zh';
   const [expandedEvents, setExpandedEvents] = useState<Set<string>>(new Set(['baseline']));
+
+  // New event creation states
+  const [isCreatingEvent, setIsCreatingEvent] = useState(false);
+  const [eventName, setEventName] = useState('');
+  const [deck, setDeck] = useState<typeof MAJOR_ARCANA>([]);
+  const [isShuffling, setIsShuffling] = useState(false);
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [drawnCard, setDrawnCard] = useState<DrawnCard | null>(null);
+  const [isLoadingReading, setIsLoadingReading] = useState(false);
+  const [reading, setReading] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState('');
+
+  const shuffleIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const shuffleTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Initialize deck
+  useEffect(() => {
+    setDeck([...MAJOR_ARCANA]);
+    return () => {
+      if (shuffleIntervalRef.current) clearInterval(shuffleIntervalRef.current);
+      if (shuffleTimeoutRef.current) clearTimeout(shuffleTimeoutRef.current);
+    };
+  }, []);
 
   const toggleEvent = (eventId: string) => {
     setExpandedEvents((prev) => {
@@ -77,6 +106,175 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
       month: '2-digit',
       day: '2-digit',
     });
+  };
+
+  // Format card label for AI prompt
+  const formatCardLabel = (card: DrawnCard) => {
+    const name = isZh ? card.nameCn : card.name;
+    const status = isZh ? (card.isReversed ? "逆位" : "正位") : (card.isReversed ? "Reversed" : "Upright");
+    return `${name} (${status})`;
+  };
+
+  // Start creating new event
+  const handleStartCreating = () => {
+    setIsCreatingEvent(true);
+    setEventName('');
+    setDrawnCard(null);
+    setReading('');
+    setError('');
+    setDeck([...MAJOR_ARCANA]);
+  };
+
+  // Cancel creating event
+  const handleCancelCreating = () => {
+    setIsCreatingEvent(false);
+    setEventName('');
+    setDrawnCard(null);
+    setReading('');
+    setError('');
+    setIsShuffling(false);
+    setIsDrawing(false);
+    if (shuffleIntervalRef.current) clearInterval(shuffleIntervalRef.current);
+    if (shuffleTimeoutRef.current) clearTimeout(shuffleTimeoutRef.current);
+  };
+
+  // Start shuffling
+  const handleStartShuffle = () => {
+    if (!eventName.trim()) {
+      setError(isZh ? '请先输入事件名称' : 'Please enter event name first');
+      return;
+    }
+    setError('');
+    setIsShuffling(true);
+    setDrawnCard(null);
+    setReading('');
+
+    if (shuffleIntervalRef.current) clearInterval(shuffleIntervalRef.current);
+    if (shuffleTimeoutRef.current) clearTimeout(shuffleTimeoutRef.current);
+
+    shuffleIntervalRef.current = setInterval(() => {
+      setDeck(prev => [...prev].sort(() => Math.random() - 0.5));
+    }, 100);
+
+    shuffleTimeoutRef.current = setTimeout(() => {
+      if (shuffleIntervalRef.current) clearInterval(shuffleIntervalRef.current);
+      setIsShuffling(false);
+      setIsDrawing(true);
+    }, 3000);
+  };
+
+  // Draw a card
+  const handleDrawCard = (index: number) => {
+    if (!isDrawing || drawnCard) return;
+
+    const selectedCard = deck[index];
+    const isReversed = Math.random() > 0.5;
+
+    const card: DrawnCard = {
+      ...selectedCard,
+      isReversed,
+      position: 0
+    };
+
+    setDrawnCard(card);
+    setIsDrawing(false);
+
+    // Auto-generate reading
+    handleGenerateReading(card);
+  };
+
+  // Generate AI reading
+  const handleGenerateReading = async (card: DrawnCard) => {
+    setIsLoadingReading(true);
+    setError('');
+
+    try {
+      // Prepare variables for prompt template
+      const baselineCards = topic.baseline_cards || [];
+      const baselineCardsStr = baselineCards.length
+        ? baselineCards.map(c => formatCardLabel(c)).join(isZh ? "，" : ", ")
+        : (isZh ? "暂无" : "None");
+
+      const historyStr = events.length
+        ? events.map(ev => {
+            const dateStr = ev.created_at ? new Date(ev.created_at).toLocaleDateString() : '';
+            const cardStr = ev.cards?.map(c => formatCardLabel(c as DrawnCard)).join(isZh ? "，" : ", ");
+            return isZh
+              ? `${dateStr}、${ev.name}${cardStr ? `、${cardStr}` : ""}`
+              : `${dateStr}: ${ev.name}${cardStr ? ` | ${cardStr}` : ""}`;
+          }).join(isZh ? "；" : "; ")
+        : (isZh ? "暂无历史事件" : "No past events");
+
+      const currentCardStr = formatCardLabel(card);
+
+      // Use prompt_case_zh or prompt_case_en
+      const promptKey = isZh ? 'prompt_case_zh' : 'prompt_case_en';
+      const variables = {
+        question: topic.title,
+        baseline_cards: baselineCardsStr,
+        baseline_reading: topic.baseline_reading || '',
+        history: historyStr,
+        event_name: eventName.trim(),
+        current_card: currentCardStr
+      };
+
+      const readingText = await getTarotReading(
+        topic.title,
+        [card],
+        language,
+        promptKey,
+        variables
+      );
+
+      setReading(readingText);
+    } catch (err: any) {
+      console.error("Failed to generate reading", err);
+      setError(isZh ? '生成解读失败，请重试' : 'Failed to generate reading');
+    } finally {
+      setIsLoadingReading(false);
+    }
+  };
+
+  // Save event
+  const handleSaveEvent = async () => {
+    if (!drawnCard || !reading) {
+      setError(isZh ? '请先抽牌并生成解读' : 'Please draw a card and generate reading first');
+      return;
+    }
+
+    setIsSaving(true);
+    setError('');
+
+    try {
+      const res = await addTopicEvent(topic.id, {
+        name: eventName.trim(),
+        cards: [drawnCard],
+        reading: reading,
+      });
+
+      if (res.event && onEventAdded) {
+        onEventAdded(res.event);
+      }
+
+      // Reset form
+      setIsCreatingEvent(false);
+      setEventName('');
+      setDrawnCard(null);
+      setReading('');
+      setDeck([...MAJOR_ARCANA]);
+    } catch (err: any) {
+      console.error("Failed to save event", err);
+      const reason = err?.data?.reason;
+      if (reason === 'event_quota_exhausted') {
+        setError(isZh ? '该命题事件次数已用完，请升级会员' : 'Event quota exhausted for this topic');
+      } else if (reason === 'downgraded_topic_locked') {
+        setError(isZh ? '降级后仅可在最近的命题继续添加事件' : 'Only the latest topic can receive events after downgrade');
+      } else {
+        setError(isZh ? '保存失败，请重试' : 'Failed to save event');
+      }
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   // Sort events by created_at ascending (oldest first) for chronological order
@@ -303,6 +501,209 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
                 )}
               </div>
             ))}
+          </div>
+        )}
+
+        {/* Create New Event Button / Form */}
+        {!isCreatingEvent ? (
+          <div className="mt-8 flex justify-center">
+            <button
+              onClick={handleStartCreating}
+              className="px-6 py-3 bg-amber-500 hover:bg-amber-600 text-slate-900 font-semibold rounded-xl transition-colors"
+            >
+              {isZh ? '开始占卜' : 'Start Reading'}
+            </button>
+          </div>
+        ) : (
+          <div className="mt-8 space-y-6">
+            {/* Event Name Input */}
+            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
+              <h3 className="text-[16px] text-amber-400 mb-4 tracking-wide">
+                {isZh ? '新事件' : 'New Event'}
+              </h3>
+              <input
+                type="text"
+                value={eventName}
+                onChange={(e) => setEventName(e.target.value)}
+                placeholder={isZh ? '输入事件名称，如"老板今天骂我了"' : 'Enter event name'}
+                className="w-full bg-slate-900 border border-white/10 rounded-lg px-4 py-3 text-white text-[15px] focus:outline-none focus:border-amber-400 transition-colors"
+                disabled={isShuffling || isDrawing || isLoadingReading || isSaving}
+              />
+              {error && (
+                <p className="mt-2 text-sm text-red-400">{error}</p>
+              )}
+            </div>
+
+            {/* Shuffling State */}
+            {isShuffling && (
+              <div className="flex flex-col items-center justify-center py-12 animate-fade-in">
+                <div className="relative w-40 h-64">
+                  {[0, 1, 2, 3, 4, 5].map((i) => (
+                    <div
+                      key={i}
+                      className="absolute inset-0 rounded-xl bg-slate-800 border-2 border-purple-900/80 shadow-2xl"
+                      style={{
+                        transform: `translate(${Math.sin(Date.now() / 80 + i) * 20}px, ${Math.cos(Date.now() / 80 + i) * 10}px) rotate(${Math.sin(Date.now() / 150 + i) * 12}deg)`,
+                        transition: 'transform 0.05s linear',
+                        zIndex: i
+                      }}
+                    >
+                      <div className="w-full h-full bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-purple-800/40 via-slate-900 to-black flex items-center justify-center rounded-lg overflow-hidden">
+                        <div className="absolute inset-0 border border-white/5 rounded-lg"></div>
+                        <span className="text-purple-500/20 text-5xl font-mystic">☾</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <p className="mt-16 text-amber-200/90 tracking-[0.3em] text-lg animate-pulse">
+                  {isZh ? '洗牌中...' : 'Shuffling...'}
+                </p>
+              </div>
+            )}
+
+            {/* Drawing State */}
+            {isDrawing && !drawnCard && (
+              <div className="relative h-64 animate-fade-in">
+                <p className="text-center text-purple-100 mb-4">{isZh ? '请选择一张牌' : 'Choose a card'}</p>
+                <div className="relative w-full max-w-md mx-auto h-48">
+                  {deck.slice(0, 15).map((card, index) => {
+                    const total = Math.min(deck.length, 15);
+                    const center = (total - 1) / 2;
+                    const offset = index - center;
+                    const degreePerCard = 4;
+                    const rotation = offset * degreePerCard;
+                    const translateY = Math.abs(offset) * 2;
+                    const translateX = offset * 12;
+
+                    return (
+                      <div
+                        key={card.id}
+                        onClick={() => handleDrawCard(index)}
+                        className="absolute bottom-0 left-1/2 cursor-pointer transition-all duration-300 group"
+                        style={{
+                          width: '80px',
+                          height: '128px',
+                          marginLeft: '-40px',
+                          transformOrigin: '50% 120%',
+                          transform: `translateX(${translateX}px) rotate(${rotation}deg) translateY(${translateY}px)`,
+                          zIndex: index + 10,
+                        }}
+                      >
+                        <div className="w-full h-full rounded-md bg-slate-800 border border-purple-500/40 shadow-xl group-hover:-translate-y-4 transition-transform relative overflow-hidden">
+                          <div className="absolute inset-0 bg-gradient-to-br from-purple-700/20 to-black"></div>
+                          <div className="absolute inset-1 border border-white/5 rounded-sm flex items-center justify-center">
+                            <span className="text-purple-300/20 text-xl">☾</span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Drawn Card & Reading */}
+            {drawnCard && (
+              <div className="animate-fade-in space-y-6">
+                <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
+                  <h3 className="text-[14px] text-amber-400 mb-4 tracking-wide">
+                    {isZh ? '抽牌结果' : 'Card Drawn'}
+                  </h3>
+                  <div className="flex justify-center">
+                    <div className="flex flex-col items-center gap-2 w-28">
+                      <div
+                        className="w-full aspect-[2/3.5] rounded-lg overflow-hidden border-2 border-amber-400/60 shadow-2xl"
+                        style={{
+                          transform: drawnCard.isReversed ? 'rotate(180deg)' : 'rotate(0deg)',
+                        }}
+                      >
+                        {drawnCard.imageUrl ? (
+                          <img
+                            src={drawnCard.imageUrl}
+                            alt={getCardName(drawnCard)}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gradient-to-br from-purple-700/20 to-black flex items-center justify-center">
+                            <span className="text-purple-300/40 text-4xl">☾</span>
+                          </div>
+                        )}
+                      </div>
+                      <div className="text-center">
+                        <p className="text-white/80 text-[13px]">
+                          {getCardName(drawnCard)} ({getCardStatus(drawnCard)})
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Loading Reading */}
+                {isLoadingReading && (
+                  <div className="flex flex-col items-center justify-center py-8">
+                    <div className="relative w-16 h-16">
+                      <div className="absolute inset-0 rounded-full border-2 border-slate-700"></div>
+                      <div className="absolute inset-0 rounded-full border-2 border-t-amber-500 border-r-transparent border-b-transparent border-l-transparent animate-spin"></div>
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <span className="text-xl animate-pulse">👁️</span>
+                      </div>
+                    </div>
+                    <p className="mt-4 text-purple-100/90 text-sm animate-pulse">
+                      {isZh ? '正在解读中...' : 'Reading in progress...'}
+                    </p>
+                  </div>
+                )}
+
+                {/* Reading Result */}
+                {reading && !isLoadingReading && (
+                  <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
+                    <h3 className="text-[14px] text-amber-400 mb-4 tracking-wide">
+                      {isZh ? '抽牌解读' : 'Reading'}
+                    </h3>
+                    <div className="prose prose-invert prose-sm max-w-none">
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        components={markdownComponents}
+                        linkTarget="_blank"
+                      >
+                        {reading}
+                      </ReactMarkdown>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Action Buttons */}
+            <div className="flex gap-4 justify-center">
+              {!drawnCard && !isShuffling && !isDrawing && (
+                <button
+                  onClick={handleStartShuffle}
+                  disabled={!eventName.trim()}
+                  className="px-6 py-3 bg-purple-600 hover:bg-purple-700 disabled:bg-slate-700 disabled:opacity-50 text-white font-semibold rounded-xl transition-colors"
+                >
+                  {isZh ? '开始洗牌' : 'Start Shuffle'}
+                </button>
+              )}
+
+              {drawnCard && reading && !isLoadingReading && (
+                <button
+                  onClick={handleSaveEvent}
+                  disabled={isSaving}
+                  className="px-6 py-3 bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-slate-900 font-semibold rounded-xl transition-colors"
+                >
+                  {isSaving ? (isZh ? '保存中...' : 'Saving...') : (isZh ? '保存事件' : 'Save Event')}
+                </button>
+              )}
+
+              <button
+                onClick={handleCancelCreating}
+                disabled={isShuffling || isDrawing || isLoadingReading || isSaving}
+                className="px-6 py-3 bg-slate-700 hover:bg-slate-600 disabled:opacity-50 text-white rounded-xl transition-colors"
+              >
+                {isZh ? '取消' : 'Cancel'}
+              </button>
+            </div>
           </div>
         )}
       </div>
