@@ -52,11 +52,12 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
   const isZh = language === 'zh';
   const [expandedEvents, setExpandedEvents] = useState<Set<string>>(new Set(['baseline']));
 
+  // Page state: 'detail' | 'shuffling' | 'drawing' | 'reading'
+  const [pageState, setPageState] = useState<'detail' | 'shuffling' | 'drawing' | 'reading'>('detail');
+
   // New event creation states
   const [eventName, setEventName] = useState('');
   const [deck, setDeck] = useState<typeof MAJOR_ARCANA>([]);
-  const [isShuffling, setIsShuffling] = useState(false);
-  const [isDrawing, setIsDrawing] = useState(false);
   const [drawnCard, setDrawnCard] = useState<DrawnCard | null>(null);
   const [isLoadingReading, setIsLoadingReading] = useState(false);
   const [reading, setReading] = useState('');
@@ -114,29 +115,17 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
     return `${name} (${status})`;
   };
 
-  // Cancel and reset form
-  const handleCancelCreating = () => {
-    setEventName('');
-    setDrawnCard(null);
-    setReading('');
-    setError('');
-    setIsShuffling(false);
-    setIsDrawing(false);
-    if (shuffleIntervalRef.current) clearInterval(shuffleIntervalRef.current);
-    if (shuffleTimeoutRef.current) clearTimeout(shuffleTimeoutRef.current);
-  };
-
-  // Start shuffling
-  const handleStartShuffle = () => {
+  // Start divination - go to shuffling page
+  const handleStartDivination = () => {
     if (!eventName.trim()) {
       setError(isZh ? '请先输入事件名称' : 'Please enter event name first');
       return;
     }
     setError('');
-    setIsShuffling(true);
-    setDrawnCard(null);
-    setReading('');
+    setDeck([...MAJOR_ARCANA]);
+    setPageState('shuffling');
 
+    // Start shuffling animation
     if (shuffleIntervalRef.current) clearInterval(shuffleIntervalRef.current);
     if (shuffleTimeoutRef.current) clearTimeout(shuffleTimeoutRef.current);
 
@@ -146,14 +135,24 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
 
     shuffleTimeoutRef.current = setTimeout(() => {
       if (shuffleIntervalRef.current) clearInterval(shuffleIntervalRef.current);
-      setIsShuffling(false);
-      setIsDrawing(true);
+      setPageState('drawing');
     }, 3000);
+  };
+
+  // Cancel and go back to detail page
+  const handleCancel = () => {
+    setPageState('detail');
+    setEventName('');
+    setDrawnCard(null);
+    setReading('');
+    setError('');
+    if (shuffleIntervalRef.current) clearInterval(shuffleIntervalRef.current);
+    if (shuffleTimeoutRef.current) clearTimeout(shuffleTimeoutRef.current);
   };
 
   // Draw a card
   const handleDrawCard = (index: number) => {
-    if (!isDrawing || drawnCard) return;
+    if (pageState !== 'drawing' || drawnCard) return;
 
     const selectedCard = deck[index];
     const isReversed = Math.random() > 0.5;
@@ -165,7 +164,7 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
     };
 
     setDrawnCard(card);
-    setIsDrawing(false);
+    setPageState('reading');
 
     // Auto-generate reading
     handleGenerateReading(card);
@@ -244,7 +243,8 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
         onEventAdded(res.event);
       }
 
-      // Reset form but keep input visible
+      // Go back to detail page and reset form
+      setPageState('detail');
       setEventName('');
       setDrawnCard(null);
       setReading('');
@@ -272,30 +272,58 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
   return (
     <div className="min-h-screen pt-20 pb-12 px-4">
       <div className="max-w-3xl mx-auto">
-        {/* Back Button */}
-        <button
-          onClick={onBack}
-          className="mb-6 flex items-center gap-2 text-white/60 hover:text-white transition-colors"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-          >
-            <path
-              fillRule="evenodd"
-              d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
-              clipRule="evenodd"
-            />
-          </svg>
-          <span className="text-sm">{isZh ? '返回' : 'Back'}</span>
-        </button>
+        {/* Detail Page */}
+        {pageState === 'detail' && (
+          <>
+            {/* Back Button */}
+            <button
+              onClick={onBack}
+              className="mb-6 flex items-center gap-2 text-white/60 hover:text-white transition-colors"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              <span className="text-sm">{isZh ? '返回' : 'Back'}</span>
+            </button>
 
-        {/* Topic Title */}
-        <div className="text-center mb-8">
-          <h1 className="text-[24px] font-medium text-white">"{topic.title}"</h1>
-        </div>
+            {/* Topic Title */}
+            <div className="text-center mb-8">
+              <h1 className="text-[24px] font-medium text-white">"{topic.title}"</h1>
+            </div>
+
+            {/* Event Input at Top */}
+            <div className="mb-8 space-y-4">
+              <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl px-5 py-4">
+                <input
+                  type="text"
+                  value={eventName}
+                  onChange={(e) => setEventName(e.target.value)}
+                  placeholder={isZh ? '输入你的事件...' : 'Enter your event...'}
+                  className="w-full bg-transparent text-white text-[15px] placeholder-white/40 focus:outline-none"
+                />
+              </div>
+              <div className="flex justify-center">
+                <button
+                  onClick={handleStartDivination}
+                  disabled={!eventName.trim()}
+                  className="px-6 py-3 bg-amber-500 hover:bg-amber-600 disabled:bg-slate-700 disabled:opacity-50 text-slate-900 font-semibold rounded-xl transition-colors"
+                >
+                  {isZh ? '开始占卜' : 'Start Reading'}
+                </button>
+              </div>
+              {error && (
+                <p className="text-center text-sm text-red-400">{error}</p>
+              )}
+            </div>
 
         {/* Baseline Reading Section */}
         <div className="mb-6">
@@ -490,187 +518,182 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
             ))}
           </div>
         )}
+          </>
+        )}
 
-        {/* Event Input - Always Visible */}
-        <div className="mt-8 space-y-4">
-          {/* Input Box */}
-          <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl px-5 py-4">
-            <input
-              type="text"
-              value={eventName}
-              onChange={(e) => setEventName(e.target.value)}
-              placeholder={isZh ? '输入你的事件...' : 'Enter your event...'}
-              className="w-full bg-transparent text-white text-[15px] placeholder-white/40 focus:outline-none"
-              disabled={isShuffling || isDrawing || isLoadingReading || isSaving}
-            />
-          </div>
-
-          {/* Start Button */}
-          {!isShuffling && !isDrawing && !drawnCard && (
-            <div className="flex justify-center">
-              <button
-                onClick={handleStartShuffle}
-                disabled={!eventName.trim()}
-                className="px-6 py-3 bg-amber-500 hover:bg-amber-600 disabled:bg-slate-700 disabled:opacity-50 text-slate-900 font-semibold rounded-xl transition-colors"
-              >
-                {isZh ? '开始占卜' : 'Start Reading'}
-              </button>
+        {/* Shuffling Page - Fullscreen */}
+        {pageState === 'shuffling' && (
+          <div className="fixed inset-0 bg-gradient-to-b from-slate-900 via-purple-900/20 to-slate-900 z-50 flex flex-col items-center justify-center animate-fade-in">
+            <div className="relative w-40 h-64">
+              {[0, 1, 2, 3, 4, 5].map((i) => (
+                <div
+                  key={i}
+                  className="absolute inset-0 rounded-xl bg-slate-800 border-2 border-purple-900/80 shadow-2xl"
+                  style={{
+                    transform: `translate(${Math.sin(Date.now() / 80 + i) * 20}px, ${Math.cos(Date.now() / 80 + i) * 10}px) rotate(${Math.sin(Date.now() / 150 + i) * 12}deg)`,
+                    transition: 'transform 0.05s linear',
+                    zIndex: i
+                  }}
+                >
+                  <div className="w-full h-full bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-purple-800/40 via-slate-900 to-black flex items-center justify-center rounded-lg overflow-hidden">
+                    <div className="absolute inset-0 border border-white/5 rounded-lg"></div>
+                    <span className="text-purple-500/20 text-5xl font-mystic">☾</span>
+                  </div>
+                </div>
+              ))}
             </div>
-          )}
+            <p className="mt-16 text-amber-200/90 tracking-[0.3em] text-lg animate-pulse">
+              {isZh ? '洗牌中...' : 'Shuffling...'}
+            </p>
+          </div>
+        )}
 
-          {/* Error Message */}
-          {error && (
-            <p className="text-center text-sm text-red-400">{error}</p>
-          )}
-        </div>
+        {/* Drawing Page - Fullscreen */}
+        {pageState === 'drawing' && (
+          <div className="fixed inset-0 bg-gradient-to-b from-slate-900 via-purple-900/20 to-slate-900 z-50 flex flex-col items-center justify-center px-4 animate-fade-in">
+            <p className="text-center text-purple-100 mb-8 text-xl">{isZh ? '请选择一张牌' : 'Choose a card'}</p>
+            <div className="relative w-full max-w-2xl h-64">
+              {deck.slice(0, 15).map((card, index) => {
+                const total = Math.min(deck.length, 15);
+                const center = (total - 1) / 2;
+                const offset = index - center;
+                const degreePerCard = 4;
+                const rotation = offset * degreePerCard;
+                const translateY = Math.abs(offset) * 2;
+                const translateX = offset * 12;
 
-        {/* Divination Process */}
-        {(isShuffling || isDrawing || drawnCard) && (
-          <div className="mt-8 space-y-6">
-
-            {/* Shuffling State */}
-            {isShuffling && (
-              <div className="flex flex-col items-center justify-center py-12 animate-fade-in">
-                <div className="relative w-40 h-64">
-                  {[0, 1, 2, 3, 4, 5].map((i) => (
-                    <div
-                      key={i}
-                      className="absolute inset-0 rounded-xl bg-slate-800 border-2 border-purple-900/80 shadow-2xl"
-                      style={{
-                        transform: `translate(${Math.sin(Date.now() / 80 + i) * 20}px, ${Math.cos(Date.now() / 80 + i) * 10}px) rotate(${Math.sin(Date.now() / 150 + i) * 12}deg)`,
-                        transition: 'transform 0.05s linear',
-                        zIndex: i
-                      }}
-                    >
-                      <div className="w-full h-full bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-purple-800/40 via-slate-900 to-black flex items-center justify-center rounded-lg overflow-hidden">
-                        <div className="absolute inset-0 border border-white/5 rounded-lg"></div>
-                        <span className="text-purple-500/20 text-5xl font-mystic">☾</span>
+                return (
+                  <div
+                    key={card.id}
+                    onClick={() => handleDrawCard(index)}
+                    className="absolute bottom-0 left-1/2 cursor-pointer transition-all duration-300 group"
+                    style={{
+                      width: '80px',
+                      height: '128px',
+                      marginLeft: '-40px',
+                      transformOrigin: '50% 120%',
+                      transform: `translateX(${translateX}px) rotate(${rotation}deg) translateY(${translateY}px)`,
+                      zIndex: index + 10,
+                    }}
+                  >
+                    <div className="w-full h-full rounded-md bg-slate-800 border border-purple-500/40 shadow-xl group-hover:-translate-y-4 transition-transform relative overflow-hidden">
+                      <div className="absolute inset-0 bg-gradient-to-br from-purple-700/20 to-black"></div>
+                      <div className="absolute inset-1 border border-white/5 rounded-sm flex items-center justify-center">
+                        <span className="text-purple-300/20 text-xl">☾</span>
                       </div>
                     </div>
-                  ))}
+                  </div>
+                );
+              })}
+            </div>
+            <button
+              onClick={handleCancel}
+              className="mt-12 px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-xl transition-colors"
+            >
+              {isZh ? '取消' : 'Cancel'}
+            </button>
+          </div>
+        )}
+
+        {/* Reading Page - Back to Detail with Result */}
+        {pageState === 'reading' && drawnCard && (
+          <div className="animate-fade-in">
+            {/* Back Button */}
+            <button
+              onClick={handleCancel}
+              className="mb-6 flex items-center gap-2 text-white/60 hover:text-white transition-colors"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              <span className="text-sm">{isZh ? '返回' : 'Back'}</span>
+            </button>
+
+            {/* Event Name */}
+            <div className="text-center mb-8">
+              <h2 className="text-[20px] font-medium text-white">{eventName}</h2>
+            </div>
+
+            {/* Drawn Card */}
+            <div className="mb-6 bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
+              <h3 className="text-[14px] text-amber-400 mb-4 tracking-wide">
+                {isZh ? '抽牌结果' : 'Card Drawn'}
+              </h3>
+              <div className="flex justify-center">
+                <div className="flex flex-col items-center gap-2 w-32">
+                  <div
+                    className="w-full aspect-[2/3.5] rounded-lg overflow-hidden border-2 border-amber-400/60 shadow-2xl"
+                    style={{
+                      transform: drawnCard.isReversed ? 'rotate(180deg)' : 'rotate(0deg)',
+                    }}
+                  >
+                    {drawnCard.imageUrl ? (
+                      <img
+                        src={drawnCard.imageUrl}
+                        alt={getCardName(drawnCard)}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-purple-700/20 to-black flex items-center justify-center">
+                        <span className="text-purple-300/40 text-4xl">☾</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="text-center">
+                    <p className="text-white/80 text-[14px]">
+                      {getCardName(drawnCard)} ({getCardStatus(drawnCard)})
+                    </p>
+                  </div>
                 </div>
-                <p className="mt-16 text-amber-200/90 tracking-[0.3em] text-lg animate-pulse">
-                  {isZh ? '洗牌中...' : 'Shuffling...'}
+              </div>
+            </div>
+
+            {/* Loading Reading */}
+            {isLoadingReading && (
+              <div className="flex flex-col items-center justify-center py-8">
+                <div className="relative w-16 h-16">
+                  <div className="absolute inset-0 rounded-full border-2 border-slate-700"></div>
+                  <div className="absolute inset-0 rounded-full border-2 border-t-amber-500 border-r-transparent border-b-transparent border-l-transparent animate-spin"></div>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-xl animate-pulse">👁️</span>
+                  </div>
+                </div>
+                <p className="mt-4 text-purple-100/90 text-sm animate-pulse">
+                  {isZh ? '正在解读中...' : 'Reading in progress...'}
                 </p>
               </div>
             )}
 
-            {/* Drawing State */}
-            {isDrawing && !drawnCard && (
-              <div className="relative h-64 animate-fade-in">
-                <p className="text-center text-purple-100 mb-4">{isZh ? '请选择一张牌' : 'Choose a card'}</p>
-                <div className="relative w-full max-w-md mx-auto h-48">
-                  {deck.slice(0, 15).map((card, index) => {
-                    const total = Math.min(deck.length, 15);
-                    const center = (total - 1) / 2;
-                    const offset = index - center;
-                    const degreePerCard = 4;
-                    const rotation = offset * degreePerCard;
-                    const translateY = Math.abs(offset) * 2;
-                    const translateX = offset * 12;
-
-                    return (
-                      <div
-                        key={card.id}
-                        onClick={() => handleDrawCard(index)}
-                        className="absolute bottom-0 left-1/2 cursor-pointer transition-all duration-300 group"
-                        style={{
-                          width: '80px',
-                          height: '128px',
-                          marginLeft: '-40px',
-                          transformOrigin: '50% 120%',
-                          transform: `translateX(${translateX}px) rotate(${rotation}deg) translateY(${translateY}px)`,
-                          zIndex: index + 10,
-                        }}
-                      >
-                        <div className="w-full h-full rounded-md bg-slate-800 border border-purple-500/40 shadow-xl group-hover:-translate-y-4 transition-transform relative overflow-hidden">
-                          <div className="absolute inset-0 bg-gradient-to-br from-purple-700/20 to-black"></div>
-                          <div className="absolute inset-1 border border-white/5 rounded-sm flex items-center justify-center">
-                            <span className="text-purple-300/20 text-xl">☾</span>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
+            {/* Reading Result */}
+            {reading && !isLoadingReading && (
+              <div className="mb-6 bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
+                <h3 className="text-[14px] text-amber-400 mb-4 tracking-wide">
+                  {isZh ? '抽牌解读' : 'Reading'}
+                </h3>
+                <div className="prose prose-invert prose-sm max-w-none">
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm]}
+                    components={markdownComponents}
+                    linkTarget="_blank"
+                  >
+                    {reading}
+                  </ReactMarkdown>
                 </div>
-              </div>
-            )}
-
-            {/* Drawn Card & Reading */}
-            {drawnCard && (
-              <div className="animate-fade-in space-y-6">
-                <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
-                  <h3 className="text-[14px] text-amber-400 mb-4 tracking-wide">
-                    {isZh ? '抽牌结果' : 'Card Drawn'}
-                  </h3>
-                  <div className="flex justify-center">
-                    <div className="flex flex-col items-center gap-2 w-28">
-                      <div
-                        className="w-full aspect-[2/3.5] rounded-lg overflow-hidden border-2 border-amber-400/60 shadow-2xl"
-                        style={{
-                          transform: drawnCard.isReversed ? 'rotate(180deg)' : 'rotate(0deg)',
-                        }}
-                      >
-                        {drawnCard.imageUrl ? (
-                          <img
-                            src={drawnCard.imageUrl}
-                            alt={getCardName(drawnCard)}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full bg-gradient-to-br from-purple-700/20 to-black flex items-center justify-center">
-                            <span className="text-purple-300/40 text-4xl">☾</span>
-                          </div>
-                        )}
-                      </div>
-                      <div className="text-center">
-                        <p className="text-white/80 text-[13px]">
-                          {getCardName(drawnCard)} ({getCardStatus(drawnCard)})
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Loading Reading */}
-                {isLoadingReading && (
-                  <div className="flex flex-col items-center justify-center py-8">
-                    <div className="relative w-16 h-16">
-                      <div className="absolute inset-0 rounded-full border-2 border-slate-700"></div>
-                      <div className="absolute inset-0 rounded-full border-2 border-t-amber-500 border-r-transparent border-b-transparent border-l-transparent animate-spin"></div>
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <span className="text-xl animate-pulse">👁️</span>
-                      </div>
-                    </div>
-                    <p className="mt-4 text-purple-100/90 text-sm animate-pulse">
-                      {isZh ? '正在解读中...' : 'Reading in progress...'}
-                    </p>
-                  </div>
-                )}
-
-                {/* Reading Result */}
-                {reading && !isLoadingReading && (
-                  <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
-                    <h3 className="text-[14px] text-amber-400 mb-4 tracking-wide">
-                      {isZh ? '抽牌解读' : 'Reading'}
-                    </h3>
-                    <div className="prose prose-invert prose-sm max-w-none">
-                      <ReactMarkdown
-                        remarkPlugins={[remarkGfm]}
-                        components={markdownComponents}
-                        linkTarget="_blank"
-                      >
-                        {reading}
-                      </ReactMarkdown>
-                    </div>
-                  </div>
-                )}
               </div>
             )}
 
             {/* Action Buttons */}
-            <div className="flex gap-4 justify-center">
-              {drawnCard && reading && !isLoadingReading && (
+            {reading && !isLoadingReading && (
+              <div className="flex gap-4 justify-center">
                 <button
                   onClick={handleSaveEvent}
                   disabled={isSaving}
@@ -678,16 +701,19 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
                 >
                   {isSaving ? (isZh ? '保存中...' : 'Saving...') : (isZh ? '保存事件' : 'Save Event')}
                 </button>
-              )}
+                <button
+                  onClick={handleCancel}
+                  disabled={isSaving}
+                  className="px-6 py-3 bg-slate-700 hover:bg-slate-600 disabled:opacity-50 text-white rounded-xl transition-colors"
+                >
+                  {isZh ? '取消' : 'Cancel'}
+                </button>
+              </div>
+            )}
 
-              <button
-                onClick={handleCancelCreating}
-                disabled={isShuffling || isDrawing || isLoadingReading || isSaving}
-                className="px-6 py-3 bg-slate-700 hover:bg-slate-600 disabled:opacity-50 text-white rounded-xl transition-colors"
-              >
-                {isZh ? '取消' : 'Cancel'}
-              </button>
-            </div>
+            {error && (
+              <p className="mt-4 text-center text-sm text-red-400">{error}</p>
+            )}
           </div>
         )}
       </div>
