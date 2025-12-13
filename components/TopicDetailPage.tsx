@@ -53,7 +53,6 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
   const [expandedEvents, setExpandedEvents] = useState<Set<string>>(new Set(['baseline']));
 
   // New event creation states
-  const [isCreatingEvent, setIsCreatingEvent] = useState(false);
   const [eventName, setEventName] = useState('');
   const [deck, setDeck] = useState<typeof MAJOR_ARCANA>([]);
   const [isShuffling, setIsShuffling] = useState(false);
@@ -115,19 +114,8 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
     return `${name} (${status})`;
   };
 
-  // Start creating new event
-  const handleStartCreating = () => {
-    setIsCreatingEvent(true);
-    setEventName('');
-    setDrawnCard(null);
-    setReading('');
-    setError('');
-    setDeck([...MAJOR_ARCANA]);
-  };
-
-  // Cancel creating event
+  // Cancel and reset form
   const handleCancelCreating = () => {
-    setIsCreatingEvent(false);
     setEventName('');
     setDrawnCard(null);
     setReading('');
@@ -256,8 +244,7 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
         onEventAdded(res.event);
       }
 
-      // Reset form
-      setIsCreatingEvent(false);
+      // Reset form but keep input visible
       setEventName('');
       setDrawnCard(null);
       setReading('');
@@ -504,35 +491,42 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
           </div>
         )}
 
-        {/* Create New Event Button / Form */}
-        {!isCreatingEvent ? (
-          <div className="mt-8 flex justify-center">
-            <button
-              onClick={handleStartCreating}
-              className="px-6 py-3 bg-amber-500 hover:bg-amber-600 text-slate-900 font-semibold rounded-xl transition-colors"
-            >
-              {isZh ? '开始占卜' : 'Start Reading'}
-            </button>
+        {/* Event Input - Always Visible */}
+        <div className="mt-8 space-y-4">
+          {/* Input Box */}
+          <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl px-5 py-4">
+            <input
+              type="text"
+              value={eventName}
+              onChange={(e) => setEventName(e.target.value)}
+              placeholder={isZh ? '输入你的事件...' : 'Enter your event...'}
+              className="w-full bg-transparent text-white text-[15px] placeholder-white/40 focus:outline-none"
+              disabled={isShuffling || isDrawing || isLoadingReading || isSaving}
+            />
           </div>
-        ) : (
-          <div className="mt-8 space-y-6">
-            {/* Event Name Input */}
-            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
-              <h3 className="text-[16px] text-amber-400 mb-4 tracking-wide">
-                {isZh ? '新事件' : 'New Event'}
-              </h3>
-              <input
-                type="text"
-                value={eventName}
-                onChange={(e) => setEventName(e.target.value)}
-                placeholder={isZh ? '输入事件名称，如"老板今天骂我了"' : 'Enter event name'}
-                className="w-full bg-slate-900 border border-white/10 rounded-lg px-4 py-3 text-white text-[15px] focus:outline-none focus:border-amber-400 transition-colors"
-                disabled={isShuffling || isDrawing || isLoadingReading || isSaving}
-              />
-              {error && (
-                <p className="mt-2 text-sm text-red-400">{error}</p>
-              )}
+
+          {/* Start Button */}
+          {!isShuffling && !isDrawing && !drawnCard && (
+            <div className="flex justify-center">
+              <button
+                onClick={handleStartShuffle}
+                disabled={!eventName.trim()}
+                className="px-6 py-3 bg-amber-500 hover:bg-amber-600 disabled:bg-slate-700 disabled:opacity-50 text-slate-900 font-semibold rounded-xl transition-colors"
+              >
+                {isZh ? '开始占卜' : 'Start Reading'}
+              </button>
             </div>
+          )}
+
+          {/* Error Message */}
+          {error && (
+            <p className="text-center text-sm text-red-400">{error}</p>
+          )}
+        </div>
+
+        {/* Divination Process */}
+        {(isShuffling || isDrawing || drawnCard) && (
+          <div className="mt-8 space-y-6">
 
             {/* Shuffling State */}
             {isShuffling && (
@@ -676,16 +670,6 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
 
             {/* Action Buttons */}
             <div className="flex gap-4 justify-center">
-              {!drawnCard && !isShuffling && !isDrawing && (
-                <button
-                  onClick={handleStartShuffle}
-                  disabled={!eventName.trim()}
-                  className="px-6 py-3 bg-purple-600 hover:bg-purple-700 disabled:bg-slate-700 disabled:opacity-50 text-white font-semibold rounded-xl transition-colors"
-                >
-                  {isZh ? '开始洗牌' : 'Start Shuffle'}
-                </button>
-              )}
-
               {drawnCard && reading && !isLoadingReading && (
                 <button
                   onClick={handleSaveEvent}
