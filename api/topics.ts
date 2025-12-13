@@ -56,7 +56,7 @@ async function handleListTopics(req: any, res: any, user: any, pool: any) {
 
   const topicsRes = await pool.query(
     `SELECT t.*,
-      (SELECT COUNT(*) FROM topic_events e WHERE e.topic_id = t.id) as event_count
+      (SELECT COUNT(*) FROM topic_events e WHERE e.topic_id = t.id AND e.user_id = $1) as event_count
     FROM topics t
     WHERE t.user_id=$1
     ORDER BY t.created_at DESC`,
@@ -131,8 +131,8 @@ async function handleGetTopic(req: any, res: any, user: any, pool: any, topicId:
   }
 
   const eventsRes = await pool.query(
-    `SELECT * FROM topic_events WHERE topic_id=$1 ORDER BY created_at ASC`,
-    [topicId]
+    `SELECT * FROM topic_events WHERE topic_id=$1 AND user_id=$2 ORDER BY created_at ASC`,
+    [topicId, user.id]
   );
 
   const quota = await getPlanQuotaSummary(user);
@@ -182,8 +182,8 @@ async function handleAddEvent(req: any, res: any, user: any, pool: any, topicId:
   }
 
   const eventCountRes = await pool.query(
-    `SELECT COUNT(*) as count FROM topic_events WHERE topic_id=$1`,
-    [topicId]
+    `SELECT COUNT(*) as count FROM topic_events WHERE topic_id=$1 AND user_id=$2`,
+    [topicId, user.id]
   );
   const eventCount = Number(eventCountRes.rows[0]?.count ?? 0);
 
