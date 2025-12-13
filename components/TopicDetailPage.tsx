@@ -346,7 +346,7 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
                   {formatDate(topic.created_at)}
                 </div>
                 <div className="text-[16px] text-white font-medium">
-                  {isZh ? '老板今天骂我了' : 'Initial Reading'}
+                  {topic.title}
                 </div>
               </div>
             </div>
