@@ -579,7 +579,29 @@ const App: React.FC = () => {
       setUsageError('');
       return true;
     } catch (err: any) {
-      if (err?.data?.requireRedemption) {
+      console.error('[Usage] Failed to consume:', err);
+
+      // Check if it's a daily limit error
+      if (err?.data?.message === 'daily_limit_reached') {
+        const { plan, used_today, daily_limit } = err.data;
+
+        if (plan === 'member') {
+          // Member reached daily limit (50 times)
+          setUsageError(
+            language === 'zh'
+              ? `今日会员解读次数已用完（${used_today}/${daily_limit}），请明天再来。`
+              : `Daily member limit reached (${used_today}/${daily_limit}). Come back tomorrow.`
+          );
+        } else {
+          // Free user reached daily limit (2 times)
+          setShowRedeem(true);
+          setUsageError(
+            language === 'zh'
+              ? `今日免费次数已用完（${used_today}/${daily_limit}），请输入兑换码开启会员。`
+              : `Free daily limit reached (${used_today}/${daily_limit}). Redeem a code to unlock membership.`
+          );
+        }
+      } else if (err?.data?.requireRedemption) {
         setShowRedeem(true);
         setUsageError(language === 'zh' ? '今日免费次数已用完，请输入兑换码开启会员。' : 'Free daily limit reached. Redeem a code to unlock membership.');
       } else if (err?.status === 401) {
