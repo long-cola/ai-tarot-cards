@@ -164,9 +164,10 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
     };
 
     setDrawnCard(card);
-    setPageState('reading');
+    // Go back to detail page immediately
+    setPageState('detail');
 
-    // Auto-generate reading
+    // Auto-generate reading in background
     handleGenerateReading(card);
   };
 
@@ -205,6 +206,12 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
         current_card: currentCardStr
       };
 
+      console.log('[TopicDetailPage] Generating reading with variables:', {
+        promptKey,
+        variables,
+        cardName: currentCardStr
+      });
+
       const readingText = await getTarotReading(
         topic.title,
         [card],
@@ -213,9 +220,10 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
         variables
       );
 
+      console.log('[TopicDetailPage] Reading generated successfully, length:', readingText.length);
       setReading(readingText);
     } catch (err: any) {
-      console.error("Failed to generate reading", err);
+      console.error("[TopicDetailPage] Failed to generate reading", err);
       setError(isZh ? '生成解读失败，请重试' : 'Failed to generate reading');
     } finally {
       setIsLoadingReading(false);
@@ -518,6 +526,110 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
             ))}
           </div>
         )}
+
+            {/* Current Reading Result - Show at bottom when drawing/reading */}
+            {drawnCard && pageState === 'detail' && (
+              <div className="mt-8 space-y-6 animate-fade-in">
+                <div className="bg-gradient-to-br from-amber-500/10 to-purple-500/10 backdrop-blur-sm border-2 border-amber-400/40 rounded-xl p-6">
+                  <h3 className="text-[16px] text-amber-300 mb-4 tracking-wide flex items-center gap-2">
+                    <span className="inline-block w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+                    {isZh ? '当前占卜' : 'Current Reading'}: {eventName}
+                  </h3>
+
+                  {/* Drawn Card */}
+                  <div className="mb-6">
+                    <h4 className="text-[14px] text-amber-400 mb-4 tracking-wide">
+                      {isZh ? '抽牌结果' : 'Card Drawn'}
+                    </h4>
+                    <div className="flex justify-center">
+                      <div className="flex flex-col items-center gap-2 w-32">
+                        <div
+                          className="w-full aspect-[2/3.5] rounded-lg overflow-hidden border-2 border-amber-400/80 shadow-2xl"
+                          style={{
+                            transform: drawnCard.isReversed ? 'rotate(180deg)' : 'rotate(0deg)',
+                          }}
+                        >
+                          {drawnCard.imageUrl ? (
+                            <img
+                              src={drawnCard.imageUrl}
+                              alt={getCardName(drawnCard)}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-gradient-to-br from-purple-700/20 to-black flex items-center justify-center">
+                              <span className="text-purple-300/40 text-4xl">☾</span>
+                            </div>
+                          )}
+                        </div>
+                        <div className="text-center">
+                          <p className="text-white/80 text-[14px]">
+                            {getCardName(drawnCard)} ({getCardStatus(drawnCard)})
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Loading Reading */}
+                  {isLoadingReading && (
+                    <div className="flex flex-col items-center justify-center py-8">
+                      <div className="relative w-16 h-16">
+                        <div className="absolute inset-0 rounded-full border-2 border-slate-700"></div>
+                        <div className="absolute inset-0 rounded-full border-2 border-t-amber-500 border-r-transparent border-b-transparent border-l-transparent animate-spin"></div>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <span className="text-xl animate-pulse">👁️</span>
+                        </div>
+                      </div>
+                      <p className="mt-4 text-purple-100/90 text-sm animate-pulse">
+                        {isZh ? '正在解读中...' : 'Reading in progress...'}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Reading Result */}
+                  {reading && !isLoadingReading && (
+                    <>
+                      <div className="mb-6">
+                        <h4 className="text-[14px] text-amber-400 mb-4 tracking-wide">
+                          {isZh ? '抽牌解读' : 'Reading'}
+                        </h4>
+                        <div className="prose prose-invert prose-sm max-w-none">
+                          <ReactMarkdown
+                            remarkPlugins={[remarkGfm]}
+                            components={markdownComponents}
+                            linkTarget="_blank"
+                          >
+                            {reading}
+                          </ReactMarkdown>
+                        </div>
+                      </div>
+
+                      {/* Action Buttons */}
+                      <div className="flex gap-4 justify-center pt-4 border-t border-white/10">
+                        <button
+                          onClick={handleSaveEvent}
+                          disabled={isSaving}
+                          className="px-6 py-3 bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-slate-900 font-semibold rounded-xl transition-colors"
+                        >
+                          {isSaving ? (isZh ? '保存中...' : 'Saving...') : (isZh ? '保存事件' : 'Save Event')}
+                        </button>
+                        <button
+                          onClick={handleCancel}
+                          disabled={isSaving}
+                          className="px-6 py-3 bg-slate-700 hover:bg-slate-600 disabled:opacity-50 text-white rounded-xl transition-colors"
+                        >
+                          {isZh ? '取消' : 'Cancel'}
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
+
+                {error && (
+                  <p className="text-center text-sm text-red-400">{error}</p>
+                )}
+              </div>
+            )}
           </>
         )}
 
@@ -592,128 +704,6 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
             >
               {isZh ? '取消' : 'Cancel'}
             </button>
-          </div>
-        )}
-
-        {/* Reading Page - Back to Detail with Result */}
-        {pageState === 'reading' && drawnCard && (
-          <div className="animate-fade-in">
-            {/* Back Button */}
-            <button
-              onClick={handleCancel}
-              className="mb-6 flex items-center gap-2 text-white/60 hover:text-white transition-colors"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              <span className="text-sm">{isZh ? '返回' : 'Back'}</span>
-            </button>
-
-            {/* Event Name */}
-            <div className="text-center mb-8">
-              <h2 className="text-[20px] font-medium text-white">{eventName}</h2>
-            </div>
-
-            {/* Drawn Card */}
-            <div className="mb-6 bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
-              <h3 className="text-[14px] text-amber-400 mb-4 tracking-wide">
-                {isZh ? '抽牌结果' : 'Card Drawn'}
-              </h3>
-              <div className="flex justify-center">
-                <div className="flex flex-col items-center gap-2 w-32">
-                  <div
-                    className="w-full aspect-[2/3.5] rounded-lg overflow-hidden border-2 border-amber-400/60 shadow-2xl"
-                    style={{
-                      transform: drawnCard.isReversed ? 'rotate(180deg)' : 'rotate(0deg)',
-                    }}
-                  >
-                    {drawnCard.imageUrl ? (
-                      <img
-                        src={drawnCard.imageUrl}
-                        alt={getCardName(drawnCard)}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-purple-700/20 to-black flex items-center justify-center">
-                        <span className="text-purple-300/40 text-4xl">☾</span>
-                      </div>
-                    )}
-                  </div>
-                  <div className="text-center">
-                    <p className="text-white/80 text-[14px]">
-                      {getCardName(drawnCard)} ({getCardStatus(drawnCard)})
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Loading Reading */}
-            {isLoadingReading && (
-              <div className="flex flex-col items-center justify-center py-8">
-                <div className="relative w-16 h-16">
-                  <div className="absolute inset-0 rounded-full border-2 border-slate-700"></div>
-                  <div className="absolute inset-0 rounded-full border-2 border-t-amber-500 border-r-transparent border-b-transparent border-l-transparent animate-spin"></div>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-xl animate-pulse">👁️</span>
-                  </div>
-                </div>
-                <p className="mt-4 text-purple-100/90 text-sm animate-pulse">
-                  {isZh ? '正在解读中...' : 'Reading in progress...'}
-                </p>
-              </div>
-            )}
-
-            {/* Reading Result */}
-            {reading && !isLoadingReading && (
-              <div className="mb-6 bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
-                <h3 className="text-[14px] text-amber-400 mb-4 tracking-wide">
-                  {isZh ? '抽牌解读' : 'Reading'}
-                </h3>
-                <div className="prose prose-invert prose-sm max-w-none">
-                  <ReactMarkdown
-                    remarkPlugins={[remarkGfm]}
-                    components={markdownComponents}
-                    linkTarget="_blank"
-                  >
-                    {reading}
-                  </ReactMarkdown>
-                </div>
-              </div>
-            )}
-
-            {/* Action Buttons */}
-            {reading && !isLoadingReading && (
-              <div className="flex gap-4 justify-center">
-                <button
-                  onClick={handleSaveEvent}
-                  disabled={isSaving}
-                  className="px-6 py-3 bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-slate-900 font-semibold rounded-xl transition-colors"
-                >
-                  {isSaving ? (isZh ? '保存中...' : 'Saving...') : (isZh ? '保存事件' : 'Save Event')}
-                </button>
-                <button
-                  onClick={handleCancel}
-                  disabled={isSaving}
-                  className="px-6 py-3 bg-slate-700 hover:bg-slate-600 disabled:opacity-50 text-white rounded-xl transition-colors"
-                >
-                  {isZh ? '取消' : 'Cancel'}
-                </button>
-              </div>
-            )}
-
-            {error && (
-              <p className="mt-4 text-center text-sm text-red-400">{error}</p>
-            )}
           </div>
         )}
       </div>
