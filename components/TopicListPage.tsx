@@ -1,5 +1,6 @@
 import React from 'react';
 import { TopicCard } from './TopicCard';
+import { Button } from './ui';
 
 interface Topic {
   id: string;
@@ -37,7 +38,7 @@ export const TopicListPage: React.FC<TopicListPageProps> = ({
 
   return (
     <div className="min-h-screen pt-24 pb-12 px-4">
-      <div className="w-full max-w-[800px] mx-auto">
+      <div className="w-full max-w-3xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-[24px] font-medium text-white">
@@ -51,18 +52,15 @@ export const TopicListPage: React.FC<TopicListPageProps> = ({
         </div>
 
         {/* Topics List - 严格按照设计规范 */}
-        <div className="flex flex-col gap-4 w-full mb-8">
+        <div className="flex flex-col gap-6 w-full mb-8">
           {sortedTopics.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-white/60 mb-4 text-[16px]">
                 {isZh ? '还没有创建任何命题' : 'No topics yet'}
               </p>
-              <button
-                onClick={onCreateNewTopic}
-                className="px-6 py-3 bg-amber-500 hover:bg-amber-600 text-slate-900 font-semibold rounded-xl transition-colors text-[16px]"
-              >
+              <Button variant="primary" size="lg" onClick={onCreateNewTopic}>
                 {isZh ? '创建第一个命题' : 'Create First Topic'}
-              </button>
+              </Button>
             </div>
           ) : (
             sortedTopics.map((topic) => (
@@ -81,12 +79,9 @@ export const TopicListPage: React.FC<TopicListPageProps> = ({
         {/* Create New Topic Button */}
         {sortedTopics.length > 0 && (
           <div className="flex justify-center">
-            <button
-              onClick={onCreateNewTopic}
-              className="px-8 py-4 bg-amber-500 hover:bg-amber-600 text-slate-900 font-semibold rounded-xl transition-colors text-[16px]"
-            >
+            <Button variant="primary" size="lg" onClick={onCreateNewTopic}>
               {isZh ? '开启新命题' : 'Create New Topic'}
-            </button>
+            </Button>
           </div>
         )}
       </div>

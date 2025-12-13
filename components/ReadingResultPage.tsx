@@ -26,20 +26,20 @@ interface ReadingResultPageProps {
 
 const markdownComponents = {
   h2: ({ children }: { children: React.ReactNode }) => (
-    <h2 className="text-xl font-semibold text-amber-200/90 tracking-wide mb-3 border-l-4 border-amber-400/40 pl-3">
+    <h2 className="text-[17px] font-semibold text-amber-200/90 tracking-wide mb-3 border-l-4 border-amber-400/40 pl-3">
       {children}
     </h2>
   ),
   h3: ({ children }: { children: React.ReactNode }) => (
-    <h3 className="text-lg font-semibold text-amber-100/90 mb-2">
+    <h3 className="text-[15px] font-semibold text-amber-100/90 mb-2">
       {children}
     </h3>
   ),
   ul: ({ children }: { children: React.ReactNode }) => (
-    <ul className="list-disc list-inside space-y-2 text-slate-200/90">{children}</ul>
+    <ul className="list-disc list-inside space-y-2 text-slate-200/90 text-[14px]">{children}</ul>
   ),
   ol: ({ children }: { children: React.ReactNode }) => (
-    <ol className="list-decimal list-inside space-y-2 text-slate-200/90">{children}</ol>
+    <ol className="list-decimal list-inside space-y-2 text-slate-200/90 text-[14px]">{children}</ol>
   ),
   li: ({ children }: { children: React.ReactNode }) => (
     <li className="leading-relaxed">{children}</li>
@@ -48,7 +48,7 @@ const markdownComponents = {
     <strong className="text-amber-300 font-semibold">{children}</strong>
   ),
   p: ({ children }: { children: React.ReactNode }) => (
-    <p className="leading-relaxed text-slate-200/90 break-words mb-2">{children}</p>
+    <p className="leading-relaxed text-slate-200/90 break-words mb-2 text-[14px]">{children}</p>
   ),
 };
 

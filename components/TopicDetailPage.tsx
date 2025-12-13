@@ -278,7 +278,7 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
   });
 
   return (
-    <div className="min-h-screen pt-20 pb-12 px-4">
+    <div className="min-h-screen pt-24 pb-12 px-4">
       <div className="w-full max-w-3xl mx-auto">
         {/* Detail Page */}
         {pageState === 'detail' && (
@@ -345,7 +345,7 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
                 <div className="text-[14px] text-slate-400 mb-1">
                   {formatDate(topic.created_at)}
                 </div>
-                <div className="text-[16px] text-white font-medium">
+                <div className="text-[18px] text-white font-medium">
                   {topic.title}
                 </div>
               </div>
@@ -442,7 +442,7 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
                       <div className="text-[14px] text-slate-400 mb-1">
                         {formatDate(event.created_at)}
                       </div>
-                      <div className="text-[16px] text-white font-medium">
+                      <div className="text-[18px] text-white font-medium">
                         {event.name}
                       </div>
                     </div>
@@ -605,18 +605,18 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
                       </div>
 
                       {/* Action Buttons */}
-                      <div className="flex gap-4 justify-center pt-4 border-t border-white/10">
+                      <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4 border-t border-white/10">
                         <button
                           onClick={handleSaveEvent}
                           disabled={isSaving}
-                          className="px-6 py-3 bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-slate-900 font-semibold rounded-xl transition-colors"
+                          className="w-full sm:w-auto px-6 py-3 bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-slate-900 font-semibold rounded-xl transition-colors"
                         >
                           {isSaving ? (isZh ? '保存中...' : 'Saving...') : (isZh ? '保存事件' : 'Save Event')}
                         </button>
                         <button
                           onClick={handleCancel}
                           disabled={isSaving}
-                          className="px-6 py-3 bg-slate-700 hover:bg-slate-600 disabled:opacity-50 text-white rounded-xl transition-colors"
+                          className="w-full sm:w-auto px-6 py-3 bg-slate-700 hover:bg-slate-600 disabled:opacity-50 text-white rounded-xl transition-colors"
                         >
                           {isZh ? '取消' : 'Cancel'}
                         </button>
