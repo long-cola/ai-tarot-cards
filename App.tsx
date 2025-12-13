@@ -7,6 +7,7 @@ import { StarryBackground } from './components/StarryBackground';
 import { Navbar } from './components/Navbar';
 import { HomePage } from './components/HomePage';
 import { TopicListPage } from './components/TopicListPage';
+import { TopicDetailPage } from './components/TopicDetailPage';
 import { ReadingResultPage } from './components/ReadingResultPage';
 import { QuickQuestionCard } from './components/ui';
 import ReactMarkdown from 'react-markdown';
@@ -334,6 +335,7 @@ const App: React.FC = () => {
   const eventShuffleTimeout = useRef<NodeJS.Timeout | null>(null);
   const [shareDataLoaded, setShareDataLoaded] = useState(false);
   const [showTopicListPage, setShowTopicListPage] = useState(false);
+  const [showTopicDetailPage, setShowTopicDetailPage] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const readingRef = useRef<HTMLDivElement>(null);
 
@@ -816,6 +818,7 @@ const App: React.FC = () => {
     setShareLink('');
     setShareError('');
     setShowTopicListPage(false);
+    setShowTopicDetailPage(false);
   };
 
   const toggleLanguage = () => {
@@ -859,6 +862,10 @@ const App: React.FC = () => {
       setEventCard(null);
       setEventReading('');
       setEventError('');
+
+      // Show detail page instead of modal
+      setShowTopicListPage(false);
+      setShowTopicDetailPage(true);
     } catch (err) {
       console.error("load topic detail failed", err);
       setTopicError(language === 'zh' ? '加载命题详情失败' : 'Failed to load topic detail');
@@ -1199,7 +1206,7 @@ Card drawn: ${currentCardStr}`;
         )}
 
         {/* Topic List Page */}
-        {showTopicListPage && (
+        {showTopicListPage && !showTopicDetailPage && (
           <TopicListPage
             topics={topicList}
             language={language}
@@ -1210,14 +1217,27 @@ Card drawn: ${currentCardStr}`;
             }}
             onTopicClick={(topicId) => {
               loadTopicDetail(topicId);
-              setTopicModalOpen(true);
-              setShowTopicListPage(false);
+            }}
+          />
+        )}
+
+        {/* Topic Detail Page */}
+        {showTopicDetailPage && selectedTopic && (
+          <TopicDetailPage
+            topic={selectedTopic}
+            events={topicEvents}
+            language={language}
+            onBack={() => {
+              setShowTopicDetailPage(false);
+              setShowTopicListPage(true);
+              setSelectedTopic(null);
+              setTopicEvents([]);
             }}
           />
         )}
 
         {/* Phase: INPUT */}
-        {phase === AppPhase.INPUT && !showTopicListPage && (
+        {phase === AppPhase.INPUT && !showTopicListPage && !showTopicDetailPage && (
           <HomePage
             language={language}
             question={question}
@@ -1233,7 +1253,7 @@ Card drawn: ${currentCardStr}`;
         )}
 
         {/* Phase: SHUFFLING */}
-        {phase === AppPhase.SHUFFLING && !showTopicListPage && (
+        {phase === AppPhase.SHUFFLING && !showTopicListPage && !showTopicDetailPage && (
           <div className="flex flex-col items-center justify-center flex-1 animate-fade-in w-full">
              <div className="relative w-40 h-64">
                 {[0, 1, 2, 3, 4, 5].map((i) => (
@@ -1260,7 +1280,7 @@ Card drawn: ${currentCardStr}`;
         )}
 
         {/* Phase: DRAWING */}
-        {phase === AppPhase.DRAWING && !showTopicListPage && (
+        {phase === AppPhase.DRAWING && !showTopicListPage && !showTopicDetailPage && (
           <div className="w-full h-full flex flex-col animate-fade-in relative pt-4">
             <div className="text-center z-20 mb-4">
                <h2 className="text-xl text-purple-100 mb-1 tracking-widest font-mystic">{t.drawTitle}</h2>
@@ -1337,7 +1357,7 @@ Card drawn: ${currentCardStr}`;
         )}
 
         {/* Phase: REVEAL & ANALYSIS */}
-        {(phase === AppPhase.REVEAL || phase === AppPhase.ANALYSIS) && !showTopicListPage && (
+        {(phase === AppPhase.REVEAL || phase === AppPhase.ANALYSIS) && !showTopicListPage && !showTopicDetailPage && (
           <ReadingResultPage
             question={question}
             cards={drawnCards}
