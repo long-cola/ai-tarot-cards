@@ -6,6 +6,13 @@ export default async function handler(req: any, res: any) {
   // Get user from JWT token
   const user = getUserFromRequest(req);
 
+  console.log('[/api/me] User from JWT:', {
+    id: user?.id,
+    email: user?.email,
+    membership_expires_at: user?.membership_expires_at,
+    membership_expires_at_type: typeof user?.membership_expires_at,
+  });
+
   if (!user) {
     return res.status(200).json({ user: null });
   }
@@ -14,6 +21,10 @@ export default async function handler(req: any, res: any) {
     const planInfo = getPlanInfo(user);
     const today = await getTodayUsage(user.id);
     const quota = await getPlanQuotaSummary(user);
+
+    console.log('[/api/me] Calculated planInfo:', planInfo);
+    console.log('[/api/me] Today usage:', today);
+    console.log('[/api/me] Quota summary:', quota);
 
     res.status(200).json({
       user: {

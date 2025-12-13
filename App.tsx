@@ -398,6 +398,8 @@ const App: React.FC = () => {
       try {
         const data = await getSession();
         console.log("[Session] Got session data:", data?.user ? "user found" : "no user", "plan:", data?.plan);
+        console.log("[Session] Full user data:", data?.user);
+        console.log("[Session] membership_expires_at:", data?.user?.membership_expires_at, "type:", typeof data?.user?.membership_expires_at);
         if (data?.user) {
           setUser(data.user);
           setPlan((data.plan as Plan) || 'free');
@@ -564,6 +566,34 @@ const App: React.FC = () => {
       localStorage.removeItem('auth_token');
     } catch (e) {
       console.error("logout failed", e);
+    }
+  };
+
+  const fetchSession = async () => {
+    try {
+      const data = await getSession();
+      console.log('[fetchSession] Got session data:', data?.user ? 'user found' : 'no user', 'plan:', data?.plan);
+      console.log('[fetchSession] membership_expires_at:', data?.user?.membership_expires_at);
+      if (data?.user) {
+        setUser(data.user);
+        setPlan((data.plan as Plan) || 'free');
+        setRemainingToday(data.remaining_today ?? null);
+        if (data.topic_quota_total) {
+          setTopicQuota({
+            plan: (data.plan as Plan) || 'free',
+            topic_quota_total: data.topic_quota_total,
+            topic_quota_remaining: data.topic_quota_remaining ?? data.topic_quota_total,
+            event_quota_per_topic: data.event_quota_per_topic ?? 0,
+            expires_at: data.cycle_expires_at ?? data.membership_expires_at,
+            downgrade_limited_topic_id: data.downgrade_limited_topic_id ?? null,
+          });
+        } else {
+          setTopicQuota(null);
+        }
+        setUpgradeHint('');
+      }
+    } catch (e) {
+      console.error('[fetchSession] Error:', e);
     }
   };
 
