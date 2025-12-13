@@ -279,7 +279,7 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
 
   return (
     <div className="min-h-screen pt-20 pb-12 px-4">
-      <div className="max-w-3xl mx-auto">
+      <div className="w-full max-w-3xl mx-auto">
         {/* Detail Page */}
         {pageState === 'detail' && (
           <>
@@ -309,8 +309,8 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
             </div>
 
             {/* Event Input at Top */}
-            <div className="mb-8 space-y-4">
-              <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl px-5 py-4">
+            <div className="mb-8 space-y-4 w-full">
+              <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl px-5 py-4 w-full min-h-[72px]">
                 <input
                   type="text"
                   value={eventName}
@@ -334,10 +334,10 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
             </div>
 
         {/* Baseline Reading Section */}
-        <div className="mb-6">
+        <div className="mb-6 w-full">
           <button
             onClick={() => toggleEvent('baseline')}
-            className="w-full flex items-center justify-between bg-white/5 hover:bg-white/10 backdrop-blur-sm border border-white/10 rounded-xl px-5 py-4 transition-all"
+            className="w-full flex items-center justify-between bg-white/5 hover:bg-white/10 backdrop-blur-sm border border-white/10 rounded-xl px-5 py-4 transition-all min-h-[80px]"
           >
             <div className="flex items-center gap-3">
               <div className="w-2 h-2 rounded-full bg-purple-400"></div>
@@ -429,12 +429,12 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
 
         {/* Events Section */}
         {sortedEvents.length > 0 && (
-          <div className="space-y-6">
+          <div className="space-y-6 w-full">
             {sortedEvents.map((event) => (
-              <div key={event.id}>
+              <div key={event.id} className="w-full">
                 <button
                   onClick={() => toggleEvent(event.id)}
-                  className="w-full flex items-center justify-between bg-white/5 hover:bg-white/10 backdrop-blur-sm border border-white/10 rounded-xl px-5 py-4 transition-all"
+                  className="w-full flex items-center justify-between bg-white/5 hover:bg-white/10 backdrop-blur-sm border border-white/10 rounded-xl px-5 py-4 transition-all min-h-[80px]"
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-2 h-2 rounded-full bg-purple-400"></div>
@@ -529,8 +529,8 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
 
             {/* Current Reading Result - Show at bottom when drawing/reading */}
             {drawnCard && pageState === 'detail' && (
-              <div className="mt-8 space-y-6 animate-fade-in">
-                <div className="bg-gradient-to-br from-amber-500/10 to-purple-500/10 backdrop-blur-sm border-2 border-amber-400/40 rounded-xl p-6">
+              <div className="mt-8 space-y-6 animate-fade-in w-full">
+                <div className="bg-gradient-to-br from-amber-500/10 to-purple-500/10 backdrop-blur-sm border-2 border-amber-400/40 rounded-xl p-6 w-full">
                   <h3 className="text-[16px] text-amber-300 mb-4 tracking-wide flex items-center gap-2">
                     <span className="inline-block w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
                     {isZh ? '当前占卜' : 'Current Reading'}: {eventName}
