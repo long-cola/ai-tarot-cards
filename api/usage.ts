@@ -34,6 +34,7 @@ async function handleConsumeUsage(req: any, res: any) {
       userId: user.id,
       email: user.email,
       membershipExpiresAt: user.membership_expires_at,
+      membershipExpiresAtType: typeof user.membership_expires_at,
       now: new Date().toISOString(),
       plan: planInfo.plan,
       membershipValid: planInfo.membershipValid,

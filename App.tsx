@@ -326,6 +326,7 @@ const App: React.FC = () => {
   const [eventError, setEventError] = useState('');
   const [upgradeHint, setUpgradeHint] = useState('');
   const [showPaywall, setShowPaywall] = useState(false);
+  const [showMemberLimitModal, setShowMemberLimitModal] = useState(false);
   const [pendingBaseline, setPendingBaseline] = useState<{ question: string; cards: DrawnCard[] } | null>(null);
   const [processingPending, setProcessingPending] = useState(false);
   const [eventDeck, setEventDeck] = useState<typeof MAJOR_ARCANA>([]);
@@ -574,27 +575,36 @@ const App: React.FC = () => {
     }
     try {
       const res = await consumeUsage();
+      console.log('[Usage] Consume success:', res);
       setPlan((res.plan as Plan) || plan);
       setRemainingToday(res.remaining ?? null);
       setUsageError('');
       return true;
     } catch (err: any) {
       console.error('[Usage] Failed to consume:', err);
+      console.log('[Usage] Error details:', {
+        status: err?.status,
+        data: err?.data,
+        message: err?.data?.message,
+        plan: err?.data?.plan,
+        used_today: err?.data?.used_today,
+        daily_limit: err?.data?.daily_limit,
+      });
 
       // Check if it's a daily limit error
       if (err?.data?.message === 'daily_limit_reached') {
-        const { plan, used_today, daily_limit } = err.data;
+        const { plan: userPlan, used_today, daily_limit } = err.data;
 
-        if (plan === 'member') {
-          // Member reached daily limit (50 times)
-          setUsageError(
-            language === 'zh'
-              ? `今日会员解读次数已用完（${used_today}/${daily_limit}），请明天再来。`
-              : `Daily member limit reached (${used_today}/${daily_limit}). Come back tomorrow.`
-          );
+        console.log('[Usage] Daily limit reached:', { userPlan, used_today, daily_limit });
+
+        if (userPlan === 'member') {
+          // Member reached daily limit (50 times) - Show simple modal, not paywall
+          console.log('[Usage] Showing member limit modal');
+          setShowMemberLimitModal(true);
         } else {
-          // Free user reached daily limit (2 times)
-          setShowRedeem(true);
+          // Free user reached daily limit (2 times) - Show paywall
+          console.log('[Usage] Showing paywall for free user');
+          setShowPaywall(true);
           setUsageError(
             language === 'zh'
               ? `今日免费次数已用完（${used_today}/${daily_limit}），请输入兑换码开启会员。`
@@ -602,13 +612,15 @@ const App: React.FC = () => {
           );
         }
       } else if (err?.data?.requireRedemption) {
-        setShowRedeem(true);
+        console.log('[Usage] Showing paywall due to requireRedemption flag');
+        setShowPaywall(true);
         setUsageError(language === 'zh' ? '今日免费次数已用完，请输入兑换码开启会员。' : 'Free daily limit reached. Redeem a code to unlock membership.');
       } else if (err?.status === 401) {
         setUsageError(language === 'zh' ? '会话已过期，请重新登录。' : 'Session expired, please log in again.');
         setUser(null);
         setPlan('guest');
       } else {
+        console.log('[Usage] Unknown error, showing generic message');
         setUsageError(language === 'zh' ? '请求受限，请稍后再试。' : 'Request blocked. Please try again later.');
       }
       return false;
@@ -1404,6 +1416,32 @@ Card drawn: ${currentCardStr}`;
          </div>
       )}
 
+      {/* Member Daily Limit Modal - Simple notification */}
+      {showMemberLimitModal && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 px-4">
+          <div className="bg-slate-900 border border-amber-500/30 rounded-2xl p-8 w-full max-w-md shadow-2xl space-y-6">
+            <div className="text-center space-y-4">
+              <div className="text-5xl">🌙</div>
+              <h3 className="text-xl text-amber-200 font-semibold">
+                {language === 'zh' ? '今日占卜额度已用完' : 'Daily Reading Limit Reached'}
+              </h3>
+              <p className="text-slate-300">
+                {language === 'zh'
+                  ? '今天的占卜次数已达上限（50次），请明天再来吧。'
+                  : 'You have reached today\'s limit (50 readings). Please come back tomorrow.'}
+              </p>
+            </div>
+            <button
+              onClick={() => setShowMemberLimitModal(false)}
+              className="w-full px-4 py-3 rounded-lg bg-amber-500 hover:bg-amber-600 text-slate-900 font-semibold transition-colors"
+            >
+              {language === 'zh' ? '知道了' : 'Got it'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Paywall Modal - For free users to upgrade/redeem */}
       {(showRedeem || showPaywall) && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 px-4">
           <div className="bg-slate-900 border border-amber-500/30 rounded-2xl p-6 w-full max-w-2xl shadow-2xl space-y-4">

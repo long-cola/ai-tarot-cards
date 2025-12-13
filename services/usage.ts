@@ -5,10 +5,23 @@ export function getPlanInfo(user: User | null) {
   if (!user) return { plan: 'guest', dailyLimit: 0, membershipValid: false };
 
   const now = new Date();
-  const membershipValid =
-    user?.membership_expires_at && new Date(user.membership_expires_at) > now;
+  const expiresAt = user?.membership_expires_at ? new Date(user.membership_expires_at) : null;
+  const membershipValid = expiresAt && expiresAt > now;
   const plan = membershipValid ? 'member' : 'free';
   const dailyLimit = membershipValid ? 50 : 2;
+
+  console.log('[getPlanInfo] User plan calculation:', {
+    userId: user.id,
+    email: user.email,
+    membership_expires_at: user.membership_expires_at,
+    membership_expires_at_type: typeof user.membership_expires_at,
+    expiresAt: expiresAt?.toISOString(),
+    now: now.toISOString(),
+    membershipValid,
+    plan,
+    dailyLimit,
+  });
+
   return { plan, dailyLimit, membershipValid };
 }
 
