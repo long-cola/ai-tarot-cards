@@ -26,18 +26,18 @@ export const HomePage: React.FC<HomePageProps> = ({
 
   const quickQuestions = isZh
     ? [
-        '我爱不爱我前任?',
-        '这段关系是否值得继续?',
-        '哪个更加适合另一个我?',
-        '要不要接受这份工作机会?',
-        '是否能够开始新的事业项目?',
+        '✨ 我要不要辞职？',
+        '✨ 这段关系是否继续？',
+        '✨ 要不要搬到另一个城市？',
+        '✨ 要不要接受这份工作机会？',
+        '✨ 是否应该开始创业项目？',
       ]
     : [
-        'Do I still love my ex?',
-        'Is this relationship worth continuing?',
-        'Which one is more suitable for me?',
-        'Should I accept this job opportunity?',
-        'Should I start a new business project?',
+        '✨ Should I quit my job?',
+        '✨ Should this relationship continue?',
+        '✨ Should I move to another city?',
+        '✨ Should I accept this job offer?',
+        '✨ Should I start a business project?',
       ];
 
   const handleSubmit = () => {
@@ -92,15 +92,15 @@ export const HomePage: React.FC<HomePageProps> = ({
         </div>
 
         {/* Input Section */}
-        <div className="w-full max-w-2xl space-y-4">
+        <div className="w-full max-w-2xl space-y-6">
           <Input
-            placeholder={isZh ? '在此输入你困扰下心中的困惑...' : 'Enter your question here...'}
+            placeholder={isZh ? '在此输入阁下心中的困惑...' : 'Enter your confusion here...'}
             value={localQuestion}
             onChange={(e) => setLocalQuestion(e.target.value)}
             onKeyPress={handleKeyPress}
           />
 
-          <div className="flex flex-col items-center gap-4">
+          <div className="flex flex-col items-center gap-6">
             <Button
               variant="primary"
               size="lg"
@@ -109,21 +109,20 @@ export const HomePage: React.FC<HomePageProps> = ({
             >
               {isZh ? '开始占卜' : 'Start Reading'}
             </Button>
-
-            <p className="text-white/40 text-sm">
-              {isZh ? '没账示例，点击试一试' : 'No account needed, try it now'}
-            </p>
           </div>
         </div>
 
         {/* Quick Questions */}
-        <div className="w-full max-w-2xl mt-12">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className="w-full max-w-2xl mt-8">
+          <p className="text-[rgb(205,190,238)] text-[16px] mb-4">
+            {isZh ? '灵感示例，点击试一试' : 'Inspiration examples, click to try'}
+          </p>
+          <div className="flex flex-wrap gap-3">
             {quickQuestions.map((q, index) => (
               <QuickQuestionCard
                 key={index}
                 question={q}
-                onClick={() => onQuickQuestionClick(q)}
+                onClick={() => onQuickQuestionClick(q.replace('✨ ', ''))}
               />
             ))}
           </div>

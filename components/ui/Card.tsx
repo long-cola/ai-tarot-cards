@@ -41,11 +41,23 @@ export const QuickQuestionCard: React.FC<QuickQuestionCardProps> = ({
   onClick,
 }) => {
   return (
-    <Card onClick={onClick} className="px-5 py-4">
-      <div className="flex items-center gap-2">
-        <span className="text-xl">{icon}</span>
-        <span className="text-white/90 text-sm font-medium">{question}</span>
-      </div>
-    </Card>
+    <button
+      onClick={onClick}
+      className="
+        px-5 py-3
+        h-[46px]
+        bg-[rgb(168,85,247)]
+        hover:bg-[rgb(178,95,255)]
+        rounded-full
+        transition-all duration-200
+        cursor-pointer
+        active:scale-95
+        flex items-center gap-2
+        shadow-md hover:shadow-lg
+      "
+    >
+      <span className="text-base">{icon}</span>
+      <span className="text-[rgb(205,190,238)] text-[14px] font-normal">{question}</span>
+    </button>
   );
 };
