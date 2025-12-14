@@ -26,20 +26,20 @@ interface ReadingResultPageProps {
 
 const markdownComponents = {
   h2: ({ children }: { children: React.ReactNode }) => (
-    <h2 className="text-[17px] font-semibold text-amber-200/90 tracking-wide mb-3 border-l-4 border-amber-400/40 pl-3">
+    <h2 className="text-xl font-semibold text-amber-200/90 tracking-wide mb-3 border-l-4 border-amber-400/40 pl-3 mt-4">
       {children}
     </h2>
   ),
   h3: ({ children }: { children: React.ReactNode }) => (
-    <h3 className="text-[15px] font-semibold text-amber-100/90 mb-2">
+    <h3 className="text-lg font-semibold text-amber-100/90 mb-2 mt-3">
       {children}
     </h3>
   ),
   ul: ({ children }: { children: React.ReactNode }) => (
-    <ul className="list-disc list-inside space-y-2 text-slate-200/90 text-[14px]">{children}</ul>
+    <ul className="list-disc list-inside space-y-2 text-slate-200/90 my-3">{children}</ul>
   ),
   ol: ({ children }: { children: React.ReactNode }) => (
-    <ol className="list-decimal list-inside space-y-2 text-slate-200/90 text-[14px]">{children}</ol>
+    <ol className="list-decimal list-inside space-y-2 text-slate-200/90 my-3">{children}</ol>
   ),
   li: ({ children }: { children: React.ReactNode }) => (
     <li className="leading-relaxed">{children}</li>
@@ -48,7 +48,7 @@ const markdownComponents = {
     <strong className="text-amber-300 font-semibold">{children}</strong>
   ),
   p: ({ children }: { children: React.ReactNode }) => (
-    <p className="leading-relaxed text-slate-200/90 break-words mb-2 text-[14px]">{children}</p>
+    <p className="leading-relaxed text-slate-200/90 break-words mb-3">{children}</p>
   ),
 };
 
@@ -84,14 +84,28 @@ export const ReadingResultPage: React.FC<ReadingResultPageProps> = ({
   };
 
   return (
-    <div className="min-h-screen pt-24 pb-12 px-4">
-      <div className="max-w-3xl mx-auto">
+    <div className="min-h-screen pt-24 pb-12 px-4 relative overflow-hidden">
+      {/* Starry Background Decorations */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute w-[3px] h-[3px] rounded-full bg-white" style={{ left: '1041px', top: '512px' }} />
+        <div className="absolute w-[4px] h-[4px] rounded-full bg-white" style={{ left: '1801px', top: '8px' }} />
+        <div className="absolute w-[3px] h-[3px] rounded-full bg-white" style={{ left: '1337px', top: '464px' }} />
+        <div className="absolute w-[3px] h-[3px] rounded-full bg-white" style={{ left: '636px', top: '1170px' }} />
+        <div className="absolute w-[4px] h-[4px] rounded-full bg-white" style={{ left: '1401px', top: '109px' }} />
+        <div className="absolute w-[1.5px] h-[1.5px] rounded-full bg-white" style={{ left: '1305px', top: '78px' }} />
+        <div className="absolute w-[4px] h-[4px] rounded-full bg-white" style={{ left: '180px', top: '699px' }} />
+        <div className="absolute w-[2px] h-[2px] rounded-full bg-white" style={{ left: '1330px', top: '185px' }} />
+        <div className="absolute w-[2px] h-[2px] rounded-full bg-white" style={{ left: '743px', top: '1072px' }} />
+        <div className="absolute w-[1px] h-[1px] rounded-full bg-white" style={{ left: '113px', top: '407px' }} />
+      </div>
+
+      <div className="mx-auto relative z-10" style={{ maxWidth: '800px' }}>
         {/* Question Title */}
         <div className="text-center mb-8">
-          <p className="text-white/60 text-sm mb-2">
+          <p className="text-[16px] leading-[19px] mb-3" style={{ color: 'rgba(205, 191, 238, 0.5)' }}>
             {isZh ? '遇事问题' : 'Your Question'}
           </p>
-          <h1 className="text-2xl font-medium text-white">"{question}"</h1>
+          <h1 className="text-[24px] font-bold leading-[29px]" style={{ color: '#E2DBFF' }}>"{question}"</h1>
         </div>
 
         {/* Cards Display */}
@@ -130,15 +144,14 @@ export const ReadingResultPage: React.FC<ReadingResultPageProps> = ({
 
         {/* Reading Content */}
         <div className="mb-8">
-          <div className="text-center mb-6 relative">
-            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-px bg-gradient-to-r from-transparent via-amber-400/40 to-transparent"></div>
-            <h2 className="text-amber-400 text-lg font-medium tracking-wide inline-block bg-[#1a1b3a] px-4 relative z-10">
+          <div className="text-center mb-6">
+            <h2 className="text-[24px] font-bold leading-[29px]" style={{ color: '#E2DBFF' }}>
               {isZh ? '命运之解读' : 'Reading Interpretation'}
             </h2>
           </div>
 
           {isLoading ? (
-            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8">
+            <div className="rounded-[16px] p-8" style={{ backgroundColor: 'rgba(40, 36, 70, 0.8)', borderColor: '#443E71', border: '1px solid' }}>
               <div className="flex flex-col items-center justify-center py-12 space-y-6">
                 <div className="relative w-16 h-16">
                   <div className="absolute inset-0 rounded-full border-2 border-slate-700"></div>
@@ -147,18 +160,17 @@ export const ReadingResultPage: React.FC<ReadingResultPageProps> = ({
                     <span className="text-xl animate-pulse">👁️</span>
                   </div>
                 </div>
-                <p className="text-purple-100/90 text-sm animate-pulse">
+                <p className="text-[16px] animate-pulse" style={{ color: '#E2DBFF' }}>
                   {isZh ? '正在解读中...' : 'Reading in progress...'}
                 </p>
               </div>
             </div>
           ) : (
-            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8 space-y-6">
-              <div className="prose prose-invert prose-sm max-w-none">
+            <div className="rounded-[16px] p-8" style={{ backgroundColor: 'rgba(40, 36, 70, 0.8)', borderColor: '#443E71', border: '1px solid' }}>
+              <div className="max-w-none">
                 <ReactMarkdown
                   remarkPlugins={[remarkGfm]}
                   components={markdownComponents}
-                  linkTarget="_blank"
                 >
                   {reading}
                 </ReactMarkdown>
@@ -167,28 +179,39 @@ export const ReadingResultPage: React.FC<ReadingResultPageProps> = ({
           )}
         </div>
 
-        {/* Action Buttons */}
-        {!isLoading && (
+        {/* Action Buttons - Only show when not loading */}
+        {!isLoading && reading && (
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button
-              variant="primary"
-              size="lg"
+            <button
               onClick={onSaveTopic}
-              disabled={isSaving || topicCreated || !reading}
+              disabled={isSaving || topicCreated}
+              className="px-8 py-4 rounded-[12px] text-[20px] font-bold hover:opacity-90 transition-opacity disabled:opacity-50"
+              style={{
+                backgroundColor: 'rgb(221, 132, 37)',
+                color: '#000000',
+                minWidth: '228px',
+                height: '56px'
+              }}
             >
               {topicCreated
                 ? (isZh ? '已创建命题' : 'Topic Created')
                 : isSaving
                 ? (isZh ? '保存中...' : 'Saving...')
                 : (isZh ? '保存为命题' : 'Save as Topic')}
-            </Button>
-            <Button
-              variant="outline"
-              size="lg"
+            </button>
+            <button
               onClick={onTryAgain}
+              className="px-8 py-4 rounded-[12px] text-[20px] font-bold hover:opacity-90 transition-opacity border"
+              style={{
+                backgroundColor: 'transparent',
+                color: '#E2DBFF',
+                borderColor: '#443E71',
+                minWidth: '228px',
+                height: '56px'
+              }}
             >
               {isZh ? '再次占卜' : 'Try Again'}
-            </Button>
+            </button>
           </div>
         )}
       </div>
