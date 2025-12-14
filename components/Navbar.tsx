@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from './ui';
 
 interface NavbarProps {
@@ -23,9 +23,25 @@ export const Navbar: React.FC<NavbarProps> = ({
   isAuthenticated,
 }) => {
   const isZh = language === 'zh';
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-[#1a1b3a]/95 backdrop-blur-md border-b border-white/10">
+    <nav
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        isScrolled
+          ? 'bg-[#0F172A]/80 backdrop-blur-md border-b border-white/10'
+          : 'bg-transparent border-b border-transparent'
+      }`}
+    >
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
         {/* Logo */}
         <div className="flex items-center">
@@ -38,13 +54,15 @@ export const Navbar: React.FC<NavbarProps> = ({
         <div className="hidden md:flex items-center gap-8">
           <button
             onClick={onQuickReadingClick}
-            className="text-white/80 hover:text-white transition-colors text-sm font-medium"
+            className="text-white/90 hover:text-white transition-colors text-[16px] font-normal"
+            style={{ letterSpacing: '0.02em' }}
           >
             {isZh ? '遇事占卜' : 'Quick Reading'}
           </button>
           <button
             onClick={onTopicsClick}
-            className="text-white/80 hover:text-white transition-colors text-sm font-medium"
+            className="text-white/90 hover:text-white transition-colors text-[16px] font-normal"
+            style={{ letterSpacing: '0.02em' }}
           >
             {isZh ? '人生命题' : 'Life Topics'}
           </button>
