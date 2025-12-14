@@ -30,26 +30,27 @@ export const TopicCard: React.FC<TopicCardProps> = ({
 
   return (
     <div
-      className="w-full h-[137px] flex flex-col p-6 rounded-[16px] cursor-pointer transition-colors"
+      className="w-full h-[137px] flex flex-col p-6 rounded-[16px] cursor-pointer transition-colors border"
       style={{
-        backgroundColor: 'rgb(40, 36, 70)',
+        backgroundColor: 'rgba(40, 36, 70, 0.8)',
+        borderColor: '#443E71',
         boxSizing: 'border-box',
       }}
       onMouseEnter={(e) => {
-        e.currentTarget.style.backgroundColor = 'rgb(58, 55, 87)';
+        e.currentTarget.style.backgroundColor = 'rgba(58, 55, 87, 0.8)';
       }}
       onMouseLeave={(e) => {
-        e.currentTarget.style.backgroundColor = 'rgb(40, 36, 70)';
+        e.currentTarget.style.backgroundColor = 'rgba(40, 36, 70, 0.8)';
       }}
     >
       {/* Title */}
       <div onClick={onClick} className="flex-1">
-        <h3 className="text-[20px] font-bold leading-[1.4] mb-3" style={{ color: 'rgb(226, 219, 255)' }}>
+        <h3 className="text-[20px] font-bold leading-[24px] mb-6" style={{ color: '#E2DBFF' }}>
           {title}
         </h3>
 
         {/* Info Row */}
-        <div className="flex items-center gap-6 text-[14px]" style={{ color: 'rgb(143, 136, 171)' }}>
+        <div className="flex items-center gap-12 text-[14px] leading-[17px]" style={{ color: '#8F88AB' }}>
           <span>
             {isZh ? '事件数：' : 'Events: '}{eventCount}
           </span>
@@ -63,7 +64,7 @@ export const TopicCard: React.FC<TopicCardProps> = ({
                 onDelete();
               }}
               className="ml-auto hover:opacity-70 transition-opacity"
-              style={{ color: 'rgb(143, 136, 171)' }}
+              style={{ color: '#70648D' }}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
