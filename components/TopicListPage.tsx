@@ -38,15 +38,7 @@ export const TopicListPage: React.FC<TopicListPageProps> = ({
   });
 
   return (
-    <div className="min-h-screen pt-24 pb-12 px-4 relative overflow-hidden" style={{ backgroundColor: '#0F172A' }}>
-      {/* Background Gradient Overlay */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background: 'linear-gradient(180deg, #020617 0%, rgba(59, 7, 100, 0.2) 50%, #020617 100%)'
-        }}
-      />
-
+    <div className="min-h-screen pt-24 pb-12 px-4 relative overflow-hidden" style={{ backgroundColor: 'transparent' }}>
       {/* Starry Background Decorations */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute w-[3px] h-[3px] rounded-full bg-white" style={{ left: '1041px', top: '512px' }} />

@@ -14,7 +14,13 @@ export const StarryBackground: React.FC = () => {
   }, []);
 
   return (
-    <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none bg-gradient-to-b from-[#1a1b3a] via-[#252651] to-[#1a1b3a]">
+    <div
+      className="fixed inset-0 z-0 overflow-hidden pointer-events-none"
+      style={{
+        background: 'linear-gradient(180deg, #020617 0%, rgba(59, 7, 100, 0.2) 50%, #020617 100%)',
+        backgroundColor: '#0F172A'
+      }}
+    >
       {stars.map((star) => (
         <div
           key={star.id}

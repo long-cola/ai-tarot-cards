@@ -54,14 +54,6 @@ export const HomePage: React.FC<HomePageProps> = ({
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-4 pt-24 pb-12 relative overflow-hidden">
-      {/* Background Gradient Overlay */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background: 'linear-gradient(180deg, #020617 0%, rgba(59, 7, 100, 0.2) 50%, #020617 100%)'
-        }}
-      />
-
       {/* Starry Background Decorations */}
       <div className="absolute inset-0 pointer-events-none">
         {/* Generate white dots as stars - sample positions from CSS */}

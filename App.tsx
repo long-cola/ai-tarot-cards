@@ -1228,7 +1228,10 @@ Card drawn: ${currentCardStr}`;
   };
 
   return (
-    <div className="min-h-full flex flex-col items-center overflow-x-hidden font-sans relative">
+    <div
+      className="min-h-full flex flex-col items-center overflow-x-hidden font-sans relative"
+      style={{ backgroundColor: '#0F172A' }}
+    >
       <StarryBackground />
 
       <Navbar
