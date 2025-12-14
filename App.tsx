@@ -14,7 +14,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { API_BASE_URL } from './services/apiClient';
 import { getSession, consumeUsage, redeemMembership, logout } from './services/authService';
-import { listTopics, createTopic, getTopicDetail, addTopicEvent } from './services/topicService';
+import { listTopics, createTopic, getTopicDetail, addTopicEvent, deleteTopic } from './services/topicService';
 import { toPng } from 'html-to-image';
 
 // Header with Title and Language Switch
@@ -959,6 +959,33 @@ const App: React.FC = () => {
     setEventError('');
   };
 
+  const handleDeleteTopic = async (id: string) => {
+    const confirmMsg = language === 'zh'
+      ? '确定要删除这个命题吗？删除后将无法恢复。'
+      : 'Are you sure you want to delete this topic? This action cannot be undone.';
+
+    if (!window.confirm(confirmMsg)) {
+      return;
+    }
+
+    setTopicsLoading(true);
+    setTopicError('');
+    try {
+      const res = await deleteTopic(id);
+      if (res.quota) setTopicQuota(res.quota);
+
+      // Refresh topic list
+      const listRes = await listTopics();
+      setTopicList(listRes.topics || []);
+      if (listRes.quota) setTopicQuota(listRes.quota);
+    } catch (err) {
+      console.error("delete topic failed", err);
+      setTopicError(language === 'zh' ? '删除命题失败' : 'Failed to delete topic');
+    } finally {
+      setTopicsLoading(false);
+    }
+  };
+
 const buildEventQuestion = (card: DrawnCard, topic?: Topic, events: TopicEvent[] = []) => {
     const isZh = language === 'zh';
     const baselineCards = topic?.baseline_cards || [];
@@ -1286,6 +1313,7 @@ Card drawn: ${currentCardStr}`;
             onTopicClick={(topicId) => {
               loadTopicDetail(topicId);
             }}
+            onDeleteTopic={handleDeleteTopic}
           />
         )}
 

@@ -174,7 +174,7 @@ export const ReadingResultPage: React.FC<ReadingResultPageProps> = ({
               variant="primary"
               size="lg"
               onClick={onSaveTopic}
-              disabled={isSaving || topicCreated}
+              disabled={isSaving || topicCreated || !reading}
             >
               {topicCreated
                 ? (isZh ? '已创建命题' : 'Topic Created')

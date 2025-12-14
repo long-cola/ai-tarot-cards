@@ -22,6 +22,11 @@ export default async function handler(req: any, res: any) {
     const topicIdMatch = path.match(/\/topics\/([^/]+)/);
     const topicId = topicIdMatch ? topicIdMatch[1] : null;
 
+    // DELETE /api/topics/:id - Delete topic
+    if (method === 'DELETE' && topicId && !path.includes('/events')) {
+      return await handleDeleteTopic(req, res, user, pool, topicId);
+    }
+
     // POST /api/topics/:id/events - Add event to topic
     if (method === 'POST' && topicId && path.includes('/events')) {
       return await handleAddEvent(req, res, user, pool, topicId);
@@ -58,7 +63,7 @@ async function handleListTopics(req: any, res: any, user: any, pool: any) {
     `SELECT t.*,
       (SELECT COUNT(*) FROM topic_events e WHERE e.topic_id = t.id AND e.user_id = $1) as event_count
     FROM topics t
-    WHERE t.user_id=$1
+    WHERE t.user_id=$1 AND t.status='active'
     ORDER BY t.created_at DESC`,
     [user.id]
   );
@@ -71,6 +76,26 @@ async function handleListTopics(req: any, res: any, user: any, pool: any) {
   });
 
   res.json({ ok: true, topics, quota });
+}
+
+// Delete topic (soft delete)
+async function handleDeleteTopic(req: any, res: any, user: any, pool: any, topicId: string) {
+  // Verify topic belongs to user
+  const topicRes = await pool.query(`SELECT * FROM topics WHERE id=$1 AND user_id=$2 AND status='active' LIMIT 1`, [
+    topicId,
+    user.id,
+  ]);
+
+  if (!topicRes.rows.length) {
+    return res.status(404).json({ ok: false, message: 'topic_not_found' });
+  }
+
+  // Soft delete - mark as deleted instead of removing from database
+  // This preserves quota usage (deleted topics still count toward the user's total)
+  await pool.query(`UPDATE topics SET status='deleted', updated_at=NOW() WHERE id=$1 AND user_id=$2`, [topicId, user.id]);
+
+  const quota = await getPlanQuotaSummary(user);
+  res.json({ ok: true, quota });
 }
 
 // Create new topic
@@ -121,7 +146,7 @@ async function handleCreateTopic(req: any, res: any, user: any, pool: any) {
 
 // Get topic detail with events
 async function handleGetTopic(req: any, res: any, user: any, pool: any, topicId: string) {
-  const topicRes = await pool.query(`SELECT * FROM topics WHERE id=$1 AND user_id=$2 LIMIT 1`, [
+  const topicRes = await pool.query(`SELECT * FROM topics WHERE id=$1 AND user_id=$2 AND status='active' LIMIT 1`, [
     topicId,
     user.id,
   ]);

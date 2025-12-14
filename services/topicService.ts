@@ -41,3 +41,7 @@ export const addTopicEvent = async (id: string, params: {
 }> => {
   return apiClient.post(`/api/topics/${id}/events`, params);
 };
+
+export const deleteTopic = async (id: string): Promise<{ quota?: PlanQuota | null }> => {
+  return apiClient.delete(`/api/topics/${id}`);
+};

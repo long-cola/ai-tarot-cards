@@ -1,6 +1,5 @@
 import React from 'react';
 import { TopicCard } from './TopicCard';
-import { Button } from './ui';
 
 interface Topic {
   id: string;
@@ -20,6 +19,7 @@ interface TopicListPageProps {
   } | null;
   onCreateNewTopic: () => void;
   onTopicClick: (topicId: string) => void;
+  onDeleteTopic?: (topicId: string) => void;
 }
 
 export const TopicListPage: React.FC<TopicListPageProps> = ({
@@ -28,6 +28,7 @@ export const TopicListPage: React.FC<TopicListPageProps> = ({
   quota,
   onCreateNewTopic,
   onTopicClick,
+  onDeleteTopic,
 }) => {
   const isZh = language === 'zh';
 
@@ -37,15 +38,15 @@ export const TopicListPage: React.FC<TopicListPageProps> = ({
   });
 
   return (
-    <div className="min-h-screen pt-24 pb-12 px-4">
+    <div className="min-h-screen pt-24 pb-12 px-4" style={{ backgroundColor: 'rgb(15, 23, 42)' }}>
       <div className="w-full max-w-3xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-[24px] font-medium text-white">
+          <h1 className="text-[24px] font-bold" style={{ color: 'rgb(226, 219, 255)' }}>
             {isZh ? '我的人生命题' : 'My Life Topics'}
           </h1>
           {quota && (
-            <div className="text-[14px] text-white/60">
+            <div className="text-[16px]" style={{ color: 'rgb(205, 190, 238)' }}>
               {isZh ? '命题数量' : 'Topics'}: {quota.topic_quota_total - quota.topic_quota_remaining} / {quota.topic_quota_total}
             </div>
           )}
@@ -55,12 +56,16 @@ export const TopicListPage: React.FC<TopicListPageProps> = ({
         <div className="flex flex-col gap-6 w-full mb-8">
           {sortedTopics.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-white/60 mb-4 text-[16px]">
+              <p className="mb-4 text-[16px]" style={{ color: 'rgb(143, 136, 171)' }}>
                 {isZh ? '还没有创建任何命题' : 'No topics yet'}
               </p>
-              <Button variant="primary" size="lg" onClick={onCreateNewTopic}>
+              <button
+                onClick={onCreateNewTopic}
+                className="px-8 py-4 rounded-[12px] text-[20px] font-bold hover:opacity-90 transition-opacity"
+                style={{ backgroundColor: 'rgb(221, 132, 37)', color: '#000000' }}
+              >
                 {isZh ? '创建第一个命题' : 'Create First Topic'}
-              </Button>
+              </button>
             </div>
           ) : (
             sortedTopics.map((topic) => (
@@ -71,6 +76,7 @@ export const TopicListPage: React.FC<TopicListPageProps> = ({
                 createdAt={topic.created_at}
                 language={language}
                 onClick={() => onTopicClick(topic.id)}
+                onDelete={onDeleteTopic ? () => onDeleteTopic(topic.id) : undefined}
               />
             ))
           )}
@@ -79,9 +85,13 @@ export const TopicListPage: React.FC<TopicListPageProps> = ({
         {/* Create New Topic Button */}
         {sortedTopics.length > 0 && (
           <div className="flex justify-center">
-            <Button variant="primary" size="lg" onClick={onCreateNewTopic}>
+            <button
+              onClick={onCreateNewTopic}
+              className="px-8 py-4 rounded-[12px] text-[20px] font-bold hover:opacity-90 transition-opacity"
+              style={{ backgroundColor: 'rgb(221, 132, 37)', color: '#000000', width: '228px', height: '56px' }}
+            >
               {isZh ? '开启新命题' : 'Create New Topic'}
-            </Button>
+            </button>
           </div>
         )}
       </div>
