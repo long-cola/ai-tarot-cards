@@ -53,9 +53,42 @@ export const HomePage: React.FC<HomePageProps> = ({
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4 pt-24 pb-12">
+    <div className="min-h-screen flex flex-col items-center justify-center px-4 pt-24 pb-12 relative overflow-hidden">
+      {/* Background Gradient Overlay */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: 'linear-gradient(180deg, #020617 0%, rgba(59, 7, 100, 0.2) 50%, #020617 100%)'
+        }}
+      />
+
+      {/* Starry Background Decorations */}
+      <div className="absolute inset-0 pointer-events-none">
+        {/* Generate white dots as stars - sample positions from CSS */}
+        <div className="absolute w-[3px] h-[3px] rounded-full bg-white" style={{ left: '1041px', top: '512px' }} />
+        <div className="absolute w-[4px] h-[4px] rounded-full bg-white" style={{ left: '1801px', top: '8px' }} />
+        <div className="absolute w-[3px] h-[3px] rounded-full bg-white" style={{ left: '1337px', top: '464px' }} />
+        <div className="absolute w-[3px] h-[3px] rounded-full bg-white" style={{ left: '636px', top: '1170px' }} />
+        <div className="absolute w-[4px] h-[4px] rounded-full bg-white" style={{ left: '1401px', top: '109px' }} />
+        <div className="absolute w-[1.5px] h-[1.5px] rounded-full bg-white" style={{ left: '1305px', top: '78px' }} />
+        <div className="absolute w-[4px] h-[4px] rounded-full bg-white" style={{ left: '180px', top: '699px' }} />
+        <div className="absolute w-[2px] h-[2px] rounded-full bg-white" style={{ left: '1330px', top: '185px' }} />
+        <div className="absolute w-[2px] h-[2px] rounded-full bg-white" style={{ left: '743px', top: '1072px' }} />
+        <div className="absolute w-[1px] h-[1px] rounded-full bg-white" style={{ left: '113px', top: '407px' }} />
+        <div className="absolute w-[3px] h-[3px] rounded-full bg-white" style={{ left: '1829px', top: '377px' }} />
+        <div className="absolute w-[3px] h-[3px] rounded-full bg-white" style={{ left: '647px', top: '273px' }} />
+        <div className="absolute w-[3px] h-[3px] rounded-full bg-white" style={{ left: '294px', top: '944px' }} />
+        <div className="absolute w-[4px] h-[4px] rounded-full bg-white" style={{ left: '1325px', top: '1053px' }} />
+        <div className="absolute w-[4px] h-[4px] rounded-full bg-white" style={{ left: '1686px', top: '359px' }} />
+        <div className="absolute w-[3px] h-[3px] rounded-full bg-white" style={{ left: '1879px', top: '111px' }} />
+        <div className="absolute w-[2px] h-[2px] rounded-full bg-white" style={{ left: '1740px', top: '296px' }} />
+        <div className="absolute w-[2px] h-[2px] rounded-full bg-white" style={{ left: '1054px', top: '600px' }} />
+        <div className="absolute w-[1px] h-[1px] rounded-full bg-white" style={{ left: '417px', top: '682px' }} />
+        <div className="absolute w-[4px] h-[4px] rounded-full bg-white" style={{ left: '1879px', top: '772px' }} />
+      </div>
+
       {/* Main Content Container */}
-      <div className="w-full max-w-3xl mx-auto flex flex-col items-center gap-8">
+      <div className="w-full max-w-3xl mx-auto flex flex-col items-center gap-8 relative z-10">
 
         {/* Tarot Cards Illustration - Three cards in fan layout using real image */}
         <div className="mb-8 relative">
@@ -114,10 +147,10 @@ export const HomePage: React.FC<HomePageProps> = ({
 
         {/* Quick Questions */}
         <div className="w-full max-w-2xl mt-8">
-          <p className="text-[rgb(205,190,238)] text-[16px] mb-4">
+          <p className="text-[rgba(205,191,238,0.5)] text-[16px] leading-[19px] mb-4 text-center">
             {isZh ? '灵感示例，点击试一试' : 'Inspiration examples, click to try'}
           </p>
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap justify-center items-center gap-4 max-w-[629px] mx-auto">
             {quickQuestions.map((q, index) => (
               <QuickQuestionCard
                 key={index}

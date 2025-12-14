@@ -23,17 +23,18 @@ export const Input: React.FC<InputProps> = ({
           className={`
             w-full max-w-[800px] mx-auto
             h-[75px]
-            px-6 py-6
+            px-[147px] py-[23px]
             text-[24px] placeholder:text-[24px]
-            bg-[rgb(168,85,247)]
-            border-0
+            bg-[rgba(168,85,247,0.1)]
+            border border-[rgba(168,85,247,0.3)]
             rounded-[16px]
-            text-white placeholder:text-[rgb(155,130,198)] text-left
-            focus:outline-none focus:ring-2 focus:ring-[rgba(168,85,247,0.8)]
+            text-white placeholder:text-[#9B83C6] text-center
+            focus:outline-none focus:border-[rgba(168,85,247,0.5)]
             transition-all duration-200
-            shadow-lg
+            shadow-[inset_0px_2px_4px_1px_rgba(0,0,0,0.05)]
+            backdrop-blur-[6px]
             ${icon ? 'pl-12' : ''}
-            ${error ? 'ring-2 ring-red-400' : ''}
+            ${error ? 'border-red-400' : ''}
             ${className}
           `}
           {...props}

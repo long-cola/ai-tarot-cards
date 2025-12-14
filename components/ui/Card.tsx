@@ -44,20 +44,20 @@ export const QuickQuestionCard: React.FC<QuickQuestionCardProps> = ({
     <button
       onClick={onClick}
       className="
-        px-5 py-3
+        px-[22px] py-3
         h-[46px]
-        bg-[rgb(168,85,247)]
-        hover:bg-[rgb(178,95,255)]
-        rounded-full
+        bg-[rgba(168,85,247,0.05)]
+        border border-[rgba(168,85,247,0.1)]
+        hover:bg-[rgba(168,85,247,0.1)]
+        rounded-[9999px]
         transition-all duration-200
         cursor-pointer
         active:scale-95
-        flex items-center gap-2
-        shadow-md hover:shadow-lg
+        flex items-center justify-center gap-2.5
+        shadow-[inset_0px_2px_4px_1px_rgba(0,0,0,0.05)]
       "
     >
-      <span className="text-base">{icon}</span>
-      <span className="text-[rgb(205,190,238)] text-[14px] font-normal">{question}</span>
+      <span className="text-[14px] leading-[22px] text-[#CDBFEE] text-center whitespace-nowrap">{question}</span>
     </button>
   );
 };
