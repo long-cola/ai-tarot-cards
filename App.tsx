@@ -1275,28 +1275,6 @@ Card drawn: ${currentCardStr}`;
       )}
 
       <main className="relative z-10 w-full flex-1 flex flex-col items-center px-4 py-4 min-h-0">
-        {user && topicQuota && (
-          <div className="w-full max-w-3xl mb-3 flex items-center justify-between bg-slate-900/60 border border-white/5 rounded-xl px-4 py-3 text-sm text-slate-200">
-            <div className="flex items-center gap-2">
-              <span className="px-2 py-1 rounded-full bg-slate-800 text-amber-200 text-xs border border-amber-400/40">
-                {topicQuota.plan === 'member' ? (language === 'zh' ? '会员' : 'Member') : (language === 'zh' ? '免费' : 'Free')}
-              </span>
-              <span>
-                {language === 'zh'
-                  ? `${t.topicsQuota}：${topicQuota.topic_quota_remaining}/${topicQuota.topic_quota_total}`
-                  : `${t.topicsQuota}: ${topicQuota.topic_quota_remaining}/${topicQuota.topic_quota_total}`}
-              </span>
-            </div>
-            {topicQuota.expires_at && topicQuota.plan === 'member' && (
-              <div className="text-xs text-slate-400">
-                {language === 'zh'
-                  ? `到期：${new Date(topicQuota.expires_at).toLocaleDateString()}`
-                  : `Expires: ${new Date(topicQuota.expires_at).toLocaleDateString()}`}
-              </div>
-            )}
-          </div>
-        )}
-
         {upgradeHint && (
           <div className="w-full max-w-3xl mb-4 bg-amber-500/15 border border-amber-400/40 text-amber-100 text-sm px-4 py-3 rounded-lg">
             {upgradeHint}

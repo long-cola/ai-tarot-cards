@@ -39,7 +39,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         isScrolled
           ? 'bg-[#0F172A]/80 backdrop-blur-md border-b border-white/10'
-          : 'bg-transparent border-b border-transparent'
+          : 'bg-[#0F172A]/40 backdrop-blur-sm border-b border-white/5'
       }`}
     >
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
@@ -54,15 +54,15 @@ export const Navbar: React.FC<NavbarProps> = ({
         <div className="hidden md:flex items-center gap-8">
           <button
             onClick={onQuickReadingClick}
-            className="text-white/90 hover:text-white transition-colors text-[16px] font-normal"
-            style={{ letterSpacing: '0.02em' }}
+            className="text-white hover:text-white/80 transition-colors text-[16px]"
+            style={{ fontWeight: 400 }}
           >
             {isZh ? '遇事占卜' : 'Quick Reading'}
           </button>
           <button
             onClick={onTopicsClick}
-            className="text-white/90 hover:text-white transition-colors text-[16px] font-normal"
-            style={{ letterSpacing: '0.02em' }}
+            className="text-white hover:text-white/80 transition-colors text-[16px]"
+            style={{ fontWeight: 400 }}
           >
             {isZh ? '人生命题' : 'Life Topics'}
           </button>
