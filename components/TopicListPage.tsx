@@ -58,7 +58,7 @@ export const TopicListPage: React.FC<TopicListPageProps> = ({
         <div className="absolute w-[4px] h-[4px] rounded-full bg-white" style={{ left: '1686px', top: '359px' }} />
       </div>
 
-      <div className="w-full max-w-3xl mx-auto relative z-10">
+      <div className="w-full mx-auto relative z-10" style={{ maxWidth: '800px' }}>
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-[24px] font-bold leading-[29px]" style={{ color: '#E2DBFF' }}>
