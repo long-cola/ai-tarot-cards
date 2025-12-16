@@ -279,7 +279,7 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
 
   return (
     <div className="min-h-screen pt-24 pb-12 px-4">
-      <div className="w-full max-w-3xl mx-auto">
+      <div className="w-full mx-auto" style={{ maxWidth: '800px' }}>
         {/* Detail Page */}
         {pageState === 'detail' && (
           <>
@@ -304,8 +304,13 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
             </button>
 
             {/* Topic Title */}
-            <div className="text-center mb-8">
-              <h1 className="text-[24px] font-medium text-white">"{topic.title}"</h1>
+            <div className="flex flex-col items-center gap-[17px] w-full mb-8">
+              <p className="text-[16px] leading-[19px] text-center" style={{ color: 'rgba(205, 191, 238, 0.5)' }}>
+                {isZh ? '阁下的问题' : 'Your Question'}
+              </p>
+              <h1 className="text-[32px] font-bold leading-[38px] text-center" style={{ color: '#E2DBFF' }}>
+                "{topic.title}"
+              </h1>
             </div>
 
             {/* Event Input at Top */}
