@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Topic, TopicEvent, DrawnCard, Language } from '../types';
+import { Topic, TopicEvent, DrawnCard, Language, Plan } from '../types';
 import { MAJOR_ARCANA } from '../constants';
 import { getTarotReading } from '../services/bailianService';
 import { addTopicEvent } from '../services/topicService';
@@ -12,6 +12,8 @@ interface TopicDetailPageProps {
   language: Language;
   onBack: () => void;
   onEventAdded?: (event: TopicEvent) => void;
+  plan?: Plan;
+  eventUsage?: { used: number; remaining: number | null };
 }
 
 const markdownComponents = {
@@ -48,6 +50,8 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
   language,
   onBack,
   onEventAdded,
+  plan = 'free',
+  eventUsage,
 }) => {
   const isZh = language === 'zh';
   const [expandedEvents, setExpandedEvents] = useState<Set<string>>(new Set(['baseline']));
@@ -121,6 +125,34 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
       setError(isZh ? '请先输入事件名称' : 'Please enter event name first');
       return;
     }
+
+    // Paywall check
+    if (plan === 'guest') {
+      setError(isZh ? '请先登录后再进行占卜' : 'Please log in to start divination');
+      return;
+    }
+
+    // Check event quota
+    if (eventUsage) {
+      const { used, remaining } = eventUsage;
+
+      // For free users: check if remaining is 0 (or null means no limit for members)
+      if (plan === 'free' && remaining !== null && remaining <= 0) {
+        setError(isZh
+          ? '该命题事件次数已用完（免费用户每命题3次），请升级会员'
+          : 'Event quota exhausted for this topic (free: 3 events per topic). Please upgrade.');
+        return;
+      }
+
+      // For member users: check if they have reached the 500 event limit
+      if (plan === 'member' && remaining !== null && remaining <= 0) {
+        setError(isZh
+          ? '该命题事件次数已达上限（会员每命题500次）'
+          : 'Event quota exhausted for this topic (member: 500 events per topic).');
+        return;
+      }
+    }
+
     setError('');
     setDeck([...MAJOR_ARCANA]);
     setPageState('shuffling');

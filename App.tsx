@@ -1310,6 +1310,8 @@ Card drawn: ${currentCardStr}`;
             topic={selectedTopic}
             events={topicEvents}
             language={language}
+            plan={plan}
+            eventUsage={topicEventUsage}
             onBack={() => {
               setShowTopicDetailPage(false);
               setShowTopicListPage(true);
