@@ -753,13 +753,19 @@ const App: React.FC = () => {
     if (phase === AppPhase.REVEAL) {
       const timer = setTimeout(async () => {
         setPhase(AppPhase.ANALYSIS);
-        setIsReadingLoading(true);
+
+        // Check if user is logged in first
         const allowed = await ensureUsageAllowance();
         if (!allowed) {
-          setReading(usageError || (language === 'zh' ? '请先登录或兑换会员后再尝试。' : 'Please log in or redeem membership to continue.'));
+          // Don't set loading state for unauthenticated users
+          // Just set empty reading to show login prompt
+          setReading('');
           setIsReadingLoading(false);
           return;
         }
+
+        // User is logged in, proceed with loading and fetching
+        setIsReadingLoading(true);
 
         // Prepare variables for first reading
         const isZh = language === 'zh';
@@ -1448,6 +1454,8 @@ Card drawn: ${currentCardStr}`;
             onTryAgain={resetApp}
             isSaving={isSavingTopic}
             topicCreated={!!createdTopicId}
+            user={user}
+            onLogin={loginWithGoogle}
           />
         )}
 

@@ -22,6 +22,8 @@ interface ReadingResultPageProps {
   onTryAgain: () => void;
   isSaving: boolean;
   topicCreated: boolean;
+  user?: { id: string; email: string; name?: string } | null;
+  onLogin?: () => void;
 }
 
 const markdownComponents = {
@@ -62,8 +64,13 @@ export const ReadingResultPage: React.FC<ReadingResultPageProps> = ({
   onTryAgain,
   isSaving,
   topicCreated,
+  user,
+  onLogin,
 }) => {
   const isZh = language === 'zh';
+
+  // Show login prompt if user is not logged in and reading is empty
+  const showLoginPrompt = !user && !reading && !isLoading;
 
   const getCardPosition = (position: number) => {
     if (isZh) {
@@ -150,7 +157,33 @@ export const ReadingResultPage: React.FC<ReadingResultPageProps> = ({
             </h2>
           </div>
 
-          {isLoading ? (
+          {showLoginPrompt ? (
+            <div className="rounded-[16px] p-8" style={{ backgroundColor: 'rgba(40, 36, 70, 0.8)', borderColor: '#443E71', border: '1px solid' }}>
+              <div className="flex flex-col items-center justify-center py-12 space-y-6">
+                <div className="text-center space-y-4">
+                  <div className="text-5xl mb-4">🔮</div>
+                  <p className="text-[18px] font-medium" style={{ color: '#E2DBFF' }}>
+                    {isZh ? '命运之启示已准备就绪' : 'Your Reading Awaits'}
+                  </p>
+                  <p className="text-[14px] text-slate-300/80">
+                    {isZh ? '登录后即可查看完整的塔罗解读' : 'Log in to reveal your full tarot reading'}
+                  </p>
+                </div>
+                <button
+                  onClick={onLogin}
+                  className="px-8 py-4 rounded-[12px] text-[18px] font-bold hover:opacity-90 transition-opacity"
+                  style={{
+                    backgroundColor: 'rgb(221, 132, 37)',
+                    color: '#000000',
+                    minWidth: '228px',
+                    height: '56px'
+                  }}
+                >
+                  {isZh ? '登录后查看命运之启示' : 'Login to View Your Reading'}
+                </button>
+              </div>
+            </div>
+          ) : isLoading ? (
             <div className="rounded-[16px] p-8" style={{ backgroundColor: 'rgba(40, 36, 70, 0.8)', borderColor: '#443E71', border: '1px solid' }}>
               <div className="flex flex-col items-center justify-center py-12 space-y-6">
                 <div className="relative w-16 h-16">
