@@ -70,6 +70,8 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
 
   const shuffleIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const shuffleTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const eventRefsMap = useRef<Map<string, HTMLDivElement>>(new Map());
+  const [newlyAddedEventId, setNewlyAddedEventId] = useState<string | null>(null);
 
   // Initialize deck
   useEffect(() => {
@@ -79,6 +81,35 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
       if (shuffleTimeoutRef.current) clearTimeout(shuffleTimeoutRef.current);
     };
   }, []);
+
+  // Auto-scroll to newly added event
+  useEffect(() => {
+    if (newlyAddedEventId && events.some(e => e.id === newlyAddedEventId)) {
+      // Event has been added to the list, now scroll to it
+      const eventElement = eventRefsMap.current.get(newlyAddedEventId);
+      if (eventElement) {
+        // Auto-expand the new event
+        setExpandedEvents(prev => {
+          const newSet = new Set(prev);
+          newSet.add(newlyAddedEventId);
+          return newSet;
+        });
+
+        // Scroll to the event with smooth animation
+        setTimeout(() => {
+          eventElement.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center'
+          });
+        }, 100);
+
+        // Clear the newly added event ID after scrolling
+        setTimeout(() => {
+          setNewlyAddedEventId(null);
+        }, 1000);
+      }
+    }
+  }, [newlyAddedEventId, events]);
 
   const toggleEvent = (eventId: string) => {
     setExpandedEvents((prev) => {
@@ -281,6 +312,8 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
 
       if (res.event && onEventAdded) {
         onEventAdded(res.event);
+        // Set the newly added event ID for auto-scroll
+        setNewlyAddedEventId(res.event.id);
       }
 
       // Go back to detail page and reset form
@@ -468,7 +501,17 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
         {sortedEvents.length > 0 && (
           <div className="space-y-6 w-full">
             {sortedEvents.map((event) => (
-              <div key={event.id} className="w-full">
+              <div
+                key={event.id}
+                className="w-full"
+                ref={(el) => {
+                  if (el) {
+                    eventRefsMap.current.set(event.id, el);
+                  } else {
+                    eventRefsMap.current.delete(event.id);
+                  }
+                }}
+              >
                 <button
                   onClick={() => toggleEvent(event.id)}
                   className="w-full flex items-center justify-between bg-white/5 hover:bg-white/10 backdrop-blur-sm border border-white/10 rounded-xl px-5 py-4 transition-all min-h-[80px]"
