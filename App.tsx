@@ -1595,56 +1595,320 @@ Card drawn: ${currentCardStr}`;
       {/* Paywall Modal - For free users to upgrade/redeem */}
       {(showRedeem || showPaywall) && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 px-4">
-          <div className="bg-slate-900 border border-amber-500/30 rounded-2xl p-6 w-full max-w-2xl shadow-2xl space-y-4">
-            <div className="flex justify-between items-start gap-4">
-              <div className="space-y-1">
-                <h3 className="text-lg text-amber-200 font-semibold">
-                  {t.upgradeTitle}
-                </h3>
-                <p className="text-sm text-slate-300">{t.upgradeDesc}</p>
+          <div
+            className="flex flex-col items-start gap-[24px]"
+            style={{
+              width: '526px',
+              padding: '32px 0px',
+              background: 'rgba(40, 36, 70, 0.8)',
+              border: '1px solid #443E71',
+              borderRadius: '16px',
+            }}
+          >
+            {/* Content Container */}
+            <div className="flex flex-col justify-center items-center gap-[16px] w-full">
+              {/* Title */}
+              <h2
+                className="w-full h-[29px] flex items-center justify-center text-center"
+                style={{
+                  fontFamily: "'Noto Serif SC', serif",
+                  fontWeight: 700,
+                  fontSize: '24px',
+                  lineHeight: '29px',
+                  color: '#E2DBFF',
+                }}
+              >
+                {language === 'zh' ? '阁下今日的免费额度已用完' : 'Daily Free Quota Exhausted'}
+              </h2>
+
+              {/* Description */}
+              <p
+                className="flex items-center justify-center text-center"
+                style={{
+                  width: '446px',
+                  fontFamily: "'Noto Serif SC', serif",
+                  fontWeight: 400,
+                  fontSize: '14px',
+                  lineHeight: '17px',
+                  color: '#8F88AB',
+                }}
+              >
+                {language === 'zh'
+                  ? '升级为 Pro 用户即刻享受每日 30 次免费占卜次数，500 个命题事件上限'
+                  : 'Upgrade to Pro for 30 daily readings and 500 events per topic'}
+              </p>
+
+              {/* Comparison Card */}
+              <div
+                className="flex flex-col items-center gap-[16px]"
+                style={{
+                  width: '410px',
+                  padding: '16px 0px',
+                  background: '#3C3665',
+                  borderRadius: '16px',
+                }}
+              >
+                <div className="flex flex-row justify-center items-center gap-[16px] w-full" style={{ padding: '8px 0px' }}>
+                  {/* Free User */}
+                  <div
+                    className="flex flex-col justify-center items-start gap-[10px] flex-1"
+                    style={{ padding: '0px 0px 0px 32px' }}
+                  >
+                    <div style={{
+                      fontFamily: "'Noto Serif SC', serif",
+                      fontWeight: 700,
+                      fontSize: '14px',
+                      lineHeight: '17px',
+                      color: '#E2DBFF',
+                    }}>
+                      {language === 'zh' ? '免费用户' : 'Free User'}
+                    </div>
+                    <div style={{
+                      fontFamily: "'Noto Serif SC', serif",
+                      fontWeight: 400,
+                      fontSize: '14px',
+                      lineHeight: '17px',
+                      color: '#8F88AB',
+                    }}>
+                      {language === 'zh' ? '每日占卜次数：1' : 'Daily readings: 1'}
+                    </div>
+                    <div style={{
+                      fontFamily: "'Noto Serif SC', serif",
+                      fontWeight: 400,
+                      fontSize: '14px',
+                      lineHeight: '17px',
+                      color: '#8F88AB',
+                    }}>
+                      {language === 'zh' ? '每命题事件上限 3' : 'Events per topic: 3'}
+                    </div>
+                    <div style={{
+                      fontFamily: "'Noto Serif SC', serif",
+                      fontWeight: 700,
+                      fontSize: '32px',
+                      lineHeight: '38px',
+                      color: '#E2DBFF',
+                    }}>
+                      0 $
+                    </div>
+                  </div>
+
+                  {/* Divider */}
+                  <div style={{
+                    width: '1px',
+                    height: '105px',
+                    background: '#443E71',
+                  }} />
+
+                  {/* Pro User */}
+                  <div
+                    className="flex flex-col justify-center items-start gap-[10px] flex-1"
+                    style={{ padding: '0px 0px 0px 32px' }}
+                  >
+                    <div style={{
+                      fontFamily: "'Noto Serif SC', serif",
+                      fontWeight: 700,
+                      fontSize: '14px',
+                      lineHeight: '17px',
+                      color: '#FFA84A',
+                    }}>
+                      {language === 'zh' ? 'Pro 用户' : 'Pro User'}
+                    </div>
+                    <div style={{
+                      fontFamily: "'Noto Serif SC', serif",
+                      fontWeight: 400,
+                      fontSize: '14px',
+                      lineHeight: '17px',
+                      color: '#8F88AB',
+                    }}>
+                      {language === 'zh' ? '每日占卜次数：30' : 'Daily readings: 30'}
+                    </div>
+                    <div style={{
+                      fontFamily: "'Noto Serif SC', serif",
+                      fontWeight: 400,
+                      fontSize: '14px',
+                      lineHeight: '17px',
+                      color: '#8F88AB',
+                    }}>
+                      {language === 'zh' ? '每命题事件上限 500' : 'Events per topic: 500'}
+                    </div>
+                    <div style={{
+                      fontFamily: "'Noto Serif SC', serif",
+                      fontWeight: 700,
+                      fontSize: '32px',
+                      lineHeight: '38px',
+                      color: '#DD8424',
+                    }}>
+                      9.9 $ / month
+                    </div>
+                  </div>
+                </div>
               </div>
+            </div>
+
+            {/* Buttons */}
+            <div className="flex flex-row justify-center items-center gap-[20px] w-full">
+              {/* Upgrade Button */}
+              <button
+                onClick={() => {
+                  // TODO: Implement upgrade logic
+                  alert(language === 'zh' ? '升级功能即将推出' : 'Upgrade feature coming soon');
+                }}
+                className="flex flex-row justify-center items-center"
+                style={{
+                  width: '130px',
+                  height: '40px',
+                  padding: '16px 64px',
+                  background: '#DD8424',
+                  borderRadius: '100px',
+                }}
+              >
+                <span style={{
+                  fontFamily: "'Noto Serif SC', serif",
+                  fontWeight: 700,
+                  fontSize: '16px',
+                  lineHeight: '19px',
+                  color: '#000000',
+                  opacity: 0.8,
+                }}>
+                  {language === 'zh' ? '升级' : 'Upgrade'}
+                </span>
+              </button>
+
+              {/* Redeem Code Button */}
+              <button
+                onClick={() => setShowRedeem(true)}
+                className="flex flex-row justify-center items-center"
+                style={{
+                  width: '130px',
+                  height: '40px',
+                  padding: '7px 20px',
+                  background: 'rgba(189, 161, 255, 0.2)',
+                  border: '1px solid rgba(189, 161, 255, 0.2)',
+                  borderRadius: '100px',
+                }}
+              >
+                <span style={{
+                  fontFamily: "'Noto Serif SC', serif",
+                  fontWeight: 400,
+                  fontSize: '16px',
+                  lineHeight: '19px',
+                  color: '#BDA1FF',
+                }}>
+                  {language === 'zh' ? '使用兑换码' : 'Use Code'}
+                </span>
+              </button>
+
+              {/* Cancel Button */}
               <button
                 onClick={() => { setShowRedeem(false); setShowPaywall(false); }}
-                className="text-slate-400 hover:text-white"
+                className="flex flex-row justify-center items-center"
+                style={{
+                  width: '130px',
+                  height: '40px',
+                  padding: '7px 20px',
+                  background: 'rgba(189, 161, 255, 0.2)',
+                  border: '1px solid rgba(189, 161, 255, 0.2)',
+                  borderRadius: '100px',
+                }}
               >
-                ✕
+                <span style={{
+                  fontFamily: "'Noto Serif SC', serif",
+                  fontWeight: 400,
+                  fontSize: '16px',
+                  lineHeight: '19px',
+                  color: '#BDA1FF',
+                }}>
+                  {language === 'zh' ? '取消' : 'Cancel'}
+                </span>
               </button>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="border border-white/10 rounded-xl p-4 bg-slate-800/50">
-                <div className="text-amber-200 font-semibold mb-2">{t.planBadgeFree}</div>
-                <p className="text-sm text-slate-300">{t.upgradeFree}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Redeem Code Modal */}
+      {showRedeem && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-[60] px-4">
+          <div
+            className="flex flex-col items-center gap-[24px]"
+            style={{
+              width: '400px',
+              padding: '32px',
+              background: 'rgba(40, 36, 70, 0.95)',
+              border: '1px solid #443E71',
+              borderRadius: '16px',
+            }}
+          >
+            <h3 style={{
+              fontFamily: "'Noto Serif SC', serif",
+              fontWeight: 700,
+              fontSize: '20px',
+              lineHeight: '24px',
+              color: '#E2DBFF',
+            }}>
+              {language === 'zh' ? '输入兑换码' : 'Enter Redemption Code'}
+            </h3>
+
+            <input
+              type="text"
+              className="w-full px-4 py-3 text-white focus:outline-none"
+              style={{
+                background: '#3C3665',
+                border: '1px solid #443E71',
+                borderRadius: '8px',
+                fontFamily: "'Noto Serif SC', serif",
+                fontSize: '14px',
+              }}
+              placeholder={language === 'zh' ? '请输入兑换码' : 'Enter code'}
+              value={redeemCodeInput}
+              onChange={(e) => setRedeemCodeInput(e.target.value)}
+            />
+
+            {redeemFeedback && (
+              <div style={{
+                fontFamily: "'Noto Serif SC', serif",
+                fontSize: '14px',
+                color: redeemFeedback.includes('成功') || redeemFeedback.includes('success') ? '#4ADE80' : '#FFA84A',
+              }}>
+                {redeemFeedback}
               </div>
-              <div className="border border-amber-400/40 rounded-xl p-4 bg-amber-500/10">
-                <div className="text-amber-200 font-semibold mb-2">{t.planBadgeMember}</div>
-                <p className="text-sm text-slate-200">{t.upgradeMember}</p>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <input
-                type="text"
-                className="w-full bg-slate-800 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-amber-400"
-                placeholder={language === 'zh' ? '兑换码' : 'Code'}
-                value={redeemCodeInput}
-                onChange={(e) => setRedeemCodeInput(e.target.value)}
-              />
-              {redeemFeedback && (
-                <div className="text-sm text-amber-300">{redeemFeedback}</div>
-              )}
-              <div className="flex justify-end gap-2">
-                <button
-                  onClick={() => { setShowRedeem(false); setShowPaywall(false); }}
-                  className="px-4 py-2 rounded-lg bg-slate-800 text-slate-200 border border-white/10"
-                >
-                  {t.close}
-                </button>
-                <button
-                  onClick={handleRedeem}
-                  className="px-4 py-2 rounded-lg bg-amber-500 text-slate-900 font-semibold"
-                >
-                  {t.redeemNow}
-                </button>
-              </div>
+            )}
+
+            <div className="flex gap-[16px] w-full">
+              <button
+                onClick={() => { setShowRedeem(false); setRedeemCodeInput(''); setRedeemFeedback(''); }}
+                className="flex-1 flex justify-center items-center"
+                style={{
+                  height: '40px',
+                  padding: '7px 20px',
+                  background: 'rgba(189, 161, 255, 0.2)',
+                  border: '1px solid rgba(189, 161, 255, 0.2)',
+                  borderRadius: '100px',
+                  fontFamily: "'Noto Serif SC', serif",
+                  fontWeight: 400,
+                  fontSize: '16px',
+                  color: '#BDA1FF',
+                }}
+              >
+                {language === 'zh' ? '取消' : 'Cancel'}
+              </button>
+              <button
+                onClick={handleRedeem}
+                className="flex-1 flex justify-center items-center"
+                style={{
+                  height: '40px',
+                  padding: '16px 64px',
+                  background: '#DD8424',
+                  borderRadius: '100px',
+                  fontFamily: "'Noto Serif SC', serif",
+                  fontWeight: 700,
+                  fontSize: '16px',
+                  color: '#000000',
+                  opacity: 0.8,
+                }}
+              >
+                {language === 'zh' ? '兑换' : 'Redeem'}
+              </button>
             </div>
           </div>
         </div>
