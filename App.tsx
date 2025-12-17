@@ -400,10 +400,33 @@ const formatCardLabel = (card: DrawnCard, language: Language) => {
 };
 
 const App: React.FC = () => {
-  const [phase, setPhase] = useState<AppPhase>(AppPhase.INPUT);
-  const [question, setQuestion] = useState('');
+  // Check if we have pending reading in localStorage to restore after OAuth
+  const getPendingReading = () => {
+    try {
+      const pendingStr = localStorage.getItem('pendingReading');
+      if (pendingStr) {
+        const pending = JSON.parse(pendingStr);
+        const age = Date.now() - (pending.timestamp || 0);
+        // Only restore if less than 30 minutes old
+        if (age < 30 * 60 * 1000) {
+          console.log('[App Init] Found pending reading in localStorage');
+          return pending;
+        } else {
+          localStorage.removeItem('pendingReading');
+        }
+      }
+    } catch (e) {
+      console.error('[App Init] Failed to parse pending reading:', e);
+    }
+    return null;
+  };
+
+  const initialPending = getPendingReading();
+
+  const [phase, setPhase] = useState<AppPhase>(initialPending ? AppPhase.ANALYSIS : AppPhase.INPUT);
+  const [question, setQuestion] = useState(initialPending?.question || '');
   const [deck, setDeck] = useState<typeof MAJOR_ARCANA>([]);
-  const [drawnCards, setDrawnCards] = useState<DrawnCard[]>([]);
+  const [drawnCards, setDrawnCards] = useState<DrawnCard[]>(initialPending?.cards || []);
   const [reading, setReading] = useState('');
   const [isReadingLoading, setIsReadingLoading] = useState(false);
   const [isInteracting, setIsInteracting] = useState(false);
@@ -443,7 +466,9 @@ const App: React.FC = () => {
   const [showPaywall, setShowPaywall] = useState(false);
   const [showMemberLimitModal, setShowMemberLimitModal] = useState(false);
   const [isUpgrading, setIsUpgrading] = useState(false);
-  const [pendingBaseline, setPendingBaseline] = useState<{ question: string; cards: DrawnCard[] } | null>(null);
+  const [pendingBaseline, setPendingBaseline] = useState<{ question: string; cards: DrawnCard[] } | null>(
+    initialPending ? { question: initialPending.question, cards: initialPending.cards } : null
+  );
   const [processingPending, setProcessingPending] = useState(false);
   const [eventDeck, setEventDeck] = useState<typeof MAJOR_ARCANA>([]);
   const [eventCanDraw, setEventCanDraw] = useState(false);
@@ -612,29 +637,20 @@ const App: React.FC = () => {
             console.log("[OAuth] Session reloaded successfully after", retryCount, "retries");
 
             // Check if there's a pending reading to restore
+            // Note: initialPending already restored the state during component mount
+            // Just clean up localStorage here
             try {
               const pendingStr = localStorage.getItem('pendingReading');
               if (pendingStr) {
-                const pending = JSON.parse(pendingStr);
-                const age = Date.now() - (pending.timestamp || 0);
-                // Only restore if less than 30 minutes old
-                if (age < 30 * 60 * 1000) {
-                  console.log("[OAuth] Restoring pending reading:", { question: pending.question, cardsCount: pending.cards?.length });
-                  setQuestion(pending.question || '');
-                  setDrawnCards(pending.cards || []);
-                  setPhase(AppPhase.ANALYSIS);
-                  setPendingBaseline({ question: pending.question, cards: pending.cards });
-
-                  // Clear from localStorage
-                  localStorage.removeItem('pendingReading');
-                } else {
-                  console.log("[OAuth] Pending reading too old, discarding");
-                  localStorage.removeItem('pendingReading');
-                }
+                console.log("[OAuth] Pending reading already restored during init, cleaning up localStorage");
+                localStorage.removeItem('pendingReading');
               }
             } catch (e) {
-              console.error("[OAuth] Failed to restore pending reading:", e);
+              console.error("[OAuth] Failed to clean up pending reading:", e);
             }
+
+            // Clear auth loading state on success
+            setAuthLoading(false);
           } else if (retryCount < maxRetries) {
             // No user data, retry after delay
             console.log("[OAuth] No user data, retrying in", retryDelay, "ms (attempt", retryCount + 1, "of", maxRetries, ")");
@@ -642,6 +658,7 @@ const App: React.FC = () => {
             return; // Don't clear loading state yet
           } else {
             console.error("[OAuth] Failed to load session after", maxRetries, "retries");
+            setAuthLoading(false);
           }
         } catch (e) {
           console.error("Session reload error after OAuth", e);
@@ -649,10 +666,7 @@ const App: React.FC = () => {
             console.log("[OAuth] Retrying in", retryDelay, "ms (attempt", retryCount + 1, "of", maxRetries, ")");
             setTimeout(() => reloadSession(retryCount + 1), retryDelay);
             return; // Don't clear loading state yet
-          }
-        } finally {
-          // Only clear loading state on final attempt
-          if (retryCount >= maxRetries) {
+          } else {
             setAuthLoading(false);
           }
         }
