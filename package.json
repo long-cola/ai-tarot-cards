@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.2",
+    "axios": "^1.13.2",
     "bcryptjs": "^3.0.3",
     "cookie": "^1.1.1",
     "dotenv": "^16.4.7",

@@ -12,7 +12,7 @@ import { ReadingResultPage } from './components/ReadingResultPage';
 import { QuickQuestionCard } from './components/ui';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { API_BASE_URL } from './services/apiClient';
+import { API_BASE_URL, apiClient } from './services/apiClient';
 import { getSession, consumeUsage, redeemMembership, logout } from './services/authService';
 import { listTopics, createTopic, getTopicDetail, addTopicEvent, deleteTopic } from './services/topicService';
 import { toPng } from 'html-to-image';
@@ -442,6 +442,7 @@ const App: React.FC = () => {
   const [upgradeHint, setUpgradeHint] = useState('');
   const [showPaywall, setShowPaywall] = useState(false);
   const [showMemberLimitModal, setShowMemberLimitModal] = useState(false);
+  const [isUpgrading, setIsUpgrading] = useState(false);
   const [pendingBaseline, setPendingBaseline] = useState<{ question: string; cards: DrawnCard[] } | null>(null);
   const [processingPending, setProcessingPending] = useState(false);
   const [eventDeck, setEventDeck] = useState<typeof MAJOR_ARCANA>([]);
@@ -885,6 +886,36 @@ const App: React.FC = () => {
       }[reason as string] || (language === 'zh' ? '兑换失败，请重试' : 'Redeem failed, try again');
       setRedeemFeedback(msg);
     }
+  };
+
+  const handleUpgrade = async () => {
+    if (!user) {
+      console.log('[Upgrade] User not logged in, showing login button');
+      return;
+    }
+
+    setIsUpgrading(true);
+    try {
+      console.log('[Upgrade] Calling checkout API...');
+      const response = await apiClient.post('/api/checkout');
+
+      if (response.ok && response.checkout_url) {
+        console.log('[Upgrade] Redirecting to checkout URL:', response.checkout_url);
+        // Redirect to Creem checkout page
+        window.location.href = response.checkout_url;
+      } else {
+        throw new Error('Invalid response from checkout API');
+      }
+    } catch (err: any) {
+      console.error('[Upgrade] Checkout failed:', err);
+      alert(
+        language === 'zh'
+          ? '无法创建支付会话，请稍后重试。'
+          : 'Failed to create checkout session. Please try again later.'
+      );
+      setIsUpgrading(false);
+    }
+    // Note: Don't set isUpgrading to false on success since we're redirecting
   };
 
   // Handle Input Submit
@@ -1864,10 +1895,8 @@ Card drawn: ${currentCardStr}`;
             <div className="flex flex-row justify-center items-center gap-[20px] w-full">
               {/* Upgrade Button */}
               <button
-                onClick={() => {
-                  // TODO: Implement upgrade logic
-                  alert(language === 'zh' ? '升级功能即将推出' : 'Upgrade feature coming soon');
-                }}
+                onClick={handleUpgrade}
+                disabled={isUpgrading}
                 className="flex flex-row justify-center items-center"
                 style={{
                   width: '130px',
@@ -1875,6 +1904,8 @@ Card drawn: ${currentCardStr}`;
                   padding: '16px 64px',
                   background: '#DD8424',
                   borderRadius: '100px',
+                  opacity: isUpgrading ? 0.5 : 1,
+                  cursor: isUpgrading ? 'not-allowed' : 'pointer',
                 }}
               >
                 <span style={{
@@ -1885,7 +1916,9 @@ Card drawn: ${currentCardStr}`;
                   color: '#000000',
                   opacity: 0.8,
                 }}>
-                  {language === 'zh' ? '升级' : 'Upgrade'}
+                  {isUpgrading
+                    ? (language === 'zh' ? '处理中...' : 'Processing...')
+                    : (language === 'zh' ? '升级' : 'Upgrade')}
                 </span>
               </button>
 
