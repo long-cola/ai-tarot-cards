@@ -1049,6 +1049,8 @@ const App: React.FC = () => {
     }
     if (createdTopicId) {
       setTopicSaveMessage(language === 'zh' ? '已创建命题' : 'Topic already created');
+      // Navigate to the created topic detail page
+      await loadTopicDetail(createdTopicId);
       return;
     }
     setTopicError('');
@@ -1064,6 +1066,9 @@ const App: React.FC = () => {
       setCreatedTopicId(res.topic.id);
       if (res.quota) setTopicQuota(res.quota);
       setTopicSaveMessage(t.topicSaved);
+
+      // Automatically navigate to the created topic detail page
+      await loadTopicDetail(res.topic.id);
     } catch (err: any) {
       console.error("topic save failed", err);
       const reason = err?.data?.reason;
