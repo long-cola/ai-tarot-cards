@@ -84,8 +84,8 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
 
   // Auto-scroll to newly added event
   useEffect(() => {
-    // Only scroll when on detail page
-    if (pageState === 'detail' && newlyAddedEventId && events.some(e => e.id === newlyAddedEventId)) {
+    // Only scroll when on detail page and we have a new event ID
+    if (pageState === 'detail' && newlyAddedEventId) {
       console.log('[TopicDetailPage] Attempting to scroll to event:', newlyAddedEventId);
 
       // Auto-expand the new event immediately
@@ -95,28 +95,38 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
         return newSet;
       });
 
-      // Wait for DOM to fully render and animations to complete before scrolling
-      const scrollTimer = setTimeout(() => {
+      // Function to attempt scrolling with retries
+      const attemptScroll = (retryCount = 0, maxRetries = 5) => {
         const eventElement = eventRefsMap.current.get(newlyAddedEventId);
-        console.log('[TopicDetailPage] Event element found:', !!eventElement);
+        console.log(`[TopicDetailPage] Scroll attempt ${retryCount + 1}/${maxRetries + 1}, element found:`, !!eventElement);
 
         if (eventElement) {
-          // Scroll to the event with smooth animation
+          // Element found, scroll to it
           eventElement.scrollIntoView({
             behavior: 'smooth',
             block: 'start',
             inline: 'nearest'
           });
-          console.log('[TopicDetailPage] Scrolled to event');
+          console.log('[TopicDetailPage] Successfully scrolled to event');
+        } else if (retryCount < maxRetries) {
+          // Element not found yet, retry after a delay
+          console.log('[TopicDetailPage] Element not found, retrying in 300ms...');
+          setTimeout(() => attemptScroll(retryCount + 1, maxRetries), 300);
         } else {
-          console.warn('[TopicDetailPage] Event element not found in DOM');
+          // Max retries reached
+          console.warn('[TopicDetailPage] Max retries reached, event element still not found in DOM');
         }
-      }, 500); // Increased delay to 500ms to ensure DOM is fully ready
+      };
 
-      // Clear the newly added event ID after scrolling
+      // Start attempting to scroll after initial delay
+      const scrollTimer = setTimeout(() => {
+        attemptScroll();
+      }, 300);
+
+      // Clear the newly added event ID after sufficient time
       const clearTimer = setTimeout(() => {
         setNewlyAddedEventId(null);
-      }, 2000);
+      }, 3000);
 
       return () => {
         clearTimeout(scrollTimer);
