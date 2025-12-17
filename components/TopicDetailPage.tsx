@@ -84,32 +84,46 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
 
   // Auto-scroll to newly added event
   useEffect(() => {
-    if (newlyAddedEventId && events.some(e => e.id === newlyAddedEventId)) {
-      // Event has been added to the list, now scroll to it
-      const eventElement = eventRefsMap.current.get(newlyAddedEventId);
-      if (eventElement) {
-        // Auto-expand the new event
-        setExpandedEvents(prev => {
-          const newSet = new Set(prev);
-          newSet.add(newlyAddedEventId);
-          return newSet;
-        });
+    // Only scroll when on detail page
+    if (pageState === 'detail' && newlyAddedEventId && events.some(e => e.id === newlyAddedEventId)) {
+      console.log('[TopicDetailPage] Attempting to scroll to event:', newlyAddedEventId);
 
-        // Scroll to the event with smooth animation
-        setTimeout(() => {
+      // Auto-expand the new event immediately
+      setExpandedEvents(prev => {
+        const newSet = new Set(prev);
+        newSet.add(newlyAddedEventId);
+        return newSet;
+      });
+
+      // Wait for DOM to fully render and animations to complete before scrolling
+      const scrollTimer = setTimeout(() => {
+        const eventElement = eventRefsMap.current.get(newlyAddedEventId);
+        console.log('[TopicDetailPage] Event element found:', !!eventElement);
+
+        if (eventElement) {
+          // Scroll to the event with smooth animation
           eventElement.scrollIntoView({
             behavior: 'smooth',
-            block: 'center'
+            block: 'start',
+            inline: 'nearest'
           });
-        }, 100);
+          console.log('[TopicDetailPage] Scrolled to event');
+        } else {
+          console.warn('[TopicDetailPage] Event element not found in DOM');
+        }
+      }, 500); // Increased delay to 500ms to ensure DOM is fully ready
 
-        // Clear the newly added event ID after scrolling
-        setTimeout(() => {
-          setNewlyAddedEventId(null);
-        }, 1000);
-      }
+      // Clear the newly added event ID after scrolling
+      const clearTimer = setTimeout(() => {
+        setNewlyAddedEventId(null);
+      }, 2000);
+
+      return () => {
+        clearTimeout(scrollTimer);
+        clearTimeout(clearTimer);
+      };
     }
-  }, [newlyAddedEventId, events]);
+  }, [newlyAddedEventId, events, pageState]);
 
   const toggleEvent = (eventId: string) => {
     setExpandedEvents((prev) => {
