@@ -89,81 +89,196 @@ const Header = ({
                   <path d="M5.23 7.21a.75.75 0 011.06.02L10 11.173l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" />
                 </svg>
               </summary>
-              <div className="absolute right-0 mt-2 w-64 bg-slate-900 border border-white/10 rounded-xl shadow-2xl p-3 space-y-2 z-50">
-                <div className="flex items-center justify-between text-xs text-slate-300">
-                  <span>{language === 'zh' ? '计划' : 'Plan'}</span>
-                  <span className="px-2 py-1 rounded-full bg-slate-800 text-amber-200 border border-amber-400/30">
-                    {plan === 'member' ? (language === 'zh' ? '付费会员' : 'Member') : (language === 'zh' ? '免费' : 'Free')}
-                  </span>
-                </div>
-                {quota && (
-                  <div className="text-[11px] text-slate-400 space-y-1">
-                    <div>
-                      {language === 'zh'
-                        ? `命题剩余 ${quota.topic_quota_remaining}/${quota.topic_quota_total}`
-                        : `Topics remaining ${quota.topic_quota_remaining}/${quota.topic_quota_total}`}
-                    </div>
-                    <div>
-                      {language === 'zh'
-                        ? `每命题事件上限 ${quota.event_quota_per_topic}`
-                        : `Events per topic ${quota.event_quota_per_topic}`}
-                    </div>
-                    {quota.expires_at && (
-                      <div className="text-amber-200">
-                        {language === 'zh'
-                          ? `到期：${new Date(quota.expires_at).toLocaleDateString()}`
-                          : `Expires: ${new Date(quota.expires_at).toLocaleDateString()}`}
-                      </div>
-                    )}
-                  </div>
-                )}
-                <div className="text-[11px] text-slate-400 space-y-1">
-                  <div className="text-amber-200">
-                    {language === 'zh'
-                      ? '付费计划：高频使用，不设常规上限'
-                      : 'Paid plan: high-frequency usage, no normal cap.'}
-                  </div>
-                  <div>
-                    {language === 'zh'
-                      ? '免费：1命题，3次事件，查看全部历史'
-                      : 'Free: 1 topic, 3 events, view history'}
-                  </div>
-                  <div>
-                    {language === 'zh'
-                      ? '会员：30命题/月，每命题500次事件'
-                      : 'Member: 30 topics/mo, 500 events/topic'}
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={onOpenTopics}
-                    className="flex-1 text-[11px] px-3 py-2 bg-slate-800 text-slate-200 border border-white/10 rounded-lg"
+              <div
+                className="absolute right-0 mt-2 flex flex-col justify-center items-center z-50"
+                style={{
+                  width: '229px',
+                  padding: '24px 0px 32px',
+                  gap: '24px',
+                  background: '#282446',
+                  border: '1px solid #443E71',
+                  borderRadius: '16px',
+                }}
+              >
+                {/* User Info Section */}
+                <div className="flex flex-col justify-center items-center w-full" style={{ gap: '12px' }}>
+                  {/* Username */}
+                  <div
+                    className="w-full flex items-center justify-center text-center"
+                    style={{
+                      fontFamily: "'Noto Serif SC', serif",
+                      fontWeight: 700,
+                      fontSize: '24px',
+                      lineHeight: '29px',
+                      color: '#E2DBFF',
+                    }}
                   >
-                    {language === 'zh' ? '命题列表' : 'Topics'}
-                  </button>
-                  {plan === 'free' && (
-                  <button
-                      onClick={onUpgrade}
-                      className="flex-1 text-[11px] px-3 py-2 bg-amber-500 text-slate-900 font-semibold rounded-lg"
+                    {user.name || user.email?.split('@')[0] || (language === 'zh' ? '用户' : 'User')}
+                  </div>
+
+                  {/* User Type Badge */}
+                  {plan === 'member' ? (
+                    <div className="flex flex-row justify-center items-center w-full" style={{ gap: '4px' }}>
+                      <div
+                        className="flex flex-row justify-center items-center"
+                        style={{
+                          padding: '2px 8px',
+                          background: 'rgba(233, 215, 195, 0.1)',
+                          border: '0.5px solid #DD8424',
+                          borderRadius: '100px',
+                          fontFamily: "'Noto Serif SC', serif",
+                          fontWeight: 400,
+                          fontSize: '14px',
+                          lineHeight: '17px',
+                          color: '#DD8424',
+                        }}
+                      >
+                        PRO
+                      </div>
+                      <span
+                        style={{
+                          fontFamily: "'Noto Serif SC', serif",
+                          fontWeight: 400,
+                          fontSize: '14px',
+                          lineHeight: '17px',
+                          color: '#8F88AB',
+                        }}
+                      >
+                        {language === 'zh' ? '用户' : 'User'}
+                      </span>
+                    </div>
+                  ) : (
+                    <div
+                      className="w-full flex items-center justify-center text-center"
+                      style={{
+                        fontFamily: "'Noto Serif SC', serif",
+                        fontWeight: 400,
+                        fontSize: '14px',
+                        lineHeight: '17px',
+                        color: '#8F88AB',
+                      }}
                     >
-                      {language === 'zh' ? '升级/兑换' : 'Upgrade/Redeem'}
-                    </button>
+                      {language === 'zh' ? '免费用户' : 'Free User'}
+                    </div>
                   )}
+                </div>
+
+                {/* Quota Info Section */}
+                <div
+                  className="flex flex-col items-start w-full"
+                  style={{
+                    padding: '0px 24px',
+                    gap: '12px',
+                  }}
+                >
+                  {/* Topic Quota */}
+                  <div
+                    style={{
+                      fontFamily: "'Noto Serif SC', serif",
+                      fontWeight: 400,
+                      fontSize: '14px',
+                      lineHeight: '17px',
+                      color: '#8F88AB',
+                    }}
+                  >
+                    {language === 'zh'
+                      ? `今日命题剩余 ${topicQuota?.topic_quota_remaining ?? 0}/${topicQuota?.topic_quota_total ?? (plan === 'member' ? 30 : 1)}`
+                      : `Topics remaining ${topicQuota?.topic_quota_remaining ?? 0}/${topicQuota?.topic_quota_total ?? (plan === 'member' ? 30 : 1)}`}
+                  </div>
+
+                  {/* Event Quota */}
+                  <div
+                    style={{
+                      fontFamily: "'Noto Serif SC', serif",
+                      fontWeight: 400,
+                      fontSize: '14px',
+                      lineHeight: '17px',
+                      color: '#8F88AB',
+                    }}
+                  >
+                    {language === 'zh'
+                      ? `每命题事件上限 ${topicQuota?.event_quota_per_topic ?? (plan === 'member' ? 500 : 3)}`
+                      : `Events per topic ${topicQuota?.event_quota_per_topic ?? (plan === 'member' ? 500 : 3)}`}
+                  </div>
+
+                  {/* Expiry Date (for Pro users only) */}
+                  {plan === 'member' && topicQuota?.expires_at && (
+                    <div
+                      style={{
+                        fontFamily: "'Noto Serif SC', serif",
+                        fontWeight: 400,
+                        fontSize: '14px',
+                        lineHeight: '17px',
+                        color: '#8F88AB',
+                      }}
+                    >
+                      {language === 'zh'
+                        ? `Pro 会员到期： ${new Date(topicQuota.expires_at).toLocaleDateString('zh-CN')}`
+                        : `Pro expires: ${new Date(topicQuota.expires_at).toLocaleDateString('en-US')}`}
+                    </div>
+                  )}
+                </div>
+
+                {/* Buttons Section */}
+                <div
+                  className="flex flex-col items-start w-full"
+                  style={{
+                    padding: '0px 24px',
+                    gap: '12px',
+                  }}
+                >
+                  {/* Upgrade Button (for free users only) */}
                   {plan === 'free' && (
                     <button
-                      onClick={onRedeem}
-                      className="flex-1 text-[11px] px-3 py-2 bg-slate-800 text-amber-200 border border-amber-400/40 rounded-lg"
+                      onClick={() => setShowPaywall(true)}
+                      className="flex flex-row justify-center items-center w-full"
+                      style={{
+                        height: '40px',
+                        padding: '16px 64px',
+                        background: '#DD8424',
+                        borderRadius: '100px',
+                      }}
                     >
-                      {language === 'zh' ? '兑换会员码' : 'Redeem code'}
+                      <span
+                        style={{
+                          fontFamily: "'Noto Serif SC', serif",
+                          fontWeight: 700,
+                          fontSize: '16px',
+                          lineHeight: '19px',
+                          color: '#000000',
+                          opacity: 0.8,
+                        }}
+                      >
+                        {language === 'zh' ? '升级为 Pro 用户' : 'Upgrade to Pro'}
+                      </span>
                     </button>
                   )}
+
+                  {/* Logout Button */}
+                  <button
+                    onClick={onLogout}
+                    className="flex flex-row justify-center items-center w-full"
+                    style={{
+                      height: '40px',
+                      padding: '7px 20px',
+                      background: 'rgba(189, 161, 255, 0.2)',
+                      border: '1px solid rgba(189, 161, 255, 0.2)',
+                      borderRadius: '100px',
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontFamily: "'Noto Serif SC', serif",
+                        fontWeight: 400,
+                        fontSize: '16px',
+                        lineHeight: '19px',
+                        color: '#BDA1FF',
+                      }}
+                    >
+                      {language === 'zh' ? '退出登录' : 'Logout'}
+                    </span>
+                  </button>
                 </div>
-                <button
-                  onClick={onLogout}
-                  className="w-full text-[11px] px-3 py-2 bg-slate-900 text-slate-200 border border-white/10 rounded-lg"
-                >
-                  {language === 'zh' ? '退出登录' : 'Logout'}
-                </button>
               </div>
             </details>
           ) : (
