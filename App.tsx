@@ -494,6 +494,31 @@ const App: React.FC = () => {
             }
             setUpgradeHint('');
             console.log("[OAuth] Session reloaded successfully after", retryCount, "retries");
+
+            // Check if there's a pending reading to restore
+            try {
+              const pendingStr = localStorage.getItem('pendingReading');
+              if (pendingStr) {
+                const pending = JSON.parse(pendingStr);
+                const age = Date.now() - (pending.timestamp || 0);
+                // Only restore if less than 30 minutes old
+                if (age < 30 * 60 * 1000) {
+                  console.log("[OAuth] Restoring pending reading:", { question: pending.question, cardsCount: pending.cards?.length });
+                  setQuestion(pending.question || '');
+                  setDrawnCards(pending.cards || []);
+                  setPhase(AppPhase.ANALYSIS);
+                  setPendingBaseline({ question: pending.question, cards: pending.cards });
+
+                  // Clear from localStorage
+                  localStorage.removeItem('pendingReading');
+                } else {
+                  console.log("[OAuth] Pending reading too old, discarding");
+                  localStorage.removeItem('pendingReading');
+                }
+              }
+            } catch (e) {
+              console.error("[OAuth] Failed to restore pending reading:", e);
+            }
           } else if (retryCount < maxRetries) {
             // No user data, retry after delay
             console.log("[OAuth] No user data, retrying in", retryDelay, "ms (attempt", retryCount + 1, "of", maxRetries, ")");
@@ -532,17 +557,59 @@ const App: React.FC = () => {
   // 登录后恢复未登录时缓存的基准占卜请求
   useEffect(() => {
     const runPending = async () => {
-      if (!user || !pendingBaseline || processingPending || phase !== AppPhase.ANALYSIS) return;
+      if (!user || !pendingBaseline || processingPending || phase !== AppPhase.ANALYSIS) {
+        console.log('[PendingBaseline] Skip:', { hasUser: !!user, hasPending: !!pendingBaseline, processing: processingPending, phase });
+        return;
+      }
+
+      console.log('[PendingBaseline] Fetching reading for restored session...');
       setProcessingPending(true);
       setIsReadingLoading(true);
+
       try {
-        const result = await getTarotReading(pendingBaseline.question, pendingBaseline.cards, language);
+        // Check usage allowance first
+        const allowed = await ensureUsageAllowance();
+        if (!allowed) {
+          console.log('[PendingBaseline] Usage not allowed');
+          setReading('');
+          return;
+        }
+
+        // Prepare variables for first reading
+        const isZh = language === 'zh';
+        const baselineCardsStr = pendingBaseline.cards
+          .map(c => formatCardLabel(c, language))
+          .join(isZh ? '，' : ', ');
+
+        const promptKey = isZh ? 'prompt_first_zh' : 'prompt_first_en';
+        const variables = {
+          question: pendingBaseline.question,
+          baseline_cards: baselineCardsStr
+        };
+
+        console.log('[PendingBaseline] Sending to API:', { promptKey, variables });
+
+        const result = await getTarotReading(
+          pendingBaseline.question,
+          pendingBaseline.cards,
+          language,
+          promptKey,
+          variables
+        );
         setReading(result);
         setUsageError('');
         setPendingBaseline(null);
-      } catch (err) {
-        console.error("pending baseline fetch failed", err);
-        setUsageError(language === 'zh' ? '登录后拉取解读失败，请重试。' : 'Failed to resume reading after login.');
+
+        console.log('[PendingBaseline] Reading fetched successfully');
+      } catch (err: any) {
+        console.error("[PendingBaseline] Fetch failed", err);
+        if (err.message === 'UNAUTHORIZED') {
+          setReading('');
+          setUser(null);
+          setPlan('guest');
+        } else {
+          setUsageError(language === 'zh' ? '登录后拉取解读失败，请重试。' : 'Failed to resume reading after login.');
+        }
       } finally {
         setIsReadingLoading(false);
         setProcessingPending(false);
@@ -601,7 +668,21 @@ const App: React.FC = () => {
     if (!user) {
       // Don't set usageError - just save the pending request and return false
       // The ReadingResultPage will show the login prompt
-      setPendingBaseline({ question, cards: drawnCards });
+      const pending = { question, cards: drawnCards };
+      setPendingBaseline(pending);
+
+      // Save to localStorage so it persists across page reload during OAuth
+      try {
+        localStorage.setItem('pendingReading', JSON.stringify({
+          question,
+          cards: drawnCards,
+          timestamp: Date.now()
+        }));
+        console.log('[PendingReading] Saved to localStorage:', { question, cardsCount: drawnCards.length });
+      } catch (e) {
+        console.error('[PendingReading] Failed to save to localStorage:', e);
+      }
+
       return false;
     }
     try {
