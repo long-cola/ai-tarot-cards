@@ -248,7 +248,7 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
     handleGenerateReading(card);
   };
 
-  // Generate AI reading
+  // Generate AI reading and auto-save
   const handleGenerateReading = async (card: DrawnCard) => {
     setIsLoadingReading(true);
     setError('');
@@ -299,29 +299,15 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
 
       console.log('[TopicDetailPage] Reading generated successfully, length:', readingText.length);
       setReading(readingText);
-    } catch (err: any) {
-      console.error("[TopicDetailPage] Failed to generate reading", err);
-      setError(isZh ? '生成解读失败，请重试' : 'Failed to generate reading');
-    } finally {
-      setIsLoadingReading(false);
-    }
-  };
 
-  // Save event
-  const handleSaveEvent = async () => {
-    if (!drawnCard || !reading) {
-      setError(isZh ? '请先抽牌并生成解读' : 'Please draw a card and generate reading first');
-      return;
-    }
+      // Auto-save the event after reading is generated
+      console.log('[TopicDetailPage] Auto-saving event...');
+      setIsSaving(true);
 
-    setIsSaving(true);
-    setError('');
-
-    try {
       const res = await addTopicEvent(topic.id, {
         name: eventName.trim(),
-        cards: [drawnCard],
-        reading: reading,
+        cards: [card],
+        reading: readingText,
       });
 
       if (res.event && onEventAdded) {
@@ -330,26 +316,28 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
         setNewlyAddedEventId(res.event.id);
       }
 
-      // Go back to detail page and reset form
-      setPageState('detail');
+      // Reset form after successful save
       setEventName('');
       setDrawnCard(null);
       setReading('');
       setDeck([...MAJOR_ARCANA]);
+      console.log('[TopicDetailPage] Event auto-saved successfully');
     } catch (err: any) {
-      console.error("Failed to save event", err);
+      console.error("[TopicDetailPage] Failed to generate or save event", err);
       const reason = err?.data?.reason;
       if (reason === 'event_quota_exhausted') {
         setError(isZh ? '该命题事件次数已用完，请升级会员' : 'Event quota exhausted for this topic');
       } else if (reason === 'downgraded_topic_locked') {
         setError(isZh ? '降级后仅可在最近的命题继续添加事件' : 'Only the latest topic can receive events after downgrade');
       } else {
-        setError(isZh ? '保存失败，请重试' : 'Failed to save event');
+        setError(isZh ? '生成解读或保存失败，请重试' : 'Failed to generate or save event');
       }
     } finally {
+      setIsLoadingReading(false);
       setIsSaving(false);
     }
   };
+
 
   // Sort events by created_at ascending (oldest first) for chronological order
   const sortedEvents = [...events].sort((a, b) => {
@@ -394,7 +382,12 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
 
             {/* Event Input at Top */}
             <div className="mb-8 space-y-4 w-full">
-              <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl px-5 py-4 w-full min-h-[72px]">
+              <div
+                className="backdrop-blur-sm border border-white/10 rounded-2xl px-6 py-5 w-full min-h-[72px]"
+                style={{
+                  background: 'linear-gradient(180deg, rgba(226, 219, 255, 0.05) 0%, rgba(113, 87, 175, 0.05) 100%)',
+                }}
+              >
                 <input
                   type="text"
                   value={eventName}
@@ -421,7 +414,10 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
         <div className="mb-6 w-full">
           <button
             onClick={() => toggleEvent('baseline')}
-            className="w-full flex items-center justify-between bg-white/5 hover:bg-white/10 backdrop-blur-sm border border-white/10 rounded-xl px-5 py-4 transition-all min-h-[80px]"
+            className="w-full flex items-center justify-between backdrop-blur-sm border border-white/10 rounded-2xl px-6 py-5 transition-all relative overflow-hidden"
+            style={{
+              background: 'linear-gradient(180deg, rgba(226, 219, 255, 0.05) 0%, rgba(113, 87, 175, 0.05) 100%)',
+            }}
           >
             <div className="flex items-center gap-3">
               <div className="w-2 h-2 rounded-full bg-purple-400"></div>
@@ -451,10 +447,15 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
           </button>
 
           {expandedEvents.has('baseline') && (
-            <div className="mt-4 space-y-6 animate-fade-in">
+            <div className="mt-6 space-y-6 animate-fade-in">
               {/* Baseline Cards */}
               {topic.baseline_cards && topic.baseline_cards.length > 0 && (
-                <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
+                <div
+                  className="backdrop-blur-sm border border-white/10 rounded-2xl p-6"
+                  style={{
+                    background: 'linear-gradient(180deg, rgba(226, 219, 255, 0.05) 0%, rgba(113, 87, 175, 0.05) 100%)',
+                  }}
+                >
                   <h3 className="text-[14px] text-amber-400 mb-4 tracking-wide">
                     {isZh ? '塔罗结果' : 'Tarot Cards'}
                   </h3>
@@ -492,7 +493,12 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
 
               {/* Baseline Reading */}
               {topic.baseline_reading && (
-                <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
+                <div
+                  className="backdrop-blur-sm border border-white/10 rounded-2xl p-6"
+                  style={{
+                    background: 'linear-gradient(180deg, rgba(226, 219, 255, 0.05) 0%, rgba(113, 87, 175, 0.05) 100%)',
+                  }}
+                >
                   <h3 className="text-[14px] text-amber-400 mb-4 tracking-wide">
                     {isZh ? '塔罗解读' : 'Reading Interpretation'}
                   </h3>
@@ -528,7 +534,10 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
               >
                 <button
                   onClick={() => toggleEvent(event.id)}
-                  className="w-full flex items-center justify-between bg-white/5 hover:bg-white/10 backdrop-blur-sm border border-white/10 rounded-xl px-5 py-4 transition-all min-h-[80px]"
+                  className="w-full flex items-center justify-between backdrop-blur-sm border border-white/10 rounded-2xl px-6 py-5 transition-all relative overflow-hidden"
+                  style={{
+                    background: 'linear-gradient(180deg, rgba(226, 219, 255, 0.05) 0%, rgba(113, 87, 175, 0.05) 100%)',
+                  }}
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-2 h-2 rounded-full bg-purple-400"></div>
@@ -558,10 +567,15 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
                 </button>
 
                 {expandedEvents.has(event.id) && (
-                  <div className="mt-4 space-y-6 animate-fade-in">
+                  <div className="mt-6 space-y-6 animate-fade-in">
                     {/* Event Cards */}
                     {event.cards && event.cards.length > 0 && (
-                      <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
+                      <div
+                        className="backdrop-blur-sm border border-white/10 rounded-2xl p-6"
+                        style={{
+                          background: 'linear-gradient(180deg, rgba(226, 219, 255, 0.05) 0%, rgba(113, 87, 175, 0.05) 100%)',
+                        }}
+                      >
                         <h3 className="text-[14px] text-amber-400 mb-4 tracking-wide">
                           {isZh ? '抽牌结果' : 'Cards Drawn'}
                         </h3>
@@ -599,7 +613,12 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
 
                     {/* Event Reading */}
                     {event.reading && (
-                      <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
+                      <div
+                        className="backdrop-blur-sm border border-white/10 rounded-2xl p-6"
+                        style={{
+                          background: 'linear-gradient(180deg, rgba(226, 219, 255, 0.05) 0%, rgba(113, 87, 175, 0.05) 100%)',
+                        }}
+                      >
                         <h3 className="text-[14px] text-amber-400 mb-4 tracking-wide">
                           {isZh ? '抽牌解读' : 'Reading'}
                         </h3>
@@ -682,40 +701,20 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
 
                   {/* Reading Result */}
                   {reading && !isLoadingReading && (
-                    <>
-                      <div className="mb-6">
-                        <h4 className="text-[14px] text-amber-400 mb-4 tracking-wide">
-                          {isZh ? '抽牌解读' : 'Reading'}
-                        </h4>
-                        <div className="prose prose-invert prose-sm max-w-none">
-                          <ReactMarkdown
-                            remarkPlugins={[remarkGfm]}
-                            components={markdownComponents}
-                            linkTarget="_blank"
-                          >
-                            {reading}
-                          </ReactMarkdown>
-                        </div>
-                      </div>
-
-                      {/* Action Buttons */}
-                      <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4 border-t border-white/10">
-                        <button
-                          onClick={handleSaveEvent}
-                          disabled={isSaving}
-                          className="w-full sm:w-auto px-6 py-3 bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-slate-900 font-semibold rounded-xl transition-colors"
+                    <div className="mb-6">
+                      <h4 className="text-[14px] text-amber-400 mb-4 tracking-wide">
+                        {isZh ? '抽牌解读' : 'Reading'}
+                      </h4>
+                      <div className="prose prose-invert prose-sm max-w-none">
+                        <ReactMarkdown
+                          remarkPlugins={[remarkGfm]}
+                          components={markdownComponents}
+                          linkTarget="_blank"
                         >
-                          {isSaving ? (isZh ? '保存中...' : 'Saving...') : (isZh ? '保存事件' : 'Save Event')}
-                        </button>
-                        <button
-                          onClick={handleCancel}
-                          disabled={isSaving}
-                          className="w-full sm:w-auto px-6 py-3 bg-slate-700 hover:bg-slate-600 disabled:opacity-50 text-white rounded-xl transition-colors"
-                        >
-                          {isZh ? '取消' : 'Cancel'}
-                        </button>
+                          {reading}
+                        </ReactMarkdown>
                       </div>
-                    </>
+                    </div>
                   )}
                 </div>
 

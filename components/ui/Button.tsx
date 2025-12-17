@@ -31,7 +31,7 @@ export const Button: React.FC<ButtonProps> = ({
   const sizes = {
     sm: 'px-4 py-2 text-sm min-h-[40px]',
     md: 'px-6 py-3 text-base min-h-[48px]',
-    lg: 'px-8 py-4 text-[20px] min-w-[208px] min-h-[56px]',
+    lg: 'px-16 py-4 text-[20px] min-w-[208px] min-h-[56px]',
   };
 
   const widthClass = fullWidth ? 'w-full' : '';
