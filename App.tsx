@@ -1510,6 +1510,9 @@ Card drawn: ${currentCardStr}`;
         language={language}
         user={user}
         isAuthenticated={!!user}
+        plan={plan}
+        topicQuota={topicQuota}
+        onUpgradeClick={() => setShowPaywall(true)}
       />
 
       {/* Expiry banner */}
