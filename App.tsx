@@ -599,7 +599,8 @@ const App: React.FC = () => {
 
   const ensureUsageAllowance = async (): Promise<boolean> => {
     if (!user) {
-      setUsageError(language === 'zh' ? '请先使用 Chrome 账号登录后再进行解读。' : 'Please log in with your Chrome (Google) account before requesting a reading.');
+      // Don't set usageError - just save the pending request and return false
+      // The ReadingResultPage will show the login prompt
       setPendingBaseline({ question, cards: drawnCards });
       return false;
     }
@@ -786,9 +787,25 @@ const App: React.FC = () => {
           variables
         });
 
-        const result = await getTarotReading(question, drawnCards, language, promptKey, variables);
-        setReading(result);
-        setIsReadingLoading(false);
+        try {
+          const result = await getTarotReading(question, drawnCards, language, promptKey, variables);
+          setReading(result);
+        } catch (err: any) {
+          console.error('[First Reading] Error:', err);
+          if (err.message === 'UNAUTHORIZED') {
+            // User logged out during the reading process
+            setReading('');
+            setUser(null);
+            setPlan('guest');
+          } else {
+            // Other errors, show generic error message
+            setReading(language === 'zh'
+              ? '与灵界的连接似乎受到了干扰，请检查你的网络信号，静心后重试。'
+              : 'Connection to the spiritual realm seems interrupted. Please check your signal and try again.');
+          }
+        } finally {
+          setIsReadingLoading(false);
+        }
       }, 3500);
       return () => clearTimeout(timer);
     }

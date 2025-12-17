@@ -42,11 +42,9 @@ export const getTarotReading = async (
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
 
-      // Handle authentication errors
+      // Handle authentication errors - throw error instead of returning message
       if (response.status === 401) {
-        return isZh
-          ? "请先登录后再进行占卜。"
-          : "Please log in first to get a reading.";
+        throw new Error('UNAUTHORIZED');
       }
 
       // Handle API errors
