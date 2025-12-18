@@ -26,10 +26,68 @@
     <div class="flex">
       <input id="email" type="text" placeholder="邮箱" style="flex:1;">
       <input id="password" type="password" placeholder="密码" style="flex:1;">
-      <button onclick="loadUsers()">登录并加载用户</button>
-      <button onclick="loadCodes()">加载兑换码</button>
-      <button onclick="loadPrompts()">加载 Prompts</button>
+      <button onclick="loadAnalytics()">统计数据</button>
+      <button onclick="loadUsers()">用户列表</button>
+      <button onclick="loadCodes()">兑换码</button>
+      <button onclick="loadPrompts()">Prompts</button>
     </div>
+  </div>
+
+  <div id="analytics" class="card" style="display:none;">
+    <h2 style="font-size:16px;">统计数据</h2>
+    <div class="flex" style="margin-bottom:12px;">
+      <select id="analyticsRangeDays" style="width:150px;">
+        <option value="7">最近 7 天</option>
+        <option value="30" selected>最近 30 天</option>
+        <option value="90">最近 90 天</option>
+      </select>
+      <button onclick="loadAnalytics()">刷新</button>
+    </div>
+
+    <div id="analyticsSummary" class="card" style="background:#0f172a;margin-bottom:12px;">
+      <h3 style="font-size:14px;margin-bottom:8px;">总览</h3>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
+        <div>
+          <div style="font-size:10px;color:#94a3b8;">页面访问</div>
+          <div id="totalPageViews" style="font-size:20px;font-weight:bold;color:#22d3ee;">-</div>
+        </div>
+        <div>
+          <div style="font-size:10px;color:#94a3b8;">独立访客</div>
+          <div id="totalUniqueVisitors" style="font-size:20px;font-weight:bold;color:#22d3ee;">-</div>
+        </div>
+        <div>
+          <div style="font-size:10px;color:#94a3b8;">新用户</div>
+          <div id="totalNewUsers" style="font-size:20px;font-weight:bold;color:#a78bfa;">-</div>
+        </div>
+        <div>
+          <div style="font-size:10px;color:#94a3b8;">占卜次数</div>
+          <div id="totalBaselineReadings" style="font-size:20px;font-weight:bold;color:#f472b6;">-</div>
+        </div>
+        <div>
+          <div style="font-size:10px;color:#94a3b8;">事件次数</div>
+          <div id="totalEventReadings" style="font-size:20px;font-weight:bold;color:#fb923c;">-</div>
+        </div>
+        <div>
+          <div style="font-size:10px;color:#94a3b8;">新命题</div>
+          <div id="totalNewTopics" style="font-size:20px;font-weight:bold;color:#4ade80;">-</div>
+        </div>
+      </div>
+    </div>
+
+    <table id="analyticsTable">
+      <thead>
+        <tr>
+          <th>日期</th>
+          <th>页面访问</th>
+          <th>独立访客</th>
+          <th>占卜</th>
+          <th>事件</th>
+          <th>新用户</th>
+          <th>新命题</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
   </div>
 
   <div id="codes" class="card" style="display:none;">
@@ -227,16 +285,18 @@
         (data.users || []).forEach(u => {
           const tr = document.createElement('tr');
           tr.innerHTML = `
-            <td>${u.id}</td>
+            <td>${u.id.substring(0, 8)}...</td>
             <td>${u.email || ''}</td>
-            <td>${u.plan}</td>
-            <td>${u.membership_expires_at || ''}</td>
-            <td>${u.created_at || ''}</td>
+            <td>${u.plan === 'member' ? '🌟 Pro' : '⚪ Free'}</td>
+            <td>${u.membership_expires_at ? new Date(u.membership_expires_at).toLocaleDateString('zh-CN') : '-'}</td>
+            <td>${u.created_at ? new Date(u.created_at).toLocaleDateString('zh-CN') : ''}</td>
             <td>${u.topic_count || 0}</td>
             <td>${u.event_count || 0}</td>
-            <td><button data-id="${u.id}">查看命题</button></td>
+            <td>
+              <button onclick="loadTopics('${u.id}')">命题</button>
+              ${u.plan === 'member' ? `<button onclick="downgradeUserConfirm('${u.id}')" style="background:#dc2626;">降级</button>` : ''}
+            </td>
           `;
-          tr.querySelector('button').onclick = () => loadTopics(u.id);
           tbody.appendChild(tr);
         });
         // 登录成功后显示成功消息和用户列表
@@ -587,6 +647,81 @@
       } catch (error) {
         console.error('删除 Prompt 失败:', error);
         alert('删除 Prompt 失败：' + error.message);
+      }
+    }
+
+    // Analytics functions
+    async function loadAnalytics() {
+      try {
+        const days = document.getElementById('analyticsRangeDays').value;
+        const data = await api(`/api/admin/analytics?days=${days}`);
+
+        // Update summary
+        const summary = data.summary || {};
+        document.getElementById('totalPageViews').innerText = summary.total_page_views || 0;
+        document.getElementById('totalUniqueVisitors').innerText = summary.total_unique_visitors || 0;
+        document.getElementById('totalBaselineReadings').innerText = summary.total_baseline_readings || 0;
+        document.getElementById('totalEventReadings').innerText = summary.total_event_readings || 0;
+        document.getElementById('totalNewUsers').innerText = summary.total_new_users || 0;
+        document.getElementById('totalNewTopics').innerText = summary.total_new_topics || 0;
+
+        // Update table
+        const tbody = document.querySelector('#analyticsTable tbody');
+        tbody.innerHTML = '';
+
+        (data.analytics || []).forEach(row => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${new Date(row.date).toLocaleDateString('zh-CN')}</td>
+            <td>${row.page_views || 0}</td>
+            <td>${row.unique_visitors || 0}</td>
+            <td>${row.baseline_readings || 0}</td>
+            <td>${row.event_readings || 0}</td>
+            <td>${row.new_users || 0}</td>
+            <td>${row.new_topics || 0}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+
+        document.getElementById('analytics').style.display = 'block';
+        document.getElementById('users').style.display = 'none';
+        document.getElementById('codes').style.display = 'none';
+        document.getElementById('prompts').style.display = 'none';
+        console.log('统计数据加载成功');
+      } catch (error) {
+        console.error('加载统计数据失败:', error);
+        alert('加载统计数据失败：' + error.message);
+      }
+    }
+
+    // Downgrade user function
+    async function downgradeUserConfirm(userId) {
+      if (!confirm('确定要将此用户降级为免费用户吗？此操作将清除其会员到期时间。')) {
+        return;
+      }
+
+      try {
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const headers = {
+          'Authorization': 'Basic ' + btoa(`${email}:${password}`),
+          'Content-Type': 'application/json'
+        };
+
+        const response = await fetch(`/api/admin/users/${userId}/downgrade`, {
+          method: 'POST',
+          headers
+        });
+
+        if (!response.ok) {
+          throw new Error(`降级失败 (${response.status})`);
+        }
+
+        alert('用户降级成功！');
+        loadUsers();
+      } catch (error) {
+        console.error('降级用户失败:', error);
+        alert('降级用户失败：' + error.message);
       }
     }
   </script>

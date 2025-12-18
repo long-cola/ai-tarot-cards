@@ -149,3 +149,27 @@ export async function getRedemptionCodes() {
 
   return res.rows;
 }
+
+/**
+ * Downgrade a user from Pro to Free
+ * This will set their membership_expires_at to NULL
+ */
+export async function downgradeUser(userId: string) {
+  const pool = getPool();
+
+  try {
+    // Update user's membership expiration
+    await pool.query(
+      `UPDATE users
+       SET membership_expires_at = NULL, updated_at = NOW()
+       WHERE id = $1`,
+      [userId]
+    );
+
+    console.log('[Admin] User downgraded:', userId);
+    return { success: true };
+  } catch (error) {
+    console.error('[Admin] Error downgrading user:', error);
+    throw error;
+  }
+}

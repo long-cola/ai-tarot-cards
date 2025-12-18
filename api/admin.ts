@@ -5,6 +5,7 @@ import {
   getUserTopics,
   getTopicEvents,
   getRedemptionCodes,
+  downgradeUser,
 } from '../services/admin.js';
 import { getPool } from '../services/db.js';
 import { generateCodes } from '../services/redemption.js';
@@ -14,6 +15,7 @@ import {
   updatePrompt,
   deletePrompt,
 } from '../services/promptService.js';
+import { getAnalytics, getAnalyticsSummary } from '../services/analyticsService.js';
 
 export default async function handler(req: any, res: any) {
   // Strip query string for clean path matching
@@ -68,9 +70,20 @@ export default async function handler(req: any, res: any) {
     return handleDeletePrompt(req, res, promptDeleteMatch[1]);
   }
 
+  // GET /api/admin/analytics - Get analytics data
+  if (path === '/api/admin/analytics' && method === 'GET') {
+    return handleGetAnalytics(req, res);
+  }
+
   // GET /api/admin/users - Get user stats (must check before users/:id/topics)
   if (path === '/api/admin/users' && method === 'GET') {
     return handleGetUsers(req, res);
+  }
+
+  // POST /api/admin/users/:id/downgrade - Downgrade user
+  const userDowngradeMatch = path.match(/\/admin\/users\/([^/]+)\/downgrade/);
+  if (userDowngradeMatch && method === 'POST') {
+    return handleDowngradeUser(req, res, userDowngradeMatch[1]);
   }
 
   // GET /api/admin/users/:id/topics - Get user's topics
@@ -293,6 +306,46 @@ async function handleDeletePrompt(req: any, res: any, promptId: string) {
     res.json({ ok: true });
   } catch (error: any) {
     console.error('[/api/admin/prompts/:id] Delete error:', error);
+    res.status(500).json({ ok: false, message: 'internal_error' });
+  }
+}
+
+// Get analytics data
+async function handleGetAnalytics(req: any, res: any) {
+  try {
+    // Get query parameters for date range
+    const url = new URL(req.url, `http://${req.headers.host}`);
+    const days = parseInt(url.searchParams.get('days') || '30', 10);
+
+    // Calculate date range
+    const endDate = new Date().toISOString().split('T')[0];
+    const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+
+    // Get analytics data
+    const analytics = await getAnalytics(startDate, endDate);
+    const summary = await getAnalyticsSummary(startDate, endDate);
+
+    res.json({
+      ok: true,
+      startDate,
+      endDate,
+      days,
+      summary,
+      analytics,
+    });
+  } catch (error: any) {
+    console.error('[/api/admin/analytics] Error:', error);
+    res.status(500).json({ ok: false, message: 'internal_error' });
+  }
+}
+
+// Downgrade user from Pro to Free
+async function handleDowngradeUser(req: any, res: any, userId: string) {
+  try {
+    await downgradeUser(userId);
+    res.json({ ok: true, message: 'User downgraded successfully' });
+  } catch (error: any) {
+    console.error('[/api/admin/users/:id/downgrade] Error:', error);
     res.status(500).json({ ok: false, message: 'internal_error' });
   }
 }
