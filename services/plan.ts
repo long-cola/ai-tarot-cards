@@ -39,6 +39,7 @@ const defaultCycleForUser = (user: User) => {
   const now = new Date();
   const membershipValid =
     user?.membership_expires_at && new Date(user.membership_expires_at) > now;
+  // Use 'member' as the standard paid plan name (pro is also treated as member)
   const plan = membershipValid ? 'member' : 'free';
   const ends_at = membershipValid ? new Date(user.membership_expires_at!) : addDays(now, 365);
 
@@ -114,7 +115,7 @@ export async function getPlanQuotaSummary(user: User) {
     cycle.plan === 'free' ? await getLastTopicIdForUser(user.id) : null;
 
   return {
-    plan: cycle.plan === 'member' ? 'member' : 'free',
+    plan: (cycle.plan === 'member' || cycle.plan === 'pro') ? 'member' : 'free',
     topic_quota_total: cycle.topic_quota,
     topic_quota_remaining: remainingTopics,
     event_quota_per_topic: cycle.event_quota_per_topic,
