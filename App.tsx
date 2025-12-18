@@ -576,6 +576,27 @@ const App: React.FC = () => {
     loadSession();
   }, []);
 
+  // Handle payment success callback
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const paymentStatus = params.get('payment');
+
+    if (paymentStatus === 'success') {
+      console.log('[Payment] Payment success detected!');
+
+      // Show success message
+      alert(language === 'zh' ? '支付成功！会员权限正在激活中...' : 'Payment successful! Activating membership...');
+
+      // Remove payment parameter from URL
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.delete('payment');
+      window.history.replaceState({}, '', newUrl.toString());
+
+      // Reload session to get updated membership status
+      fetchSession();
+    }
+  }, [language]);
+
   // Handle OAuth callback - reload session when auth=success is detected
   useEffect(() => {
     console.log("[OAuth] Checking for OAuth callback, URL:", window.location.href);

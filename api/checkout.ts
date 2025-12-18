@@ -40,6 +40,12 @@ export default async function handler(req: any, res: any) {
     console.log('[/api/checkout] Using API endpoint:', apiBaseUrl);
     console.log('[/api/checkout] Test mode:', isTestMode);
 
+    // Get the client origin from the request
+    const origin = req.headers.origin || req.headers.referer?.replace(/\/$/, '') || 'https://ai-tarot-cards.vercel.app';
+    const successUrl = `${origin}/?payment=success`;
+
+    console.log('[/api/checkout] Success URL:', successUrl);
+
     // Call Creem API to create checkout session
     console.log('[/api/checkout] Creating Creem checkout session...');
     const response = await axios.post(
@@ -50,6 +56,8 @@ export default async function handler(req: any, res: any) {
         customer: {
           email: user.email,
         },
+        // Success URL - where to redirect after payment
+        success_url: successUrl,
         // Optional: Pass metadata to track the user
         metadata: {
           user_id: user.id,
