@@ -29,14 +29,27 @@ export default async function handler(req: any, res: any) {
       return res.status(500).json({ error: 'Payment system not configured' });
     }
 
+    // Determine API endpoint based on API key type
+    // Test keys start with 'ck_test_' or 'creem_test_'
+    // Live keys start with 'ck_live_' or 'creem_live_'
+    const isTestMode = creemApiKey.includes('test');
+    const apiBaseUrl = isTestMode
+      ? 'https://test-api.creem.io'
+      : 'https://api.creem.io';
+
+    console.log('[/api/checkout] Using API endpoint:', apiBaseUrl);
+    console.log('[/api/checkout] Test mode:', isTestMode);
+
     // Call Creem API to create checkout session
     console.log('[/api/checkout] Creating Creem checkout session...');
     const response = await axios.post(
-      'https://api.creem.io/v1/checkouts',
+      `${apiBaseUrl}/v1/checkouts`,
       {
         product_id: creemProductId,
-        // Optional: Pass user email to pre-fill checkout form
-        customer_email: user.email,
+        // Optional: Pass customer info to pre-fill checkout form
+        customer: {
+          email: user.email,
+        },
         // Optional: Pass metadata to track the user
         metadata: {
           user_id: user.id,
