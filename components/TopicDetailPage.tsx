@@ -254,6 +254,12 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
     // Go back to detail page immediately
     setPageState('detail');
 
+    // Scroll to top immediately to show the "generating reading..." state
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+
     // Auto-generate reading in background
     handleGenerateReading(card);
   };

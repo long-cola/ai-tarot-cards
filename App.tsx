@@ -1287,6 +1287,14 @@ const App: React.FC = () => {
       // Show detail page instead of modal
       setShowTopicListPage(false);
       setShowTopicDetailPage(true);
+
+      // Scroll to top to show the event input form
+      setTimeout(() => {
+        window.scrollTo({
+          top: 0,
+          behavior: 'smooth'
+        });
+      }, 100);
     } catch (err) {
       console.error("load topic detail failed", err);
       setTopicError(language === 'zh' ? '加载命题详情失败' : 'Failed to load topic detail');
