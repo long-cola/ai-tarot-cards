@@ -44,28 +44,42 @@ export function verifyToken(token: string): User | null {
 export function getUserFromRequest(req: any): User | null {
   let token: string | null = null;
 
-  // First, try to get token from Authorization header (mobile browsers)
+  // First, try to get token from Authorization header (localStorage-based auth)
   const authHeader = req.headers.authorization || req.headers.Authorization;
   if (authHeader && authHeader.startsWith('Bearer ')) {
     token = authHeader.substring(7);
-    console.log('[JWT] Using token from Authorization header');
+    console.log('[JWT] ✅ Using token from Authorization header (localStorage-based)');
   }
 
-  // Fallback to cookie (desktop browsers)
+  // Fallback to cookie (cookie-based auth)
   if (!token) {
-    const cookies = parseCookie(req.headers.cookie || '');
+    const cookieHeader = req.headers.cookie || '';
+    const cookies = parseCookie(cookieHeader);
     token = cookies[COOKIE_NAME];
+
     if (token) {
-      console.log('[JWT] Using token from cookie');
+      console.log('[JWT] ✅ Using token from cookie (cookie-based)');
+    } else {
+      console.log('[JWT] ⚠️  No auth_token cookie found');
+      console.log('[JWT] Cookie header present:', !!cookieHeader);
+      console.log('[JWT] All cookies:', Object.keys(cookies).join(', ') || 'none');
     }
   }
 
   if (!token) {
-    console.log('[JWT] No token found in Authorization header or cookie');
+    console.log('[JWT] ❌ No token found in Authorization header or cookie');
+    console.log('[JWT] Headers available:', Object.keys(req.headers).join(', '));
     return null;
   }
 
-  return verifyToken(token);
+  const user = verifyToken(token);
+  if (user) {
+    console.log('[JWT] ✅ Token verified, user:', user.email);
+  } else {
+    console.log('[JWT] ❌ Token verification failed');
+  }
+
+  return user;
 }
 
 // Set auth cookie in response

@@ -159,17 +159,14 @@ async function handleGoogleCallback(req: any, res: any) {
     setAuthCookie(res, token);
     console.log('[OAuth Callback] Cookie set with token (length:', token?.length, ')');
 
-    // For mobile browsers, also pass token in URL as fallback
+    // Always pass token in URL as fallback for all browsers
+    // This ensures auth works even if cookies are blocked or not persisting
     const isMobile = /Mobile|Android|iPhone|iPad|iPod/i.test(req.headers['user-agent'] || '');
     console.log('[OAuth Callback] Is mobile:', isMobile);
+    console.log('[OAuth Callback] Passing token in URL for reliable auth fallback');
 
-    if (isMobile) {
-      // Pass token in URL for mobile browsers
-      return res.redirect(302, `${clientOrigin}?auth=success&token=${encodeURIComponent(token)}`);
-    } else {
-      // Desktop: use cookie-based auth
-      return res.redirect(302, `${clientOrigin}?auth=success`);
-    }
+    // Pass token in URL for all browsers (cookie is still set as primary method)
+    return res.redirect(302, `${clientOrigin}?auth=success&token=${encodeURIComponent(token)}`);
   } catch (error: any) {
     console.error('[OAuth Callback] Unexpected error:', error);
     console.error('[OAuth Callback] Error stack:', error.stack);
