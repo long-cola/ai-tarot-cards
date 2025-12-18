@@ -23,7 +23,14 @@ export async function getPlanInfo(user: User | null) {
        WHERE user_id = $1
          AND starts_at <= NOW()
          AND ends_at > NOW()
-       ORDER BY ends_at DESC
+       ORDER BY
+         CASE
+           WHEN plan = 'pro' THEN 1
+           WHEN plan = 'member' THEN 2
+           WHEN plan = 'free' THEN 3
+           ELSE 4
+         END,
+         created_at DESC
        LIMIT 1`,
       [user.id]
     );

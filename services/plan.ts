@@ -26,6 +26,18 @@ export async function startMembershipCycle({
   const pool = getPool();
   const now = new Date();
   const ends_at = addDays(now, durationDays);
+
+  // First, end any active free cycles to avoid conflicts
+  await pool.query(
+    `UPDATE membership_cycles
+     SET ends_at = NOW()
+     WHERE user_id = $1
+       AND plan = 'free'
+       AND starts_at <= NOW()
+       AND ends_at > NOW()`,
+    [userId]
+  );
+
   const insert = await pool.query(
     `INSERT INTO membership_cycles (user_id, plan, starts_at, ends_at, topic_quota, event_quota_per_topic, source)
      VALUES ($1,$2,$3,$4,$5,$6,$7)

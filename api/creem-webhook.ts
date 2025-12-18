@@ -93,6 +93,17 @@ async function handleOrderCompleted(data: any) {
     endsAt,
   });
 
+  // First, end any active free cycles to avoid conflicts
+  await query(
+    `UPDATE membership_cycles
+     SET ends_at = NOW()
+     WHERE user_id = $1
+       AND plan = 'free'
+       AND starts_at <= NOW()
+       AND ends_at > NOW()`,
+    [userId]
+  );
+
   // Create a new membership cycle
   await query(
     `INSERT INTO membership_cycles (user_id, plan, starts_at, ends_at, topic_quota, event_quota_per_topic, source)
@@ -137,6 +148,17 @@ async function handleSubscriptionActivated(data: any) {
     startsAt,
     endsAt,
   });
+
+  // First, end any active free cycles to avoid conflicts
+  await query(
+    `UPDATE membership_cycles
+     SET ends_at = NOW()
+     WHERE user_id = $1
+       AND plan = 'free'
+       AND starts_at <= NOW()
+       AND ends_at > NOW()`,
+    [userId]
+  );
 
   // Create a new membership cycle
   await query(
@@ -188,6 +210,17 @@ async function handleSubscriptionRenewed(data: any) {
     startsAt,
     endsAt,
   });
+
+  // First, end any active free cycles to avoid conflicts
+  await query(
+    `UPDATE membership_cycles
+     SET ends_at = NOW()
+     WHERE user_id = $1
+       AND plan = 'free'
+       AND starts_at <= NOW()
+       AND ends_at > NOW()`,
+    [userId]
+  );
 
   // Create a new membership cycle
   await query(
