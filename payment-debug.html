@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>支付问题诊断工具</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #0f172a; color: #e2e8f0; margin: 0; padding: 16px; max-width: 800px; margin: 0 auto; }
+    h1 { font-size: 24px; margin-bottom: 16px; color: #22d3ee; }
+    h2 { font-size: 18px; margin-top: 24px; margin-bottom: 12px; color: #a78bfa; }
+    .card { background: #111827; border: 1px solid #1f2937; border-radius: 12px; padding: 16px; margin-bottom: 16px; }
+    input, button { padding: 8px; border: 1px solid #334155; border-radius: 6px; background: #1e293b; color: #e2e8f0; }
+    button { cursor: pointer; background: #3b82f6; font-weight: bold; }
+    button:hover { background: #2563eb; }
+    button.danger { background: #dc2626; }
+    button.danger:hover { background: #b91c1c; }
+    .flex { display: flex; gap: 8px; align-items: center; }
+    .info { background: #1e3a8a; padding: 12px; border-radius: 8px; margin: 12px 0; border-left: 4px solid #3b82f6; }
+    .warning { background: #854d0e; padding: 12px; border-radius: 8px; margin: 12px 0; border-left: 4px solid #eab308; }
+    .error { background: #7f1d1d; padding: 12px; border-radius: 8px; margin: 12px 0; border-left: 4px solid #dc2626; }
+    .success { background: #14532d; padding: 12px; border-radius: 8px; margin: 12px 0; border-left: 4px solid #22c55e; }
+    pre { white-space: pre-wrap; word-break: break-all; background: #0b1220; padding: 12px; border-radius: 8px; font-size: 12px; }
+    code { background: #1e293b; padding: 2px 6px; border-radius: 4px; font-family: monospace; color: #22d3ee; }
+    .step { background: #1e293b; padding: 12px; border-radius: 8px; margin: 8px 0; border-left: 4px solid #22d3ee; }
+    .step-number { background: #22d3ee; color: #0f172a; width: 24px; height: 24px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 8px; }
+  </style>
+</head>
+<body>
+  <h1>💳 支付问题诊断工具</h1>
+
+  <div class="info">
+    <strong>🎯 使用说明：</strong>
+    <p>如果您完成支付但未自动升级为 Pro 会员，请按以下步骤排查问题。</p>
+  </div>
+
+  <!-- Step 1: Check User Status -->
+  <div class="card">
+    <h2>步骤 1: 检查用户状态</h2>
+    <div class="step">
+      <span class="step-number">1</span>
+      请先登录，然后点击下方按钮检查您当前的会员状态
+    </div>
+    <button onclick="checkUserStatus()">检查我的会员状态</button>
+    <div id="userStatus"></div>
+  </div>
+
+  <!-- Step 2: Check Webhook Logs -->
+  <div class="card">
+    <h2>步骤 2: 检查 Webhook 配置</h2>
+    <div class="warning">
+      <strong>⚠️ 常见问题：</strong> Webhook 可能未正确配置或未被触发
+    </div>
+    <div class="step">
+      <span class="step-number">2</span>
+      请访问 Creem Dashboard 检查 Webhook 配置
+    </div>
+    <div style="margin: 12px 0;">
+      <p>1. 登录 <a href="https://app.creem.io/settings/webhooks" target="_blank" style="color: #22d3ee;">Creem Dashboard → Webhooks</a></p>
+      <p>2. 确认 Webhook URL 为：<code>https://ai-tarot-cards.vercel.app/api/creem-webhook</code></p>
+      <p>3. 确认已订阅事件：<code>order.completed</code></p>
+      <p>4. 查看 Webhook 发送历史，确认是否成功发送</p>
+    </div>
+  </div>
+
+  <!-- Step 3: Manual Upgrade -->
+  <div class="card">
+    <h2>步骤 3: 手动激活会员（仅管理员）</h2>
+    <div class="warning">
+      <strong>⚠️ 管理员功能：</strong> 只有管理员才能使用此功能
+    </div>
+    <div class="step">
+      <span class="step-number">3</span>
+      如果 Webhook 未触发，管理员可以手动激活会员权限
+    </div>
+    <div style="margin: 12px 0;">
+      <div class="flex">
+        <input id="adminEmail" type="text" placeholder="管理员邮箱" style="flex:1;">
+        <input id="adminPassword" type="password" placeholder="管理员密码" style="flex:1;">
+      </div>
+      <div class="flex" style="margin-top: 8px;">
+        <input id="targetUserId" type="text" placeholder="用户 ID (UUID)" style="flex:1;">
+        <button onclick="manualUpgrade()">手动激活会员</button>
+      </div>
+    </div>
+    <div id="manualUpgradeResult"></div>
+  </div>
+
+  <!-- Step 4: View Recent Webhooks (Admin) -->
+  <div class="card">
+    <h2>步骤 4: 查看 Webhook 历史（仅管理员）</h2>
+    <div class="step">
+      <span class="step-number">4</span>
+      查看最近的 Webhook 事件记录
+    </div>
+    <button onclick="viewWebhookLogs()">查看 Webhook 日志</button>
+    <div id="webhookLogs"></div>
+  </div>
+
+  <!-- Troubleshooting Guide -->
+  <div class="card">
+    <h2>📚 常见问题解决方案</h2>
+
+    <div class="step">
+      <strong>Q1: 支付成功但没有升级？</strong>
+      <p>A: 这通常是因为 Webhook 未被 Creem 调用。请检查 Creem Dashboard 中的 Webhook 配置和发送历史。</p>
+    </div>
+
+    <div class="step">
+      <strong>Q2: Webhook URL 是否正确？</strong>
+      <p>A: 确保 Webhook URL 为 <code>https://ai-tarot-cards.vercel.app/api/creem-webhook</code>（无斜杠结尾）</p>
+    </div>
+
+    <div class="step">
+      <strong>Q3: 测试环境 vs 生产环境</strong>
+      <p>A: 确保使用同一环境的 API Key 和 Product ID（都是测试或都是生产）</p>
+    </div>
+
+    <div class="step">
+      <strong>Q4: 如何联系技术支持？</strong>
+      <p>A: 请记录您的用户 ID 和支付时间，发送邮件至 support@example.com</p>
+    </div>
+  </div>
+
+  <script>
+    async function checkUserStatus() {
+      const resultDiv = document.getElementById('userStatus');
+      resultDiv.innerHTML = '<p>正在检查...</p>';
+
+      try {
+        const response = await fetch('/api/me');
+        if (!response.ok) {
+          throw new Error('未登录或请求失败');
+        }
+
+        const data = await response.json();
+        const user = data.user;
+        const plan = data.plan;
+
+        const expiresAt = user.membership_expires_at
+          ? new Date(user.membership_expires_at).toLocaleString('zh-CN')
+          : '无';
+
+        const isPro = plan === 'member' || plan === 'pro' || (user.membership_expires_at && new Date(user.membership_expires_at) > new Date());
+
+        if (isPro) {
+          resultDiv.innerHTML = `
+            <div class="success">
+              <strong>✅ 您已经是 Pro 会员！</strong>
+              <p>用户 ID: <code>${user.id}</code></p>
+              <p>邮箱: ${user.email}</p>
+              <p>会员到期: ${expiresAt}</p>
+            </div>
+          `;
+        } else {
+          resultDiv.innerHTML = `
+            <div class="warning">
+              <strong>⚠️ 您当前是免费用户</strong>
+              <p>用户 ID: <code>${user.id}</code></p>
+              <p>邮箱: ${user.email}</p>
+              <p>会员到期: ${expiresAt}</p>
+              <p style="margin-top:12px;">如果您已完成支付，请继续下面的步骤排查问题。</p>
+            </div>
+          `;
+        }
+      } catch (error) {
+        resultDiv.innerHTML = `
+          <div class="error">
+            <strong>❌ 检查失败</strong>
+            <p>${error.message}</p>
+            <p>请确保您已登录。</p>
+          </div>
+        `;
+      }
+    }
+
+    async function manualUpgrade() {
+      const email = document.getElementById('adminEmail').value;
+      const password = document.getElementById('adminPassword').value;
+      const userId = document.getElementById('targetUserId').value;
+      const resultDiv = document.getElementById('manualUpgradeResult');
+
+      if (!email || !password || !userId) {
+        resultDiv.innerHTML = '<div class="error">请填写所有字段</div>';
+        return;
+      }
+
+      resultDiv.innerHTML = '<p>正在处理...</p>';
+
+      try {
+        const response = await fetch('/api/test-webhook', {
+          method: 'POST',
+          headers: {
+            'Authorization': 'Basic ' + btoa(`${email}:${password}`),
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ userId })
+        });
+
+        if (!response.ok) {
+          throw new Error(`请求失败 (${response.status})`);
+        }
+
+        const data = await response.json();
+
+        resultDiv.innerHTML = `
+          <div class="success">
+            <strong>✅ 会员激活成功！</strong>
+            <p>用户 ID: <code>${data.userId}</code></p>
+            <p>到期时间: ${new Date(data.endsAt).toLocaleString('zh-CN')}</p>
+            <p style="margin-top:12px;">请让用户刷新页面查看会员状态。</p>
+          </div>
+        `;
+      } catch (error) {
+        resultDiv.innerHTML = `
+          <div class="error">
+            <strong>❌ 激活失败</strong>
+            <p>${error.message}</p>
+            <p>请检查管理员凭据和用户 ID 是否正确。</p>
+          </div>
+        `;
+      }
+    }
+
+    async function viewWebhookLogs() {
+      const resultDiv = document.getElementById('webhookLogs');
+      resultDiv.innerHTML = `
+        <div class="info">
+          <p>Webhook 日志存储在 Vercel 函数日志中。</p>
+          <p>请访问 <a href="https://vercel.com/dashboard" target="_blank" style="color: #22d3ee;">Vercel Dashboard</a> → 项目 → Deployments → 最新部署 → Functions → 查看 <code>api/creem-webhook</code> 的日志</p>
+          <p>日志格式示例：</p>
+          <pre>[Creem Webhook] Received webhook
+[Creem Webhook] Event type: order.completed
+[Creem Webhook] Granting membership: {...}
+[Creem Webhook] Membership granted successfully</pre>
+        </div>
+      `;
+    }
+  </script>
+</body>
+</html>

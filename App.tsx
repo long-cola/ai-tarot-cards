@@ -584,16 +584,47 @@ const App: React.FC = () => {
     if (paymentStatus === 'success') {
       console.log('[Payment] Payment success detected!');
 
-      // Show success message
-      alert(language === 'zh' ? '支付成功！会员权限正在激活中...' : 'Payment successful! Activating membership...');
-
       // Remove payment parameter from URL
       const newUrl = new URL(window.location.href);
       newUrl.searchParams.delete('payment');
       window.history.replaceState({}, '', newUrl.toString());
 
-      // Reload session to get updated membership status
-      fetchSession();
+      // Show success message
+      alert(language === 'zh'
+        ? '支付成功！正在激活会员权限，请稍候...'
+        : 'Payment successful! Activating membership, please wait...');
+
+      // Reload session with retry logic
+      // Webhook processing may take a few seconds
+      const reloadWithRetry = async (attempt = 1, maxAttempts = 5) => {
+        console.log(`[Payment] Checking membership status (attempt ${attempt}/${maxAttempts})...`);
+
+        await fetchSession();
+
+        // Check if plan was updated to member/pro
+        const currentPlan = localStorage.getItem('current_plan');
+        if (currentPlan === 'member' || currentPlan === 'pro') {
+          console.log('[Payment] Membership activated successfully!');
+          alert(language === 'zh'
+            ? '会员权限已激活！您现在是 Pro 用户了 🎉'
+            : 'Membership activated! You are now a Pro user 🎉');
+          return;
+        }
+
+        // If not upgraded yet and still have attempts left, retry
+        if (attempt < maxAttempts) {
+          console.log(`[Payment] Not upgraded yet, retrying in 2 seconds...`);
+          setTimeout(() => reloadWithRetry(attempt + 1, maxAttempts), 2000);
+        } else {
+          console.error('[Payment] Failed to detect membership upgrade after', maxAttempts, 'attempts');
+          alert(language === 'zh'
+            ? '支付成功，但会员激活延迟。请刷新页面或联系客服。'
+            : 'Payment successful, but activation delayed. Please refresh or contact support.');
+        }
+      };
+
+      // Start checking after a small delay to allow webhook processing
+      setTimeout(() => reloadWithRetry(), 1000);
     }
   }, [language]);
 
@@ -820,12 +851,17 @@ const App: React.FC = () => {
       console.log('[fetchSession] Got session data:', data?.user ? 'user found' : 'no user', 'plan:', data?.plan);
       console.log('[fetchSession] membership_expires_at:', data?.user?.membership_expires_at);
       if (data?.user) {
+        const userPlan = (data.plan as Plan) || 'free';
         setUser(data.user);
-        setPlan((data.plan as Plan) || 'free');
+        setPlan(userPlan);
         setRemainingToday(data.remaining_today ?? null);
+
+        // Save plan to localStorage for payment success check
+        localStorage.setItem('current_plan', userPlan);
+
         if (data.topic_quota_total) {
           setTopicQuota({
-            plan: (data.plan as Plan) || 'free',
+            plan: userPlan,
             topic_quota_total: data.topic_quota_total,
             topic_quota_remaining: data.topic_quota_remaining ?? data.topic_quota_total,
             event_quota_per_topic: data.event_quota_per_topic ?? 0,
