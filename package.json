@@ -8,7 +8,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "db:init": "tsx scripts/init-db.ts",
-    "db:migrate-prompts": "tsx scripts/migrate-prompts.ts"
+    "db:migrate-prompts": "tsx scripts/migrate-prompts.ts",
+    "db:migrate-analytics": "tsx scripts/migrate-analytics.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.2",

@@ -27,8 +27,8 @@ CREATE TABLE IF NOT EXISTS page_views (
 
 -- Index for efficient queries
 CREATE INDEX IF NOT EXISTS idx_daily_analytics_date ON daily_analytics(date DESC);
-CREATE INDEX IF NOT EXISTS idx_page_views_date ON page_views(date(created_at));
-CREATE INDEX IF NOT EXISTS idx_page_views_visitor ON page_views(visitor_id, date(created_at));
+CREATE INDEX IF NOT EXISTS idx_page_views_created_at ON page_views(created_at);
+CREATE INDEX IF NOT EXISTS idx_page_views_visitor ON page_views(visitor_id, created_at);
 
 -- Function to increment daily analytics
 CREATE OR REPLACE FUNCTION increment_analytics(
