@@ -18,7 +18,7 @@ export default async function handler(req: any, res: any) {
   }
 
   try {
-    const planInfo = getPlanInfo(user);
+    const planInfo = await getPlanInfo(user);
     const today = await getTodayUsage(user.id);
     const quota = await getPlanQuotaSummary(user);
 

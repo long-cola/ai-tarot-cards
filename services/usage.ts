@@ -1,28 +1,62 @@
 import { getPool } from './db.js';
 import { User } from './jwt.js';
 
-export function getPlanInfo(user: User | null) {
+/**
+ * Get plan info by checking BOTH users.membership_expires_at AND membership_cycles table
+ * This ensures paid users are recognized even if webhook didn't update users table
+ */
+export async function getPlanInfo(user: User | null) {
   if (!user) return { plan: 'guest', dailyLimit: 0, membershipValid: false };
 
   const now = new Date();
+  const pool = getPool();
+
+  // First check users.membership_expires_at (legacy/fallback)
   const expiresAt = user?.membership_expires_at ? new Date(user.membership_expires_at) : null;
-  const membershipValid = expiresAt && expiresAt > now;
-  const plan = membershipValid ? 'member' : 'free';
-  const dailyLimit = membershipValid ? 50 : 2;
+  const membershipValidFromUser = expiresAt && expiresAt > now;
 
-  console.log('[getPlanInfo] User plan calculation:', {
-    userId: user.id,
-    email: user.email,
-    membership_expires_at: user.membership_expires_at,
-    membership_expires_at_type: typeof user.membership_expires_at,
-    expiresAt: expiresAt?.toISOString(),
-    now: now.toISOString(),
-    membershipValid,
-    plan,
-    dailyLimit,
-  });
+  // Then check membership_cycles table (more reliable)
+  try {
+    const cycleResult = await pool.query(
+      `SELECT plan, ends_at
+       FROM membership_cycles
+       WHERE user_id = $1
+         AND starts_at <= NOW()
+         AND ends_at > NOW()
+       ORDER BY ends_at DESC
+       LIMIT 1`,
+      [user.id]
+    );
 
-  return { plan, dailyLimit, membershipValid };
+    const activeCycle = cycleResult.rows[0];
+    const membershipValidFromCycle = activeCycle && (activeCycle.plan === 'member' || activeCycle.plan === 'pro');
+
+    // Use cycle info if available, fallback to user table
+    const membershipValid = membershipValidFromCycle || membershipValidFromUser;
+    const plan = membershipValid ? 'member' : 'free';
+    const dailyLimit = membershipValid ? 50 : 2;
+
+    console.log('[getPlanInfo] User plan calculation:', {
+      userId: user.id,
+      email: user.email,
+      membership_expires_at: user.membership_expires_at,
+      expiresAt: expiresAt?.toISOString(),
+      activeCycle: activeCycle ? { plan: activeCycle.plan, ends_at: activeCycle.ends_at } : null,
+      membershipValidFromUser,
+      membershipValidFromCycle,
+      finalPlan: plan,
+      dailyLimit,
+    });
+
+    return { plan, dailyLimit, membershipValid };
+  } catch (error) {
+    console.error('[getPlanInfo] Error checking membership_cycles, falling back to user table:', error);
+
+    // Fallback to user table only
+    const plan = membershipValidFromUser ? 'member' : 'free';
+    const dailyLimit = membershipValidFromUser ? 50 : 2;
+    return { plan, dailyLimit, membershipValid: membershipValidFromUser };
+  }
 }
 
 export async function getTodayUsage(userId: string) {

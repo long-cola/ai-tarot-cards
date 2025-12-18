@@ -27,7 +27,7 @@ async function handleConsumeUsage(req: any, res: any) {
   }
 
   try {
-    const planInfo = getPlanInfo(user);
+    const planInfo = await getPlanInfo(user);
     const today = await getTodayUsage(user.id);
 
     console.log('[/api/usage/consume] User quota check:', {
