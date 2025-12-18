@@ -427,7 +427,7 @@ const App: React.FC = () => {
   const [question, setQuestion] = useState(initialPending?.question || '');
   const [deck, setDeck] = useState<typeof MAJOR_ARCANA>([]);
   const [drawnCards, setDrawnCards] = useState<DrawnCard[]>(initialPending?.cards || []);
-  const [reading, setReading] = useState('');
+  const [reading, setReading] = useState(initialPending?.reading || '');
   const [isReadingLoading, setIsReadingLoading] = useState(false);
   const [isInteracting, setIsInteracting] = useState(false);
   const [language, setLanguage] = useState<Language>('zh');
@@ -713,6 +713,14 @@ const App: React.FC = () => {
         return;
       }
 
+      // If reading already exists (restored from localStorage with the reading), no need to fetch again
+      if (reading) {
+        console.log('[PendingBaseline] Reading already exists from localStorage, skipping API call');
+        setPendingBaseline(null);
+        setProcessingPending(false);
+        return;
+      }
+
       console.log('[PendingBaseline] Fetching reading for restored session...');
       setProcessingPending(true);
       setIsReadingLoading(true);
@@ -767,9 +775,28 @@ const App: React.FC = () => {
       }
     };
     runPending();
-  }, [user, pendingBaseline, processingPending, phase, language]);
+  }, [user, pendingBaseline, processingPending, phase, language, reading]);
 
   const loginWithGoogle = () => {
+    // Save current reading state before redirecting to OAuth
+    if (phase === AppPhase.ANALYSIS && question && drawnCards.length > 0 && reading) {
+      try {
+        localStorage.setItem('pendingReading', JSON.stringify({
+          question,
+          cards: drawnCards,
+          reading,  // Also save the reading text
+          timestamp: Date.now()
+        }));
+        console.log('[Login] Saved current reading to localStorage before OAuth:', {
+          question,
+          cardsCount: drawnCards.length,
+          hasReading: !!reading
+        });
+      } catch (e) {
+        console.error('[Login] Failed to save reading to localStorage:', e);
+      }
+    }
+
     window.location.href = `${API_BASE_URL}/api/auth/google`;
   };
 
