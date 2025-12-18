@@ -37,6 +37,17 @@ export const Navbar: React.FC<NavbarProps> = ({
   const isZh = language === 'zh';
   const [isScrolled, setIsScrolled] = useState(false);
 
+  // Debug: Log quota info when it changes
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      console.log('[Navbar] User quota info:', {
+        user: user?.email,
+        plan,
+        topicQuota,
+      });
+    }
+  }, [isAuthenticated, user, plan, topicQuota]);
+
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10);
@@ -201,8 +212,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                     }}
                   >
                     {isZh
-                      ? `今日命题剩余 ${topicQuota?.topic_quota_remaining ?? 0}/${topicQuota?.topic_quota_total ?? (plan === 'member' ? 30 : 1)}`
-                      : `Topics remaining ${topicQuota?.topic_quota_remaining ?? 0}/${topicQuota?.topic_quota_total ?? (plan === 'member' ? 30 : 1)}`}
+                      ? `本周期命题剩余 ${topicQuota?.topic_quota_remaining ?? '?'}/${topicQuota?.topic_quota_total ?? '?'}`
+                      : `Topics remaining ${topicQuota?.topic_quota_remaining ?? '?'}/${topicQuota?.topic_quota_total ?? '?'}`}
                   </div>
 
                   {/* Event Quota */}
@@ -216,8 +227,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                     }}
                   >
                     {isZh
-                      ? `每命题事件上限 ${topicQuota?.event_quota_per_topic ?? (plan === 'member' ? 500 : 3)}`
-                      : `Events per topic ${topicQuota?.event_quota_per_topic ?? (plan === 'member' ? 500 : 3)}`}
+                      ? `每命题事件上限 ${topicQuota?.event_quota_per_topic ?? '?'}`
+                      : `Events per topic ${topicQuota?.event_quota_per_topic ?? '?'}`}
                   </div>
 
                   {/* Expiry Date (for Pro users only) */}
@@ -232,8 +243,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                       }}
                     >
                       {isZh
-                        ? `Pro 会员到期： ${new Date(topicQuota.expires_at).toLocaleDateString('zh-CN')}`
-                        : `Pro expires: ${new Date(topicQuota.expires_at).toLocaleDateString('en-US')}`}
+                        ? `Pro 会员到期： ${new Date(topicQuota.expires_at).toLocaleDateString('zh-CN', { year: 'numeric', month: 'numeric', day: 'numeric' }).replace(/\//g, '/')}`
+                        : `Pro expires: ${new Date(topicQuota.expires_at).toLocaleDateString('en-US', { year: 'numeric', month: 'numeric', day: 'numeric' })}`}
                     </div>
                   )}
                 </div>
