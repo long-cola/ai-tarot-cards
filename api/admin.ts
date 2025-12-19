@@ -6,6 +6,7 @@ import {
   getTopicEvents,
   getRedemptionCodes,
   downgradeUser,
+  deleteUser,
 } from '../services/admin.js';
 import { getPool } from '../services/db.js';
 import { generateCodes } from '../services/redemption.js';
@@ -84,6 +85,12 @@ export default async function handler(req: any, res: any) {
   const userDowngradeMatch = path.match(/\/admin\/users\/([^/]+)\/downgrade/);
   if (userDowngradeMatch && method === 'POST') {
     return handleDowngradeUser(req, res, userDowngradeMatch[1]);
+  }
+
+  // DELETE /api/admin/users/:id - Delete user
+  const userDeleteMatch = path.match(/\/admin\/users\/([^/]+)$/);
+  if (userDeleteMatch && method === 'DELETE') {
+    return handleDeleteUser(req, res, userDeleteMatch[1]);
   }
 
   // GET /api/admin/users/:id/topics - Get user's topics
@@ -347,6 +354,17 @@ async function handleDowngradeUser(req: any, res: any, userId: string) {
   } catch (error: any) {
     console.error('[/api/admin/users/:id/downgrade] Error:', error);
     res.status(500).json({ ok: false, message: 'internal_error' });
+  }
+}
+
+// Delete user and all their data
+async function handleDeleteUser(req: any, res: any, userId: string) {
+  try {
+    const result = await deleteUser(userId);
+    res.json({ ok: true, message: 'User deleted successfully', email: result.email });
+  } catch (error: any) {
+    console.error('[/api/admin/users/:id] Delete error:', error);
+    res.status(500).json({ ok: false, message: error.message || 'internal_error' });
   }
 }
 

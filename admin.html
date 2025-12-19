@@ -295,6 +295,7 @@
             <td>
               <button onclick="loadTopics('${u.id}')">命题</button>
               ${u.plan === 'member' ? `<button onclick="downgradeUserConfirm('${u.id}')" style="background:#dc2626;">降级</button>` : ''}
+              <button onclick="deleteUserConfirm('${u.id}', '${u.email}')" style="background:#991b1b; margin-left: 4px;">删除</button>
             </td>
           `;
           tbody.appendChild(tr);
@@ -722,6 +723,46 @@
       } catch (error) {
         console.error('降级用户失败:', error);
         alert('降级用户失败：' + error.message);
+      }
+    }
+
+    // Delete user function
+    async function deleteUserConfirm(userId, userEmail) {
+      const confirmMessage = `⚠️ 危险操作！\n\n确定要删除用户 ${userEmail} 吗？\n\n此操作将永久删除：\n- 用户账号\n- 所有命题\n- 所有事件\n- 所有会员周期记录\n- 所有使用记录\n\n此操作不可恢复！请输入 "DELETE" 确认：`;
+
+      const userInput = prompt(confirmMessage);
+
+      if (userInput !== 'DELETE') {
+        if (userInput !== null) {
+          alert('输入不正确，操作已取消');
+        }
+        return;
+      }
+
+      try {
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const headers = {
+          'Authorization': 'Basic ' + btoa(`${email}:${password}`),
+          'Content-Type': 'application/json'
+        };
+
+        const response = await fetch(`/api/admin/users/${userId}`, {
+          method: 'DELETE',
+          headers
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || `删除失败 (${response.status})`);
+        }
+
+        const result = await response.json();
+        alert(`用户 ${result.email} 已被永久删除！`);
+        loadUsers();
+      } catch (error) {
+        console.error('删除用户失败:', error);
+        alert('删除用户失败：' + error.message);
       }
     }
   </script>

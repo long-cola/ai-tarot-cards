@@ -173,3 +173,88 @@ export async function downgradeUser(userId: string) {
     throw error;
   }
 }
+
+/**
+ * Delete a user and all their associated data
+ * This will cascade delete all related records:
+ * - topic_events
+ * - topics
+ * - membership_cycles
+ * - daily_usage
+ * - page_views
+ * - redemption_codes (set redeemed_by to NULL)
+ * - users
+ */
+export async function deleteUser(userId: string) {
+  const pool = getPool();
+
+  try {
+    // Start transaction
+    await pool.query('BEGIN');
+
+    console.log('[Admin] Starting user deletion:', userId);
+
+    // 1. Delete topic_events (child of topics)
+    const eventsResult = await pool.query(
+      `DELETE FROM topic_events WHERE topic_id IN (SELECT id FROM topics WHERE user_id = $1)`,
+      [userId]
+    );
+    console.log(`[Admin] Deleted ${eventsResult.rowCount} topic events`);
+
+    // 2. Delete topics
+    const topicsResult = await pool.query(
+      `DELETE FROM topics WHERE user_id = $1`,
+      [userId]
+    );
+    console.log(`[Admin] Deleted ${topicsResult.rowCount} topics`);
+
+    // 3. Delete membership_cycles
+    const cyclesResult = await pool.query(
+      `DELETE FROM membership_cycles WHERE user_id = $1`,
+      [userId]
+    );
+    console.log(`[Admin] Deleted ${cyclesResult.rowCount} membership cycles`);
+
+    // 4. Delete daily_usage
+    const usageResult = await pool.query(
+      `DELETE FROM daily_usage WHERE user_id = $1`,
+      [userId]
+    );
+    console.log(`[Admin] Deleted ${usageResult.rowCount} daily usage records`);
+
+    // 5. Delete page_views
+    const viewsResult = await pool.query(
+      `DELETE FROM page_views WHERE user_id = $1`,
+      [userId]
+    );
+    console.log(`[Admin] Deleted ${viewsResult.rowCount} page views`);
+
+    // 6. Update redemption_codes to remove user reference
+    const codesResult = await pool.query(
+      `UPDATE redemption_codes SET redeemed_by = NULL WHERE redeemed_by = $1`,
+      [userId]
+    );
+    console.log(`[Admin] Updated ${codesResult.rowCount} redemption codes`);
+
+    // 7. Delete user
+    const userResult = await pool.query(
+      `DELETE FROM users WHERE id = $1 RETURNING email`,
+      [userId]
+    );
+
+    if (userResult.rowCount === 0) {
+      throw new Error('User not found');
+    }
+
+    // Commit transaction
+    await pool.query('COMMIT');
+
+    console.log('[Admin] User deleted successfully:', userResult.rows[0].email);
+    return { success: true, email: userResult.rows[0].email };
+  } catch (error) {
+    // Rollback on error
+    await pool.query('ROLLBACK');
+    console.error('[Admin] Error deleting user:', error);
+    throw error;
+  }
+}
