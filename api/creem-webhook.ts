@@ -2,11 +2,10 @@
  * Creem Webhook Handler
  *
  * Handles payment events from Creem.io:
- * - order.created: New order created
- * - order.completed: Payment completed successfully
- * - subscription.activated: Subscription started
- * - subscription.renewed: Subscription renewed
- * - subscription.cancelled: Subscription cancelled
+ * - checkout.completed: Payment completed successfully
+ * - subscription.active: Subscription started
+ * - subscription.paid: Subscription renewed/paid
+ * - subscription.canceled: Subscription cancelled
  */
 
 import { query } from '../services/db.js';
@@ -22,33 +21,35 @@ export default async function handler(req: any, res: any) {
 
   try {
     const event = req.body;
-    console.log('[Creem Webhook] Event type:', event.type);
-    console.log('[Creem Webhook] Event data:', JSON.stringify(event, null, 2));
+    console.log('[Creem Webhook] Event ID:', event.id);
+    console.log('[Creem Webhook] Event type:', event.eventType);
+    console.log('[Creem Webhook] Full event:', JSON.stringify(event, null, 2));
 
-    // Extract event type and data
-    const eventType = event.type;
-    const eventData = event.data;
+    // Extract event type and data (Creem uses eventType and object, not type and data)
+    const eventType = event.eventType;
+    const eventData = event.object;
 
     if (!eventType || !eventData) {
-      console.error('[Creem Webhook] Invalid webhook payload');
+      console.error('[Creem Webhook] Invalid webhook payload - missing eventType or object');
+      console.error('[Creem Webhook] Received:', { eventType, hasObject: !!eventData });
       return res.status(400).json({ error: 'Invalid webhook payload' });
     }
 
-    // Handle different event types
+    // Handle different event types (Creem uses different names)
     switch (eventType) {
-      case 'order.completed':
+      case 'checkout.completed':
         await handleOrderCompleted(eventData);
         break;
 
-      case 'subscription.activated':
+      case 'subscription.active':
         await handleSubscriptionActivated(eventData);
         break;
 
-      case 'subscription.renewed':
+      case 'subscription.paid':
         await handleSubscriptionRenewed(eventData);
         break;
 
-      case 'subscription.cancelled':
+      case 'subscription.canceled':
         await handleSubscriptionCancelled(eventData);
         break;
 
@@ -67,10 +68,10 @@ export default async function handler(req: any, res: any) {
 }
 
 /**
- * Handle order.completed event (one-time payment)
+ * Handle checkout.completed event (one-time payment)
  */
 async function handleOrderCompleted(data: any) {
-  console.log('[Creem Webhook] Handling order.completed');
+  console.log('[Creem Webhook] Handling checkout.completed');
 
   const userId = data.metadata?.user_id;
   const userEmail = data.metadata?.user_email;
@@ -123,10 +124,10 @@ async function handleOrderCompleted(data: any) {
 }
 
 /**
- * Handle subscription.activated event
+ * Handle subscription.active event
  */
 async function handleSubscriptionActivated(data: any) {
-  console.log('[Creem Webhook] Handling subscription.activated');
+  console.log('[Creem Webhook] Handling subscription.active');
 
   const userId = data.metadata?.user_id;
   const subscriptionId = data.id;
@@ -179,10 +180,10 @@ async function handleSubscriptionActivated(data: any) {
 }
 
 /**
- * Handle subscription.renewed event
+ * Handle subscription.paid event
  */
 async function handleSubscriptionRenewed(data: any) {
-  console.log('[Creem Webhook] Handling subscription.renewed');
+  console.log('[Creem Webhook] Handling subscription.paid');
 
   const userId = data.metadata?.user_id;
 
@@ -241,10 +242,10 @@ async function handleSubscriptionRenewed(data: any) {
 }
 
 /**
- * Handle subscription.cancelled event
+ * Handle subscription.canceled event
  */
 async function handleSubscriptionCancelled(data: any) {
-  console.log('[Creem Webhook] Handling subscription.cancelled');
+  console.log('[Creem Webhook] Handling subscription.canceled');
 
   const userId = data.metadata?.user_id;
 
