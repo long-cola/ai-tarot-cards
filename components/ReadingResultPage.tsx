@@ -220,7 +220,11 @@ export const ReadingResultPage: React.FC<ReadingResultPageProps> = ({
           ) : (
             <div className="w-full">
               <div className="prose prose-invert prose-sm max-w-none">
-                <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm]}
+                  components={markdownComponents}
+                  linkTarget="_blank"
+                >
                   {reading}
                 </ReactMarkdown>
               </div>

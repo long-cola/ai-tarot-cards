@@ -6,6 +6,66 @@
     <title>神秘塔罗 AI</title>
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%2323415f'/%3E%3Ccircle cx='32' cy='28' r='16' fill='%23c084fc'/%3E%3Ccircle cx='26' cy='22' r='4' fill='%23f8fafc'/%3E%3Cpath d='M16 50h32v6H16z' fill='%23fbbf24'/%3E%3C/svg%3E" />
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        plugins: [
+          // Load Typography plugin from CDN
+          function({ addBase, addComponents, addUtilities }) {
+            // Basic prose styles for markdown
+            addComponents({
+              '.prose': {
+                maxWidth: '65ch',
+                fontSize: '1rem',
+                lineHeight: '1.75',
+              },
+              '.prose-invert': {
+                '--tw-prose-body': 'rgb(209 213 219)',
+                '--tw-prose-headings': 'rgb(243 244 246)',
+                '--tw-prose-links': 'rgb(96 165 250)',
+                '--tw-prose-bold': 'rgb(243 244 246)',
+                '--tw-prose-code': 'rgb(243 244 246)',
+              },
+              '.prose-sm': {
+                fontSize: '0.875rem',
+                lineHeight: '1.7142857',
+              },
+              '.prose h1, .prose h2, .prose h3, .prose h4': {
+                color: 'var(--tw-prose-headings)',
+                fontWeight: '700',
+                marginTop: '1.5em',
+                marginBottom: '0.5em',
+              },
+              '.prose p': {
+                marginTop: '1em',
+                marginBottom: '1em',
+              },
+              '.prose ul, .prose ol': {
+                marginTop: '1em',
+                marginBottom: '1em',
+                paddingLeft: '1.625em',
+              },
+              '.prose li': {
+                marginTop: '0.5em',
+                marginBottom: '0.5em',
+              },
+              '.prose strong': {
+                color: 'var(--tw-prose-bold)',
+                fontWeight: '600',
+              },
+              '.prose blockquote': {
+                borderLeftWidth: '0.25rem',
+                borderLeftColor: 'rgb(55 65 81)',
+                paddingLeft: '1em',
+                fontStyle: 'italic',
+              },
+              '.max-w-none': {
+                maxWidth: 'none',
+              },
+            });
+          }
+        ]
+      }
+    </script>
     <!-- Using domestic CDN mirror for better accessibility in China -->
     <link rel="preconnect" href="https://fonts.loli.net">
     <link rel="preconnect" href="https://gstatic.loli.net" crossorigin>
