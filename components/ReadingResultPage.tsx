@@ -250,16 +250,28 @@ export const ReadingResultPage: React.FC<ReadingResultPageProps> = ({
           ) : (
             <div className="w-full">
               {(() => {
-                console.log('[ReadingResultPage] Rendering markdown, length:', reading.length);
-                console.log('[ReadingResultPage] First 200 chars:', reading.substring(0, 200));
-                console.log('[ReadingResultPage] Contains markdown?', reading.includes('#'), reading.includes('**'), reading.includes('>'));
+                // Remove markdown code block wrapper if present
+                let cleanedReading = reading;
+
+                // Check if wrapped in ```markdown ... ```
+                if (cleanedReading.startsWith('```markdown\n') || cleanedReading.startsWith('```md\n') || cleanedReading.startsWith('```\n')) {
+                  console.log('[ReadingResultPage] Detected code block wrapper, removing...');
+                  // Remove opening ```markdown or ```md or ```
+                  cleanedReading = cleanedReading.replace(/^```(?:markdown|md)?\n/, '');
+                  // Remove closing ```
+                  cleanedReading = cleanedReading.replace(/\n```\s*$/, '');
+                  console.log('[ReadingResultPage] After cleaning, first 200 chars:', cleanedReading.substring(0, 200));
+                }
+
+                console.log('[ReadingResultPage] Rendering markdown, length:', cleanedReading.length);
+
                 return (
                   <ReactMarkdown
                     remarkPlugins={[remarkGfm]}
                     components={markdownComponents}
                     linkTarget="_blank"
                   >
-                    {reading}
+                    {cleanedReading}
                   </ReactMarkdown>
                 );
               })()}
