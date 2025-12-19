@@ -26,16 +26,22 @@ interface ReadingResultPageProps {
 }
 
 const markdownComponents = {
-  h1: ({ children }: { children: React.ReactNode }) => (
-    <h1 className="text-[24px] font-bold leading-[32px] tracking-[0.5px] mb-4 text-[rgba(253,230,138,0.95)]">
-      {children}
-    </h1>
-  ),
-  h2: ({ children }: { children: React.ReactNode }) => (
-    <h2 className="text-[20px] font-bold leading-[28px] tracking-[0.5px] mb-4 text-[rgba(253,230,138,0.9)]">
-      {children}
-    </h2>
-  ),
+  h1: ({ children }: { children: React.ReactNode }) => {
+    console.log('[Markdown] h1 rendered:', children);
+    return (
+      <h1 className="text-[24px] font-bold leading-[32px] tracking-[0.5px] mb-4 text-[rgba(253,230,138,0.95)]">
+        {children}
+      </h1>
+    );
+  },
+  h2: ({ children }: { children: React.ReactNode }) => {
+    console.log('[Markdown] h2 rendered:', children);
+    return (
+      <h2 className="text-[20px] font-bold leading-[28px] tracking-[0.5px] mb-4 text-[rgba(253,230,138,0.9)]">
+        {children}
+      </h2>
+    );
+  },
   h3: ({ children }: { children: React.ReactNode }) => (
     <h3 className="text-[14px] font-semibold leading-[22px] mb-2 text-[#FCD34D]">
       {children}
@@ -56,9 +62,12 @@ const markdownComponents = {
   em: ({ children }: { children: React.ReactNode }) => (
     <em className="text-[#E8D6FF] italic">{children}</em>
   ),
-  p: ({ children }: { children: React.ReactNode }) => (
-    <p className="leading-[22px] text-[#A38FFF] break-words mb-4 text-[14px] font-semibold">{children}</p>
-  ),
+  p: ({ children }: { children: React.ReactNode }) => {
+    console.log('[Markdown] p rendered:', children);
+    return (
+      <p className="leading-[22px] text-[#A38FFF] break-words mb-4 text-[14px] font-semibold">{children}</p>
+    );
+  },
   blockquote: ({ children }: { children: React.ReactNode }) => (
     <blockquote className="border-l-4 border-[#9D7FF5] pl-4 py-2 my-4 text-[#B8A5E0] italic">
       {children}
@@ -240,13 +249,20 @@ export const ReadingResultPage: React.FC<ReadingResultPageProps> = ({
             </div>
           ) : (
             <div className="w-full">
-              <ReactMarkdown
-                remarkPlugins={[remarkGfm]}
-                components={markdownComponents}
-                linkTarget="_blank"
-              >
-                {reading}
-              </ReactMarkdown>
+              {(() => {
+                console.log('[ReadingResultPage] Rendering markdown, length:', reading.length);
+                console.log('[ReadingResultPage] First 200 chars:', reading.substring(0, 200));
+                console.log('[ReadingResultPage] Contains markdown?', reading.includes('#'), reading.includes('**'), reading.includes('>'));
+                return (
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm]}
+                    components={markdownComponents}
+                    linkTarget="_blank"
+                  >
+                    {reading}
+                  </ReactMarkdown>
+                );
+              })()}
             </div>
           )}
 
