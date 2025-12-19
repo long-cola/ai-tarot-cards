@@ -258,19 +258,10 @@ export const ReadingResultPage: React.FC<ReadingResultPageProps> = ({
               </p>
             </div>
           ) : (
-            <div className="w-full overflow-hidden">
-              <div className="prose prose-invert max-w-none" style={{
-                wordBreak: 'break-word',
-                overflowWrap: 'break-word',
-                whiteSpace: 'pre-wrap'
-              }}>
-                <ReactMarkdown
-                  remarkPlugins={[remarkGfm]}
-                  components={markdownComponents}
-                >
-                  {reading}
-                </ReactMarkdown>
-              </div>
+            <div className="w-full text-sm break-words whitespace-pre-wrap overflow-wrap-anywhere">
+              <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+                {reading}
+              </ReactMarkdown>
             </div>
           )}
 
