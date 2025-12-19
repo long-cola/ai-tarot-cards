@@ -27,29 +27,29 @@ interface ReadingResultPageProps {
 
 const markdownComponents = {
   h2: ({ children }: { children: React.ReactNode }) => (
-    <h2 className="text-xl font-semibold text-amber-200/90 tracking-wide mb-3 border-l-4 border-amber-400/40 pl-3">
+    <h2 className="text-[20px] font-bold leading-[28px] tracking-[0.5px] mb-4 text-[rgba(253,230,138,0.9)]">
       {children}
     </h2>
   ),
   h3: ({ children }: { children: React.ReactNode }) => (
-    <h3 className="text-lg font-semibold text-amber-100/90 mb-2">
+    <h3 className="text-[14px] font-semibold leading-[22px] mb-2 text-[#FCD34D]">
       {children}
     </h3>
   ),
   ul: ({ children }: { children: React.ReactNode }) => (
-    <ul className="list-disc list-inside space-y-2 text-slate-200/90">{children}</ul>
+    <ul className="list-disc list-inside space-y-2 text-[#A38FFF] text-[14px] leading-[22px] my-4">{children}</ul>
   ),
   ol: ({ children }: { children: React.ReactNode }) => (
-    <ol className="list-decimal list-inside space-y-2 text-slate-200/90">{children}</ol>
+    <ol className="list-decimal list-inside space-y-2 text-[#A38FFF] text-[14px] leading-[22px] my-4">{children}</ol>
   ),
   li: ({ children }: { children: React.ReactNode }) => (
-    <li className="leading-relaxed">{children}</li>
+    <li className="leading-[22px]">{children}</li>
   ),
   strong: ({ children }: { children: React.ReactNode }) => (
-    <strong className="text-amber-300 font-semibold">{children}</strong>
+    <strong className="text-[#FCD34D] font-semibold">{children}</strong>
   ),
   p: ({ children }: { children: React.ReactNode }) => (
-    <p className="leading-relaxed text-slate-200/90 break-words mb-2">{children}</p>
+    <p className="leading-[22px] text-[#A38FFF] break-words mb-4 text-[14px] font-semibold">{children}</p>
   ),
 };
 
@@ -218,10 +218,12 @@ export const ReadingResultPage: React.FC<ReadingResultPageProps> = ({
               </p>
             </div>
           ) : (
-            <div className="w-full bg-slate-800/60 border border-white/5 rounded-xl p-4 text-sm text-slate-200 break-words whitespace-pre-wrap overflow-wrap-anywhere">
-              <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
-                {reading}
-              </ReactMarkdown>
+            <div className="w-full">
+              <div className="prose prose-invert prose-sm max-w-none">
+                <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+                  {reading}
+                </ReactMarkdown>
+              </div>
             </div>
           )}
 
