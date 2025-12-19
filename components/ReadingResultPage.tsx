@@ -26,70 +26,30 @@ interface ReadingResultPageProps {
 }
 
 const markdownComponents = {
-  h1: ({ children }: { children: React.ReactNode }) => (
-    <h1 className="text-[24px] font-bold leading-[32px] tracking-[0.5px] mb-4 text-[rgba(253,230,138,0.95)]" style={{
-      wordBreak: 'break-word',
-      overflowWrap: 'break-word'
-    }}>
-      {children}
-    </h1>
-  ),
   h2: ({ children }: { children: React.ReactNode }) => (
-    <h2 className="text-[20px] font-bold leading-[28px] tracking-[0.5px] mb-4 text-[rgba(253,230,138,0.9)]" style={{
-      wordBreak: 'break-word',
-      overflowWrap: 'break-word'
-    }}>
+    <h2 className="text-xl font-semibold text-amber-200/90 tracking-wide mb-3 border-l-4 border-amber-400/40 pl-3">
       {children}
     </h2>
   ),
   h3: ({ children }: { children: React.ReactNode }) => (
-    <h3 className="text-[16px] font-semibold leading-[24px] mb-3 text-[#FCD34D]" style={{
-      wordBreak: 'break-word',
-      overflowWrap: 'break-word'
-    }}>
+    <h3 className="text-lg font-semibold text-amber-100/90 mb-2">
       {children}
     </h3>
   ),
   ul: ({ children }: { children: React.ReactNode }) => (
-    <ul className="list-disc list-inside space-y-2 text-[#A38FFF] text-[14px] leading-[22px] my-4 pl-4">{children}</ul>
+    <ul className="list-disc list-inside space-y-2 text-slate-200/90">{children}</ul>
   ),
   ol: ({ children }: { children: React.ReactNode }) => (
-    <ol className="list-decimal list-inside space-y-2 text-[#A38FFF] text-[14px] leading-[22px] my-4 pl-4">{children}</ol>
+    <ol className="list-decimal list-inside space-y-2 text-slate-200/90">{children}</ol>
   ),
   li: ({ children }: { children: React.ReactNode }) => (
-    <li className="leading-[22px] mb-2" style={{
-      wordBreak: 'break-word',
-      overflowWrap: 'break-word'
-    }}>{children}</li>
+    <li className="leading-relaxed">{children}</li>
   ),
   strong: ({ children }: { children: React.ReactNode }) => (
-    <strong className="text-[#FCD34D] font-semibold">{children}</strong>
-  ),
-  em: ({ children }: { children: React.ReactNode }) => (
-    <em className="text-[#E8D6FF] italic">{children}</em>
+    <strong className="text-amber-300 font-semibold">{children}</strong>
   ),
   p: ({ children }: { children: React.ReactNode }) => (
-    <p className="leading-[22px] text-[#A38FFF] mb-4 text-[14px] font-semibold" style={{
-      wordBreak: 'break-word',
-      overflowWrap: 'break-word',
-      whiteSpace: 'pre-wrap'
-    }}>{children}</p>
-  ),
-  blockquote: ({ children }: { children: React.ReactNode }) => (
-    <blockquote className="border-l-4 border-[#9D7FF5] pl-4 py-2 my-4 text-[#B8A5E0] italic" style={{
-      wordBreak: 'break-word',
-      overflowWrap: 'break-word'
-    }}>
-      {children}
-    </blockquote>
-  ),
-  code: ({ children }: { children: React.ReactNode }) => (
-    <code className="bg-[rgba(189,161,255,0.15)] px-2 py-1 rounded text-[#E8D6FF] text-[13px]" style={{
-      wordBreak: 'break-all'
-    }}>{children}</code>
-  ),
-  hr: () => (
-    <hr className="my-6 border-[rgba(189,161,255,0.2)]" />
+    <p className="leading-relaxed text-slate-200/90 break-words mb-2">{children}</p>
   ),
 };
 
@@ -258,7 +218,7 @@ export const ReadingResultPage: React.FC<ReadingResultPageProps> = ({
               </p>
             </div>
           ) : (
-            <div className="w-full text-sm break-words whitespace-pre-wrap overflow-wrap-anywhere">
+            <div className="w-full bg-slate-800/60 border border-white/5 rounded-xl p-4 text-sm text-slate-200 break-words whitespace-pre-wrap overflow-wrap-anywhere">
               <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
                 {reading}
               </ReactMarkdown>
