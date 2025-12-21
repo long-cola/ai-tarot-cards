@@ -1736,8 +1736,8 @@ Card drawn: ${currentCardStr}`;
 
         {/* Phase: DRAWING */}
         {phase === AppPhase.DRAWING && !showTopicListPage && !showTopicDetailPage && (
-          <div className="w-full h-full flex flex-col animate-fade-in relative pt-4">
-            <div className="text-center z-20 mb-4">
+          <div className="w-full h-full flex flex-col animate-fade-in relative pt-20 md:pt-24">
+            <div className="text-center z-20 mb-6 md:mb-8">
                <h2 className="text-xl text-purple-100 mb-1 tracking-widest font-mystic">{t.drawTitle}</h2>
                <div className="flex justify-center gap-1">
                  {[0, 1, 2].map(i => (
@@ -1748,30 +1748,45 @@ Card drawn: ${currentCardStr}`;
             
             <div className="grid grid-cols-3 gap-2 sm:gap-6 w-full max-w-lg mx-auto mb-4 z-20 px-2">
               {[0, 1, 2].map((slot) => (
-                <div key={slot} className="aspect-[2/3.5] border border-purple-500/20 rounded-lg flex items-center justify-center bg-slate-900/40 backdrop-blur-sm relative transition-all duration-500 shadow-inner">
-                  {drawnCards[slot] ? (
-                     <div className="animate-fade-in w-full h-full p-1">
-                        <Card card={drawnCards[slot]} isRevealed={false} className="w-full h-full" language={language} />
-                     </div>
-                  ) : (
-                    <div className="text-center opacity-30">
-                       <div className="text-xl mb-1 font-mystic text-purple-200">{slot + 1}</div>
-                       <div className="text-[8px] uppercase tracking-widest font-cinzel">
-                        {language === 'zh' ? (['过去', '现在', '未来'][slot]) : (['Past', 'Present', 'Future'][slot])}
+                <div key={slot} className="flex flex-col">
+                  <div className="aspect-[2/3.5] border border-purple-500/20 rounded-lg flex items-center justify-center bg-slate-900/40 backdrop-blur-sm relative transition-all duration-500 shadow-inner">
+                    {drawnCards[slot] ? (
+                       <div className="animate-fade-in w-full h-full p-1">
+                          <Card card={drawnCards[slot]} isRevealed={false} className="w-full h-full" language={language} />
                        </div>
+                    ) : (
+                      <div className="text-center opacity-30">
+                         <div className="text-xl mb-1 font-mystic text-purple-200">{slot + 1}</div>
+                         <div className="text-[8px] uppercase tracking-widest font-cinzel">
+                          {language === 'zh' ? (['过去', '现在', '未来'][slot]) : (['Past', 'Present', 'Future'][slot])}
+                         </div>
+                      </div>
+                    )}
+                    {drawnCards.length === slot && !isInteracting && (
+                      <div className="absolute inset-0 border border-amber-500/50 rounded-lg animate-pulse shadow-[0_0_15px_rgba(245,158,11,0.15)] pointer-events-none"></div>
+                    )}
+                  </div>
+                  {drawnCards[slot] && (
+                    <div className="mt-2 text-center animate-fade-in">
+                      <div className="text-xs font-semibold text-purple-200/90 leading-tight">
+                        {language === 'zh' ? drawnCards[slot].nameCn : drawnCards[slot].name}
+                      </div>
+                      <div className="text-[10px] text-amber-400/80 mt-0.5">
+                        {drawnCards[slot].isReversed
+                          ? (language === 'zh' ? '逆位' : 'Reversed')
+                          : (language === 'zh' ? '正位' : 'Upright')
+                        }
+                      </div>
                     </div>
-                  )}
-                  {drawnCards.length === slot && !isInteracting && (
-                    <div className="absolute inset-0 border border-amber-500/50 rounded-lg animate-pulse shadow-[0_0_15px_rgba(245,158,11,0.15)] pointer-events-none"></div>
                   )}
                 </div>
               ))}
             </div>
 
-            <div className={`relative flex-1 w-full min-h-[300px] flex justify-center items-end perspective-1000 overflow-hidden ${isInteracting ? 'pointer-events-none grayscale-[0.5]' : ''} transition-all duration-500`}>
+            <div className={`relative flex-1 w-full min-h-[400px] flex justify-center items-end perspective-1000 overflow-hidden ${isInteracting ? 'pointer-events-none grayscale-[0.5]' : ''} transition-all duration-500`}>
                <div className="absolute inset-x-0 bottom-0 h-3/4 bg-gradient-to-t from-slate-950 via-purple-950/30 to-transparent pointer-events-none"></div>
 
-               <div className="relative w-full max-w-md h-64 mb-6">
+               <div className="relative w-full max-w-md h-80 mb-12 md:mb-16">
                  {deck.map((card, index) => {
                     const total = deck.length;
                     const center = (total - 1) / 2;
