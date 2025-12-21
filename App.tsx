@@ -430,7 +430,7 @@ const App: React.FC = () => {
   const [reading, setReading] = useState(initialPending?.reading || '');
   const [isReadingLoading, setIsReadingLoading] = useState(false);
   const [isInteracting, setIsInteracting] = useState(false);
-  const [language, setLanguage] = useState<Language>('zh');
+  const [language, setLanguage] = useState<Language>('en');
   const [errorMsg, setErrorMsg] = useState('');
   const [user, setUser] = useState<SessionUser | null>(null);
   const [plan, setPlan] = useState<Plan>('guest');

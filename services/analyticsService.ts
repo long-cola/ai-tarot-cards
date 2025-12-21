@@ -18,14 +18,7 @@ export async function trackPageView(data: {
   try {
     const today = new Date().toISOString().split('T')[0];
 
-    // Insert page view record
-    await query(
-      `INSERT INTO page_views (visitor_id, user_id, page_path, user_agent, referrer, created_at)
-       VALUES ($1, $2, $3, $4, $5, NOW())`,
-      [data.visitorId, data.userId || null, data.pagePath || '/', data.userAgent || '', data.referrer || '']
-    );
-
-    // Check if this visitor has visited today
+    // Check if this visitor has visited today BEFORE inserting
     const existingVisit = await query(
       `SELECT 1 FROM page_views
        WHERE visitor_id = $1
@@ -34,15 +27,24 @@ export async function trackPageView(data: {
       [data.visitorId, today]
     );
 
+    const isFirstVisitToday = existingVisit.rows.length === 0;
+
+    // Insert page view record
+    await query(
+      `INSERT INTO page_views (visitor_id, user_id, page_path, user_agent, referrer, created_at)
+       VALUES ($1, $2, $3, $4, $5, NOW())`,
+      [data.visitorId, data.userId || null, data.pagePath || '/', data.userAgent || '', data.referrer || '']
+    );
+
     // Increment page views
     await query(`SELECT increment_analytics($1, 'page_views', 1)`, [today]);
 
     // If this is the first visit today, increment unique visitors
-    if (existingVisit.rows.length === 1) {
+    if (isFirstVisitToday) {
       await query(`SELECT increment_analytics($1, 'unique_visitors', 1)`, [today]);
     }
 
-    console.log('[Analytics] Page view tracked:', data.visitorId);
+    console.log('[Analytics] Page view tracked:', data.visitorId, 'First visit today:', isFirstVisitToday);
   } catch (error) {
     console.error('[Analytics] Error tracking page view:', error);
     // Don't throw - analytics failures shouldn't break the app
