@@ -9,6 +9,7 @@ import { HomePage } from './components/HomePage';
 import { TopicListPage } from './components/TopicListPage';
 import { TopicDetailPage } from './components/TopicDetailPage';
 import { ReadingResultPage } from './components/ReadingResultPage';
+import { SharedReadingPage } from './components/SharedReadingPage';
 import { QuickQuestionCard } from './components/ui';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -478,6 +479,8 @@ const App: React.FC = () => {
   const [shareDataLoaded, setShareDataLoaded] = useState(false);
   const [showTopicListPage, setShowTopicListPage] = useState(false);
   const [showTopicDetailPage, setShowTopicDetailPage] = useState(false);
+  const [showSharedReadingPage, setShowSharedReadingPage] = useState(false);
+  const [sharedReadingId, setSharedReadingId] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const readingRef = useRef<HTMLDivElement>(null);
 
@@ -492,6 +495,17 @@ const App: React.FC = () => {
   useEffect(() => {
     if (shareDataLoaded) return;
     const params = new URLSearchParams(window.location.search);
+
+    // Check for new share format (shareId parameter)
+    const shareId = params.get('shareId');
+    if (shareId) {
+      setSharedReadingId(shareId);
+      setShowSharedReadingPage(true);
+      setShareDataLoaded(true);
+      return;
+    }
+
+    // Legacy share format (base64 encoded data)
     const share = params.get('share');
     if (share) {
       try {
@@ -1694,8 +1708,16 @@ Card drawn: ${currentCardStr}`;
           </div>
         )}
 
+        {/* Shared Reading Page */}
+        {showSharedReadingPage && sharedReadingId && (
+          <SharedReadingPage
+            shareId={sharedReadingId}
+            language={language}
+          />
+        )}
+
         {/* Topic List Page */}
-        {showTopicListPage && !showTopicDetailPage && (
+        {showTopicListPage && !showTopicDetailPage && !showSharedReadingPage && (
           <TopicListPage
             topics={topicList}
             language={language}
@@ -1712,7 +1734,7 @@ Card drawn: ${currentCardStr}`;
         )}
 
         {/* Topic Detail Page */}
-        {showTopicDetailPage && selectedTopic && (
+        {showTopicDetailPage && selectedTopic && !showSharedReadingPage && (
           <TopicDetailPage
             topic={selectedTopic}
             events={topicEvents}
@@ -1732,7 +1754,7 @@ Card drawn: ${currentCardStr}`;
         )}
 
         {/* Phase: INPUT */}
-        {phase === AppPhase.INPUT && !showTopicListPage && !showTopicDetailPage && (
+        {phase === AppPhase.INPUT && !showTopicListPage && !showTopicDetailPage && !showSharedReadingPage && (
           <HomePage
             language={language}
             question={question}
@@ -1748,7 +1770,7 @@ Card drawn: ${currentCardStr}`;
         )}
 
         {/* Phase: SHUFFLING */}
-        {phase === AppPhase.SHUFFLING && !showTopicListPage && !showTopicDetailPage && (
+        {phase === AppPhase.SHUFFLING && !showTopicListPage && !showTopicDetailPage && !showSharedReadingPage && (
           <div className="flex flex-col items-center justify-center flex-1 animate-fade-in w-full">
              <div className="relative w-40 h-64">
                 {[0, 1, 2, 3, 4, 5].map((i) => (
@@ -1775,7 +1797,7 @@ Card drawn: ${currentCardStr}`;
         )}
 
         {/* Phase: DRAWING */}
-        {phase === AppPhase.DRAWING && !showTopicListPage && !showTopicDetailPage && (
+        {phase === AppPhase.DRAWING && !showTopicListPage && !showTopicDetailPage && !showSharedReadingPage && (
           <div className="w-full h-full flex flex-col animate-fade-in relative pt-20 md:pt-24">
             <div className="text-center z-20 mb-6 md:mb-8">
                <h2 className="text-xl text-purple-100 mb-1 tracking-widest font-mystic">{t.drawTitle}</h2>
@@ -1867,7 +1889,7 @@ Card drawn: ${currentCardStr}`;
         )}
 
         {/* Phase: REVEAL & ANALYSIS */}
-        {(phase === AppPhase.REVEAL || phase === AppPhase.ANALYSIS) && !showTopicListPage && !showTopicDetailPage && (
+        {(phase === AppPhase.REVEAL || phase === AppPhase.ANALYSIS) && !showTopicListPage && !showTopicDetailPage && !showSharedReadingPage && (
           <ReadingResultPage
             question={question}
             cards={drawnCards}

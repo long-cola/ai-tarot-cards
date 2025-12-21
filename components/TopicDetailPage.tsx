@@ -5,6 +5,7 @@ import { getTarotReading } from '../services/bailianService';
 import { addTopicEvent } from '../services/topicService';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { ShareButton } from './ShareButton';
 
 interface TopicDetailPageProps {
   topic: Topic;
@@ -561,6 +562,21 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
                   </div>
                 </div>
               )}
+
+              {/* Share Button for Baseline */}
+              {topic.baseline_reading && (
+                <div className="flex justify-center mt-4">
+                  <ShareButton
+                    shareParams={{
+                      shareType: 'topic_baseline',
+                      topicId: topic.id,
+                    }}
+                    question={topic.title}
+                    language={language}
+                    variant="secondary"
+                  />
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -679,6 +695,21 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
                             {event.reading}
                           </ReactMarkdown>
                         </div>
+                      </div>
+                    )}
+
+                    {/* Share Button for Event */}
+                    {event.reading && (
+                      <div className="flex justify-center mt-4">
+                        <ShareButton
+                          shareParams={{
+                            shareType: 'topic_event',
+                            eventId: event.id,
+                          }}
+                          question={event.name}
+                          language={language}
+                          variant="secondary"
+                        />
                       </div>
                     )}
                   </div>

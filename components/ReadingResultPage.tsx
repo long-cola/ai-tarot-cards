@@ -2,6 +2,7 @@ import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import SEOHead from './SEOHead';
+import { ShareButton } from './ShareButton';
 
 interface Card {
   id: string;
@@ -329,6 +330,21 @@ export const ReadingResultPage: React.FC<ReadingResultPageProps> = ({
                   >
                     {isZh ? '再次占卜' : 'Try Again'}
                   </button>
+                </div>
+                {/* Share Button */}
+                <div className="w-full flex justify-center mt-2">
+                  <ShareButton
+                    shareParams={{
+                      shareType: 'quick',
+                      question,
+                      cards,
+                      reading,
+                      language,
+                    }}
+                    question={question}
+                    language={language}
+                    variant="secondary"
+                  />
                 </div>
               </div>
             </>
