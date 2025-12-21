@@ -15,12 +15,12 @@ const SEOHead: React.FC<SEOProps> = ({
   title = '神秘塔罗 AI - AI驱动的塔罗牌占卜体验',
   description = '体验沉浸式AI塔罗牌占卜，由阿里云百炼Qwen模型驱动的深度解读。洗牌仪式、神秘氛围，探索命运的指引。',
   type = 'website',
-  image = 'https://ai-tarot-cards.vercel.app/og-image.jpg',
-  url = 'https://ai-tarot-cards.vercel.app',
+  image = 'https://ai-tarotcard.com/og-image.jpg',
+  url = 'https://ai-tarotcard.com',
   lang = 'zh-CN',
   schemaType = 'WebSite'
 }) => {
-  const siteUrl = 'https://ai-tarot-cards.vercel.app';
+  const siteUrl = 'https://ai-tarotcard.com';
 
   // 根据语言生成不同的描述
   const defaultDescriptions = {

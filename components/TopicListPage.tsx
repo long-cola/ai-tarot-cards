@@ -45,7 +45,7 @@ export const TopicListPage: React.FC<TopicListPageProps> = ({
         description={isZh
           ? '查看和管理您的塔罗占卜命题，追踪命运的演变轨迹。'
           : 'View and manage your Tarot reading topics, track the evolution of your destiny.'}
-        url="https://ai-tarot-cards.vercel.app/topics"
+        url="https://ai-tarotcard.com/topics"
         lang={isZh ? 'zh-CN' : 'en'}
         schemaType="WebSite"
       />

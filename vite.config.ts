@@ -13,7 +13,7 @@ export default defineConfig(({ mode }) => {
       plugins: [
         react(),
         sitemap({
-          hostname: 'https://ai-tarot-cards.vercel.app',
+          hostname: 'https://ai-tarotcard.com',
           dynamicRoutes: [
             '/topics',
           ],

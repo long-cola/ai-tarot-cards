@@ -60,7 +60,7 @@ export const HomePage: React.FC<HomePageProps> = ({
         description={isZh
           ? '体验沉浸式AI塔罗牌占卜，由阿里云百炼Qwen模型驱动的深度解读。洗牌仪式、神秘氛围，探索命运的指引。'
           : 'Experience immersive AI-powered Tarot readings with deep interpretations by Alibaba Bailian Qwen models. Card shuffling rituals, mystical atmosphere, explore fate\'s guidance.'}
-        url="https://ai-tarot-cards.vercel.app/"
+        url="https://ai-tarotcard.com/"
         lang={isZh ? 'zh-CN' : 'en'}
         schemaType="WebSite"
       />
