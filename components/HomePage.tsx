@@ -1,6 +1,7 @@
 import React from 'react';
 import { Button, Input, QuickQuestionCard } from './ui';
 import SEOHead from './SEOHead';
+import { FAQSchema } from './FAQSchema';
 
 interface HomePageProps {
   language: 'zh' | 'en';
@@ -64,6 +65,7 @@ export const HomePage: React.FC<HomePageProps> = ({
         lang={isZh ? 'zh-CN' : 'en'}
         schemaType="WebSite"
       />
+      <FAQSchema language={language} />
       <div className="min-h-screen flex flex-col items-center justify-center px-4 md:px-6 pt-20 md:pt-24 pb-8 md:pb-12 relative overflow-hidden">
       {/* Starry Background Decorations */}
       <div className="absolute inset-0 pointer-events-none">

@@ -16,8 +16,12 @@ export default defineConfig(({ mode }) => {
           hostname: 'https://ai-tarotcard.com',
           dynamicRoutes: [
             '/topics',
+            // Note: Individual share pages can be submitted separately via sitemap generation
           ],
-          exclude: ['/admin', '/admin.html'],
+          exclude: ['/admin', '/admin.html', '/api'],
+          changefreq: 'daily',
+          priority: 0.7,
+          lastmod: new Date().toISOString().split('T')[0],
           robots: [
             {
               userAgent: '*',

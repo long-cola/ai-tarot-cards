@@ -21,6 +21,7 @@ const SEOHead: React.FC<SEOProps> = ({
   schemaType = 'WebSite'
 }) => {
   const siteUrl = 'https://ai-tarotcard.com';
+  const isZh = lang === 'zh-CN';
 
   // 根据语言生成不同的描述
   const defaultDescriptions = {
@@ -97,6 +98,32 @@ const SEOHead: React.FC<SEOProps> = ({
       <title>{finalTitle}</title>
       <meta name="description" content={finalDescription} />
       <link rel="canonical" href={url} />
+
+      {/* SEO关键词和作者 */}
+      <meta name="keywords" content={isZh ? '塔罗牌,AI占卜,塔罗解读,在线占卜,命运指引,塔罗预测,人生命题,神秘学,占卜工具' : 'tarot cards,AI tarot,tarot reading,online divination,fortune telling,tarot prediction,life guidance,mysticism'} />
+      <meta name="author" content="神秘塔罗 AI / Mystic Tarot AI" />
+      <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+      <meta name="googlebot" content="index, follow" />
+
+      {/* 移动端优化 */}
+      <meta name="mobile-web-app-capable" content="yes" />
+      <meta name="apple-mobile-web-app-capable" content="yes" />
+      <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+      <meta name="apple-mobile-web-app-title" content={isZh ? '塔罗AI' : 'Tarot AI'} />
+
+      {/* 主题颜色 */}
+      <meta name="theme-color" content="#9333EA" media="(prefers-color-scheme: dark)" />
+      <meta name="theme-color" content="#A855F7" media="(prefers-color-scheme: light)" />
+      <meta name="msapplication-TileColor" content="#9333EA" />
+      <meta name="msapplication-navbutton-color" content="#9333EA" />
+
+      {/* PWA Manifest */}
+      <link rel="manifest" href="/manifest.json" />
+
+      {/* 图标 */}
+      <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+      <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
+      <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png" />
 
       {/* Open Graph 标签 */}
       <meta property="og:type" content={type} />

@@ -3,4 +3,6 @@ Allow: /
 Disallow: /admin
 Disallow: /api
 
+# Sitemaps
 Sitemap: https://ai-tarotcard.com/sitemap.xml
+Sitemap: https://ai-tarotcard.com/api/sitemap-dynamic
