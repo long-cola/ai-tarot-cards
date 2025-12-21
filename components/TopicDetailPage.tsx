@@ -18,29 +18,29 @@ interface TopicDetailPageProps {
 
 const markdownComponents = {
   h2: ({ children }: { children: React.ReactNode }) => (
-    <h2 className="text-[20px] font-bold leading-[28px] tracking-[0.5px] mb-4 text-[rgba(253,230,138,0.9)]">
+    <h2 className="text-[18px] sm:text-[19px] md:text-[20px] font-bold leading-[24px] sm:leading-[26px] md:leading-[28px] tracking-[0.5px] mb-3 md:mb-4 text-[rgba(253,230,138,0.9)]">
       {children}
     </h2>
   ),
   h3: ({ children }: { children: React.ReactNode }) => (
-    <h3 className="text-[14px] font-semibold leading-[22px] mb-2 text-[#FCD34D]">
+    <h3 className="text-[13px] sm:text-[13.5px] md:text-[14px] font-semibold leading-[20px] md:leading-[22px] mb-2 text-[#FCD34D]">
       {children}
     </h3>
   ),
   ul: ({ children }: { children: React.ReactNode }) => (
-    <ul className="list-disc list-inside space-y-2 text-[#A38FFF] text-[14px] leading-[22px] my-4">{children}</ul>
+    <ul className="list-disc list-inside space-y-1.5 md:space-y-2 text-[#A38FFF] text-[13px] md:text-[14px] leading-[20px] md:leading-[22px] my-3 md:my-4">{children}</ul>
   ),
   ol: ({ children }: { children: React.ReactNode }) => (
-    <ol className="list-decimal list-inside space-y-2 text-[#A38FFF] text-[14px] leading-[22px] my-4">{children}</ol>
+    <ol className="list-decimal list-inside space-y-1.5 md:space-y-2 text-[#A38FFF] text-[13px] md:text-[14px] leading-[20px] md:leading-[22px] my-3 md:my-4">{children}</ol>
   ),
   li: ({ children }: { children: React.ReactNode }) => (
-    <li className="leading-[22px]">{children}</li>
+    <li className="leading-[20px] md:leading-[22px]">{children}</li>
   ),
   strong: ({ children }: { children: React.ReactNode }) => (
     <strong className="text-[#FCD34D] font-semibold">{children}</strong>
   ),
   p: ({ children }: { children: React.ReactNode }) => (
-    <p className="leading-[22px] text-[#A38FFF] break-words mb-4 text-[14px] font-semibold">{children}</p>
+    <p className="leading-[20px] md:leading-[22px] text-[#A38FFF] break-words mb-3 md:mb-4 text-[13px] sm:text-[13.5px] md:text-[14px] font-semibold">{children}</p>
   ),
 };
 
@@ -169,9 +169,17 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
   };
 
   // Format card label for AI prompt
-  const formatCardLabel = (card: DrawnCard) => {
+  const formatCardLabel = (card: DrawnCard, includePosition: boolean = true) => {
     const name = isZh ? card.nameCn : card.name;
     const status = isZh ? (card.isReversed ? "逆位" : "正位") : (card.isReversed ? "Reversed" : "Upright");
+
+    if (includePosition && card.position !== undefined) {
+      const posName = isZh
+        ? ['过去', '现在', '未来'][card.position]
+        : ['Past', 'Present', 'Future'][card.position];
+      return `${posName}: ${name} – ${status}`;
+    }
+
     return `${name} (${status})`;
   };
 
@@ -287,14 +295,14 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
       const historyStr = events.length
         ? events.map(ev => {
             const dateStr = ev.created_at ? new Date(ev.created_at).toLocaleDateString() : '';
-            const cardStr = ev.cards?.map(c => formatCardLabel(c as DrawnCard)).join(isZh ? "，" : ", ");
+            const cardStr = ev.cards?.map(c => formatCardLabel(c as DrawnCard, false)).join(isZh ? "，" : ", ");
             return isZh
               ? `${dateStr}、${ev.name}${cardStr ? `、${cardStr}` : ""}`
               : `${dateStr}: ${ev.name}${cardStr ? ` | ${cardStr}` : ""}`;
           }).join(isZh ? "；" : "; ")
         : (isZh ? "暂无历史事件" : "No past events");
 
-      const currentCardStr = formatCardLabel(card);
+      const currentCardStr = formatCardLabel(card, false);
 
       // Use prompt_case_zh or prompt_case_en
       const promptKey = isZh ? 'prompt_case_zh' : 'prompt_case_en';
@@ -369,19 +377,19 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
   });
 
   return (
-    <div className="min-h-screen pt-24 pb-12 px-4">
-      <div className="w-full mx-auto" style={{ maxWidth: '800px' }}>
+    <div className="min-h-screen pt-20 md:pt-24 pb-8 md:pb-12 px-4 md:px-6">
+      <div className="w-full max-w-full sm:max-w-[600px] md:max-w-[800px] mx-auto">
         {/* Detail Page */}
         {pageState === 'detail' && (
           <>
             {/* Back Button */}
             <button
               onClick={onBack}
-              className="mb-6 flex items-center gap-2 text-white/60 hover:text-white transition-colors"
+              className="mb-4 md:mb-6 flex items-center gap-2 text-white/60 hover:text-white transition-colors"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5"
+                className="h-4 w-4 md:h-5 md:w-5"
                 viewBox="0 0 20 20"
                 fill="currentColor"
               >
@@ -391,23 +399,23 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
                   clipRule="evenodd"
                 />
               </svg>
-              <span className="text-sm">{isZh ? '返回' : 'Back'}</span>
+              <span className="text-xs md:text-sm">{isZh ? '返回' : 'Back'}</span>
             </button>
 
             {/* Topic Title */}
-            <div className="flex flex-col items-center gap-[17px] w-full mb-8">
-              <p className="text-[16px] leading-[19px] text-center" style={{ color: 'rgba(205, 191, 238, 0.5)' }}>
+            <div className="flex flex-col items-center gap-3 md:gap-[17px] w-full mb-6 md:mb-8 px-4">
+              <p className="text-[14px] md:text-[16px] leading-[17px] md:leading-[19px] text-center" style={{ color: 'rgba(205, 191, 238, 0.5)' }}>
                 {isZh ? '阁下的问题' : 'Your Question'}
               </p>
-              <h1 className="text-[32px] font-bold leading-[38px] text-center" style={{ color: '#E2DBFF' }}>
+              <h1 className="text-[24px] md:text-[32px] font-bold leading-[29px] md:leading-[38px] text-center" style={{ color: '#E2DBFF' }}>
                 "{topic.title}"
               </h1>
             </div>
 
             {/* Event Input at Top */}
-            <div className="mb-8 space-y-4 w-full">
+            <div className="mb-6 md:mb-8 space-y-3 md:space-y-4 w-full">
               <div
-                className="backdrop-blur-sm border border-white/10 rounded-2xl px-6 py-5 w-full min-h-[72px]"
+                className="backdrop-blur-sm border border-white/10 rounded-2xl px-4 md:px-6 py-4 md:py-5 w-full min-h-[60px] md:min-h-[72px]"
                 style={{
                   background: 'linear-gradient(180deg, rgba(226, 219, 255, 0.05) 0%, rgba(113, 87, 175, 0.05) 100%)',
                 }}
@@ -417,14 +425,14 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
                   value={eventName}
                   onChange={(e) => setEventName(e.target.value)}
                   placeholder={isZh ? '输入你的事件...' : 'Enter your event...'}
-                  className="w-full bg-transparent text-white text-[15px] placeholder-white/40 focus:outline-none"
+                  className="w-full bg-transparent text-white text-[14px] md:text-[15px] placeholder-white/40 focus:outline-none"
                 />
               </div>
               <div className="flex justify-center">
                 <button
                   onClick={handleStartDivination}
                   disabled={!eventName.trim()}
-                  className="px-6 py-3 bg-amber-500 hover:bg-amber-600 disabled:bg-slate-700 disabled:opacity-50 text-slate-900 font-semibold rounded-xl transition-colors"
+                  className="w-full sm:w-auto px-5 md:px-6 py-2.5 md:py-3 bg-amber-500 hover:bg-amber-600 disabled:bg-slate-700 disabled:opacity-50 text-slate-900 text-[14px] md:text-base font-semibold rounded-xl transition-colors min-h-[42px] md:min-h-[48px]"
                 >
                   {isZh ? '开始占卜' : 'Start Reading'}
                 </button>
@@ -435,7 +443,7 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
             </div>
 
         {/* Baseline Reading Section */}
-        <div className="mb-6 w-full">
+        <div className="mb-4 md:mb-6 w-full">
           <button
             onClick={() => toggleEvent('baseline')}
             className="w-full flex items-center justify-between backdrop-blur-sm border border-white/10 rounded-2xl px-6 py-5 transition-all relative overflow-hidden"
@@ -483,9 +491,9 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
                   <h3 className="text-[14px] text-amber-400 mb-4 tracking-wide">
                     {isZh ? '塔罗结果' : 'Tarot Cards'}
                   </h3>
-                  <div className="flex justify-center gap-4">
+                  <div className="flex justify-center gap-2 md:gap-4">
                     {topic.baseline_cards.map((card, idx) => (
-                      <div key={card.id} className="flex flex-col items-center gap-2 w-28">
+                      <div key={card.id} className="flex flex-col items-center gap-2 w-20 sm:w-24 md:w-28">
                         <div
                           className="w-full aspect-[2/3.5] rounded-lg overflow-hidden border-2 border-amber-400/60 shadow-2xl"
                           style={{
@@ -505,7 +513,7 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
                           )}
                         </div>
                         <div className="text-center">
-                          <p className="text-white/80 text-[13px]">
+                          <p className="text-white/80 text-[11px] sm:text-[12px] md:text-[13px]">
                             {getCardName(card)} ({getCardStatus(card)})
                           </p>
                         </div>
@@ -543,7 +551,7 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
 
         {/* Events Section */}
         {sortedEvents.length > 0 && (
-          <div className="space-y-6 w-full">
+          <div className="space-y-4 md:space-y-6 w-full">
             {sortedEvents.map((event) => (
               <div
                 key={event.id}
@@ -603,9 +611,9 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
                         <h3 className="text-[14px] text-amber-400 mb-4 tracking-wide">
                           {isZh ? '抽牌结果' : 'Cards Drawn'}
                         </h3>
-                        <div className="flex justify-center gap-4">
+                        <div className="flex justify-center gap-2 md:gap-4">
                           {event.cards.map((card, idx) => (
-                            <div key={card.id} className="flex flex-col items-center gap-2 w-28">
+                            <div key={card.id} className="flex flex-col items-center gap-2 w-20 sm:w-24 md:w-28">
                               <div
                                 className="w-full aspect-[2/3.5] rounded-lg overflow-hidden border-2 border-amber-400/60 shadow-2xl"
                                 style={{
@@ -625,7 +633,7 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
                                 )}
                               </div>
                               <div className="text-center">
-                                <p className="text-white/80 text-[13px]">
+                                <p className="text-white/80 text-[11px] sm:text-[12px] md:text-[13px]">
                                   {getCardName(card)} ({getCardStatus(card)})
                                 </p>
                               </div>
@@ -666,9 +674,9 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
 
             {/* Current Reading Result - Show at bottom when drawing/reading */}
             {drawnCard && pageState === 'detail' && (
-              <div ref={currentReadingRef} className="mt-8 space-y-6 animate-fade-in w-full">
-                <div className="bg-gradient-to-br from-amber-500/10 to-purple-500/10 backdrop-blur-sm border-2 border-amber-400/40 rounded-xl p-6 w-full">
-                  <h3 className="text-[16px] text-amber-300 mb-4 tracking-wide flex items-center gap-2">
+              <div ref={currentReadingRef} className="mt-6 md:mt-8 space-y-4 md:space-y-6 animate-fade-in w-full">
+                <div className="bg-gradient-to-br from-amber-500/10 to-purple-500/10 backdrop-blur-sm border-2 border-amber-400/40 rounded-xl p-4 md:p-6 w-full">
+                  <h3 className="text-[14px] md:text-[16px] text-amber-300 mb-4 tracking-wide flex items-center gap-2">
                     <span className="inline-block w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
                     {isZh ? '当前占卜' : 'Current Reading'}: {eventName}
                   </h3>
@@ -679,7 +687,7 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
                       {isZh ? '抽牌结果' : 'Card Drawn'}
                     </h4>
                     <div className="flex justify-center">
-                      <div className="flex flex-col items-center gap-2 w-32">
+                      <div className="flex flex-col items-center gap-2 w-28 sm:w-30 md:w-32">
                         <div
                           className="w-full aspect-[2/3.5] rounded-lg overflow-hidden border-2 border-amber-400/80 shadow-2xl"
                           style={{
@@ -753,7 +761,7 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
         {/* Shuffling Page - Fullscreen */}
         {pageState === 'shuffling' && (
           <div className="fixed inset-0 bg-gradient-to-b from-slate-900 via-purple-900/20 to-slate-900 z-50 flex flex-col items-center justify-center animate-fade-in">
-            <div className="relative w-40 h-64">
+            <div className="relative w-28 sm:w-32 md:w-40 h-48 sm:h-56 md:h-64">
               {[0, 1, 2, 3, 4, 5].map((i) => (
                 <div
                   key={i}
@@ -771,7 +779,7 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
                 </div>
               ))}
             </div>
-            <p className="mt-16 text-amber-200/90 tracking-[0.3em] text-lg animate-pulse">
+            <p className="mt-12 md:mt-16 text-amber-200/90 tracking-[0.2em] md:tracking-[0.3em] text-base md:text-lg animate-pulse">
               {isZh ? '洗牌中...' : 'Shuffling...'}
             </p>
           </div>
@@ -780,16 +788,16 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
         {/* Drawing Page - Fullscreen */}
         {pageState === 'drawing' && (
           <div className="fixed inset-0 bg-gradient-to-b from-slate-900 via-purple-900/20 to-slate-900 z-50 flex flex-col items-center justify-center px-4 animate-fade-in">
-            <p className="text-center text-purple-100 mb-8 text-xl">{isZh ? '请选择一张牌' : 'Choose a card'}</p>
-            <div className="relative w-full max-w-2xl h-64">
+            <p className="text-center text-purple-100 mb-6 md:mb-8 text-lg md:text-xl">{isZh ? '请选择一张牌' : 'Choose a card'}</p>
+            <div className="relative w-full max-w-md sm:max-w-lg md:max-w-2xl h-48 sm:h-56 md:h-64">
               {deck.slice(0, 15).map((card, index) => {
                 const total = Math.min(deck.length, 15);
                 const center = (total - 1) / 2;
                 const offset = index - center;
-                const degreePerCard = 4;
+                const degreePerCard = window.innerWidth < 640 ? 3 : 4;
                 const rotation = offset * degreePerCard;
-                const translateY = Math.abs(offset) * 2;
-                const translateX = offset * 12;
+                const translateY = Math.abs(offset) * (window.innerWidth < 640 ? 1.5 : 2);
+                const translateX = offset * (window.innerWidth < 640 ? 8 : 12);
 
                 return (
                   <div
@@ -797,15 +805,15 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
                     onClick={() => handleDrawCard(index)}
                     className="absolute bottom-0 left-1/2 cursor-pointer transition-all duration-300 group"
                     style={{
-                      width: '80px',
-                      height: '128px',
-                      marginLeft: '-40px',
+                      width: window.innerWidth < 640 ? '60px' : '80px',
+                      height: window.innerWidth < 640 ? '96px' : '128px',
+                      marginLeft: window.innerWidth < 640 ? '-30px' : '-40px',
                       transformOrigin: '50% 120%',
                       transform: `translateX(${translateX}px) rotate(${rotation}deg) translateY(${translateY}px)`,
                       zIndex: index + 10,
                     }}
                   >
-                    <div className="w-full h-full rounded-md bg-slate-800 border border-purple-500/40 shadow-xl group-hover:-translate-y-4 transition-transform relative overflow-hidden">
+                    <div className="w-full h-full rounded-md bg-slate-800 border border-purple-500/40 shadow-xl group-hover:-translate-y-3 md:group-hover:-translate-y-4 transition-transform relative overflow-hidden">
                       <div className="absolute inset-0 bg-gradient-to-br from-purple-700/20 to-black"></div>
                       <div className="absolute inset-1 border border-white/5 rounded-sm flex items-center justify-center">
                         <span className="text-purple-300/20 text-xl">☾</span>
@@ -817,7 +825,7 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
             </div>
             <button
               onClick={handleCancel}
-              className="mt-12 px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-xl transition-colors"
+              className="mt-8 md:mt-12 px-5 md:px-6 py-2.5 md:py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-xl transition-colors"
             >
               {isZh ? '取消' : 'Cancel'}
             </button>

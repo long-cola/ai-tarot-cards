@@ -38,7 +38,7 @@ export const TopicListPage: React.FC<TopicListPageProps> = ({
   });
 
   return (
-    <div className="min-h-screen pt-24 pb-12 px-4 relative overflow-hidden" style={{ backgroundColor: 'transparent' }}>
+    <div className="min-h-screen pt-20 md:pt-24 pb-8 md:pb-12 px-4 md:px-6 relative overflow-hidden" style={{ backgroundColor: 'transparent' }}>
       {/* Starry Background Decorations */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute w-[3px] h-[3px] rounded-full bg-white" style={{ left: '1041px', top: '512px' }} />
@@ -58,21 +58,21 @@ export const TopicListPage: React.FC<TopicListPageProps> = ({
         <div className="absolute w-[4px] h-[4px] rounded-full bg-white" style={{ left: '1686px', top: '359px' }} />
       </div>
 
-      <div className="w-full mx-auto relative z-10" style={{ maxWidth: '800px' }}>
+      <div className="w-full max-w-full sm:max-w-[600px] md:max-w-[800px] mx-auto relative z-10">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-[24px] font-bold leading-[29px]" style={{ color: '#E2DBFF' }}>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-4 mb-6 md:mb-8">
+          <h1 className="text-[20px] md:text-[24px] font-bold leading-[24px] md:leading-[29px]" style={{ color: '#E2DBFF' }}>
             {isZh ? '我的人生命题' : 'My Life Topics'}
           </h1>
           {quota && (
-            <div className="text-[16px] leading-[19px]" style={{ color: 'rgba(205, 191, 238, 0.5)' }}>
+            <div className="text-[14px] md:text-[16px] leading-[17px] md:leading-[19px]" style={{ color: 'rgba(205, 191, 238, 0.5)' }}>
               {isZh ? '命题数量: ' : 'Topics: '}{quota.topic_quota_total - quota.topic_quota_remaining} / {quota.topic_quota_total}
             </div>
           )}
         </div>
 
         {/* Topics List - 严格按照设计规范 */}
-        <div className="flex flex-col gap-4 w-full mb-8">
+        <div className="flex flex-col gap-3 md:gap-4 w-full mb-6 md:mb-8">
           {sortedTopics.length === 0 ? (
             <div className="text-center py-12">
               <p className="mb-4 text-[16px]" style={{ color: 'rgb(143, 136, 171)' }}>
@@ -80,7 +80,7 @@ export const TopicListPage: React.FC<TopicListPageProps> = ({
               </p>
               <button
                 onClick={onCreateNewTopic}
-                className="px-8 py-4 rounded-[12px] text-[20px] font-bold hover:opacity-90 transition-opacity"
+                className="w-full sm:w-auto px-6 md:px-8 py-3 md:py-4 rounded-[12px] text-[18px] md:text-[20px] font-bold hover:opacity-90 transition-opacity min-w-[180px] h-[52px] md:h-[56px]"
                 style={{ backgroundColor: 'rgb(221, 132, 37)', color: '#000000' }}
               >
                 {isZh ? '创建第一个命题' : 'Create First Topic'}
@@ -106,8 +106,8 @@ export const TopicListPage: React.FC<TopicListPageProps> = ({
           <div className="flex justify-center">
             <button
               onClick={onCreateNewTopic}
-              className="px-8 py-4 rounded-[12px] text-[20px] font-bold hover:opacity-90 transition-opacity"
-              style={{ backgroundColor: 'rgb(221, 132, 37)', color: '#000000', width: '228px', height: '56px' }}
+              className="w-full sm:w-auto px-6 md:px-8 py-3 md:py-4 rounded-[12px] text-[18px] md:text-[20px] font-bold hover:opacity-90 transition-opacity min-w-[180px] h-[52px] md:h-[56px]"
+              style={{ backgroundColor: 'rgb(221, 132, 37)', color: '#000000', maxWidth: '228px' }}
             >
               {isZh ? '开启新命题' : 'Create New Topic'}
             </button>

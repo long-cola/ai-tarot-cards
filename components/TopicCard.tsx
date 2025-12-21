@@ -30,7 +30,7 @@ export const TopicCard: React.FC<TopicCardProps> = ({
 
   return (
     <div
-      className="w-full h-[137px] flex flex-col p-6 rounded-[16px] cursor-pointer transition-colors border"
+      className="w-full min-h-[110px] sm:min-h-[125px] md:h-[137px] flex flex-col p-4 sm:p-5 md:p-6 rounded-[12px] md:rounded-[16px] cursor-pointer transition-colors border"
       style={{
         backgroundColor: 'rgba(40, 36, 70, 0.8)',
         borderColor: '#443E71',
@@ -45,16 +45,16 @@ export const TopicCard: React.FC<TopicCardProps> = ({
     >
       {/* Title */}
       <div onClick={onClick} className="flex-1">
-        <h3 className="text-[20px] font-bold leading-[24px] mb-6" style={{ color: '#E2DBFF' }}>
+        <h3 className="text-[17px] sm:text-[18px] md:text-[20px] font-bold leading-[20px] sm:leading-[22px] md:leading-[24px] mb-4 sm:mb-5 md:mb-6" style={{ color: '#E2DBFF' }}>
           {title}
         </h3>
 
         {/* Info Row */}
-        <div className="flex items-center gap-12 text-[14px] leading-[17px]" style={{ color: '#8F88AB' }}>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-6 md:gap-12 text-[12px] sm:text-[13px] md:text-[14px] leading-[15px] sm:leading-[16px] md:leading-[17px]" style={{ color: '#8F88AB' }}>
           <span>
             {isZh ? '事件数：' : 'Events: '}{eventCount}
           </span>
-          <span>
+          <span className="truncate">
             {isZh ? '开始时间：' : 'Created: '}{formatDate(createdAt)}
           </span>
           {onDelete && (
@@ -63,12 +63,12 @@ export const TopicCard: React.FC<TopicCardProps> = ({
                 e.stopPropagation();
                 onDelete();
               }}
-              className="ml-auto hover:opacity-70 transition-opacity"
+              className="sm:ml-auto hover:opacity-70 transition-opacity p-1"
               style={{ color: '#70648D' }}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                className="h-4 w-4"
+                className="h-3.5 w-3.5 sm:h-4 sm:w-4"
                 viewBox="0 0 16 16"
                 fill="currentColor"
               >

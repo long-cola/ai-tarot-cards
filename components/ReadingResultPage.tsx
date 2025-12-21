@@ -29,7 +29,7 @@ const markdownComponents = {
   h1: ({ children }: { children: React.ReactNode }) => {
     console.log('[Markdown] h1 rendered:', children);
     return (
-      <h1 className="text-[24px] font-bold leading-[32px] tracking-[0.5px] mb-4 text-[rgba(253,230,138,0.95)]">
+      <h1 className="text-[20px] sm:text-[22px] md:text-[24px] font-bold leading-[28px] sm:leading-[30px] md:leading-[32px] tracking-[0.5px] mb-3 md:mb-4 text-[rgba(253,230,138,0.95)]">
         {children}
       </h1>
     );
@@ -37,24 +37,24 @@ const markdownComponents = {
   h2: ({ children }: { children: React.ReactNode }) => {
     console.log('[Markdown] h2 rendered:', children);
     return (
-      <h2 className="text-[20px] font-bold leading-[28px] tracking-[0.5px] mb-4 text-[rgba(253,230,138,0.9)]">
+      <h2 className="text-[18px] sm:text-[19px] md:text-[20px] font-bold leading-[24px] sm:leading-[26px] md:leading-[28px] tracking-[0.5px] mb-3 md:mb-4 text-[rgba(253,230,138,0.9)]">
         {children}
       </h2>
     );
   },
   h3: ({ children }: { children: React.ReactNode }) => (
-    <h3 className="text-[14px] font-semibold leading-[22px] mb-2 text-[#FCD34D]">
+    <h3 className="text-[13px] sm:text-[13.5px] md:text-[14px] font-semibold leading-[20px] md:leading-[22px] mb-2 text-[#FCD34D]">
       {children}
     </h3>
   ),
   ul: ({ children }: { children: React.ReactNode }) => (
-    <ul className="list-disc list-inside space-y-2 text-[#A38FFF] text-[14px] leading-[22px] my-4">{children}</ul>
+    <ul className="list-disc list-inside space-y-1.5 md:space-y-2 text-[#A38FFF] text-[13px] md:text-[14px] leading-[20px] md:leading-[22px] my-3 md:my-4">{children}</ul>
   ),
   ol: ({ children }: { children: React.ReactNode }) => (
-    <ol className="list-decimal list-inside space-y-2 text-[#A38FFF] text-[14px] leading-[22px] my-4">{children}</ol>
+    <ol className="list-decimal list-inside space-y-1.5 md:space-y-2 text-[#A38FFF] text-[13px] md:text-[14px] leading-[20px] md:leading-[22px] my-3 md:my-4">{children}</ol>
   ),
   li: ({ children }: { children: React.ReactNode }) => (
-    <li className="leading-[22px]">{children}</li>
+    <li className="leading-[20px] md:leading-[22px]">{children}</li>
   ),
   strong: ({ children }: { children: React.ReactNode }) => (
     <strong className="text-[#FCD34D] font-semibold">{children}</strong>
@@ -65,7 +65,7 @@ const markdownComponents = {
   p: ({ children }: { children: React.ReactNode }) => {
     console.log('[Markdown] p rendered:', children);
     return (
-      <p className="leading-[22px] text-[#A38FFF] break-words mb-4 text-[14px] font-semibold">{children}</p>
+      <p className="leading-[20px] md:leading-[22px] text-[#A38FFF] break-words mb-3 md:mb-4 text-[13px] sm:text-[13.5px] md:text-[14px] font-semibold">{children}</p>
     );
   },
   blockquote: ({ children }: { children: React.ReactNode }) => (
@@ -120,7 +120,7 @@ export const ReadingResultPage: React.FC<ReadingResultPageProps> = ({
   };
 
   return (
-    <div className="min-h-screen pt-[136px] pb-12 px-4 relative overflow-hidden">
+    <div className="min-h-screen pt-28 md:pt-[136px] pb-8 md:pb-12 px-4 md:px-6 relative overflow-hidden">
       {/* Starry Background Decorations */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute w-[3.04px] h-[3.04px] rounded-full bg-white" style={{ left: '1041.07px', top: '512.86px' }} />
@@ -141,28 +141,28 @@ export const ReadingResultPage: React.FC<ReadingResultPageProps> = ({
         <div className="absolute w-[2.44px] h-[2.44px] rounded-full bg-white" style={{ left: '797px', top: '580px' }} />
       </div>
 
-      <div className="mx-auto relative z-10 flex flex-col items-center gap-[72px] max-w-[800px] w-full">
+      <div className="mx-auto relative z-10 flex flex-col items-center gap-12 md:gap-[72px] max-w-full sm:max-w-[600px] md:max-w-[800px] w-full">
         {/* Question and Cards Section */}
-        <div className="flex flex-col items-center gap-[56px] w-full">
+        <div className="flex flex-col items-center gap-10 md:gap-[56px] w-full">
           {/* Question Title */}
-          <div className="flex flex-col items-center gap-[17px] w-full">
-            <p className="text-[16px] leading-[19px] text-center" style={{ color: 'rgba(205, 191, 238, 0.5)' }}>
+          <div className="flex flex-col items-center gap-3 md:gap-[17px] w-full px-4">
+            <p className="text-[14px] md:text-[16px] leading-[17px] md:leading-[19px] text-center" style={{ color: 'rgba(205, 191, 238, 0.5)' }}>
               {isZh ? '阁下的问题' : 'Your Question'}
             </p>
-            <h1 className="text-[32px] font-bold leading-[38px] text-center" style={{ color: '#E2DBFF' }}>
+            <h1 className="text-[22px] sm:text-[28px] md:text-[32px] font-bold leading-[26px] sm:leading-[34px] md:leading-[38px] text-center" style={{ color: '#E2DBFF' }}>
               "{question}"
             </h1>
           </div>
 
           {/* Cards Display */}
-          <div className="flex justify-between items-center gap-[100px] w-full">
+          <div className="flex justify-center sm:justify-between items-center gap-4 sm:gap-8 md:gap-[100px] w-full flex-wrap sm:flex-nowrap">
             {cards.map((card, idx) => (
-              <div key={card.id} className="flex flex-col justify-center items-center gap-[24px]" style={{ width: '180px' }}>
+              <div key={card.id} className="flex flex-col justify-center items-center gap-4 md:gap-[24px]">
                 <div
-                  className="rounded-[12px] overflow-hidden shadow-2xl"
+                  className="rounded-[8px] md:rounded-[12px] overflow-hidden shadow-2xl"
                   style={{
-                    width: '180px',
-                    height: '316px',
+                    width: window.innerWidth < 640 ? '110px' : window.innerWidth < 768 ? '140px' : '180px',
+                    height: window.innerWidth < 640 ? '193px' : window.innerWidth < 768 ? '246px' : '316px',
                     transform: card.isReversed ? 'rotate(180deg)' : 'rotate(0deg)',
                   }}
                 >
@@ -174,12 +174,12 @@ export const ReadingResultPage: React.FC<ReadingResultPageProps> = ({
                     />
                   ) : (
                     <div className="w-full h-full bg-gradient-to-br from-purple-700/20 to-black flex items-center justify-center">
-                      <span className="text-purple-300/40 text-4xl">☾</span>
+                      <span className="text-purple-300/40 text-2xl sm:text-3xl md:text-4xl">☾</span>
                     </div>
                   )}
                 </div>
                 <p
-                  className="text-[24px] leading-[29px] font-normal text-center"
+                  className="text-[18px] sm:text-[20px] md:text-[24px] leading-[22px] sm:leading-[24px] md:leading-[29px] font-normal text-center"
                   style={{
                     background: 'linear-gradient(90deg, #D5C8FF 0%, #807899 100%)',
                     WebkitBackgroundClip: 'text',
@@ -195,7 +195,7 @@ export const ReadingResultPage: React.FC<ReadingResultPageProps> = ({
         </div>
 
         {/* Reading Content Container */}
-        <div className="flex flex-col justify-center items-center gap-[32px] w-full rounded-[24px] px-[32px] py-[24px]"
+        <div className="flex flex-col justify-center items-center gap-6 md:gap-[32px] w-full rounded-[16px] md:rounded-[24px] px-4 sm:px-6 md:px-[32px] py-5 md:py-[24px]"
           style={{
             background: 'rgba(40, 36, 70, 0.5)',
             backdropFilter: 'blur(14px)',
@@ -203,12 +203,12 @@ export const ReadingResultPage: React.FC<ReadingResultPageProps> = ({
           }}
         >
           {/* Title with decorative lines */}
-          <div className="flex justify-center items-center gap-[32px] w-full">
-            <div className="w-[125px] h-[1px]" style={{ background: 'linear-gradient(90deg, rgba(128, 120, 153, 0) 0%, #D5C8FF 100%)' }} />
-            <h2 className="text-[24px] font-black leading-[29px] text-center" style={{ color: '#B7ACDC', minWidth: '120px' }}>
+          <div className="flex justify-center items-center gap-4 md:gap-[32px] w-full">
+            <div className="w-[60px] sm:w-[90px] md:w-[125px] h-[1px]" style={{ background: 'linear-gradient(90deg, rgba(128, 120, 153, 0) 0%, #D5C8FF 100%)' }} />
+            <h2 className="text-[20px] md:text-[24px] font-black leading-[24px] md:leading-[29px] text-center whitespace-nowrap" style={{ color: '#B7ACDC' }}>
               {isZh ? '命运之解读' : 'Reading'}
             </h2>
-            <div className="w-[125px] h-[1px]" style={{ background: 'linear-gradient(90deg, #D5C8FF 0%, rgba(128, 120, 153, 0) 100%)' }} />
+            <div className="w-[60px] sm:w-[90px] md:w-[125px] h-[1px]" style={{ background: 'linear-gradient(90deg, #D5C8FF 0%, rgba(128, 120, 153, 0) 100%)' }} />
           </div>
 
           {showLoginPrompt ? (
@@ -281,23 +281,22 @@ export const ReadingResultPage: React.FC<ReadingResultPageProps> = ({
           {/* Description and Action Buttons - Only show when not loading */}
           {!isLoading && reading && (
             <>
-              <div className="flex flex-col items-start gap-[20px] w-full">
-                <p className="text-[14px] leading-[22px] text-center w-full" style={{ color: 'rgba(205, 191, 238, 0.5)' }}>
+              <div className="flex flex-col items-start gap-4 md:gap-[20px] w-full">
+                <p className="text-[12px] md:text-[14px] leading-[18px] md:leading-[22px] text-center w-full px-2" style={{ color: 'rgba(205, 191, 238, 0.5)' }}>
                   {isZh
                     ? '将你的问题创建为一个人生命题吧！创建后，当你需要对这个人生命题进行新的启示时，可以再次进行抽牌，延续人生命题，查看演进记录。'
                     : 'Create a life topic from your question! After creation, when you need new insights, you can draw cards again to continue and view the evolution.'
                   }
                 </p>
-                <div className="flex items-start gap-[20px] w-full">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-start gap-3 md:gap-[20px] w-full">
                   <button
                     onClick={onSaveTopic}
                     disabled={isSaving || topicCreated}
-                    className="flex-1 flex justify-center items-center px-[64px] py-[12px] rounded-[100px] text-[16px] font-bold hover:opacity-90 transition-opacity disabled:opacity-50"
+                    className="flex-1 flex justify-center items-center px-8 md:px-[64px] py-3 md:py-[12px] rounded-[100px] text-[14px] md:text-[16px] font-bold hover:opacity-90 transition-opacity disabled:opacity-50 min-h-[40px] md:h-[43px]"
                     style={{
                       backgroundColor: '#DD8424',
                       color: '#000000',
-                      opacity: 0.8,
-                      height: '43px'
+                      opacity: 0.8
                     }}
                   >
                     {topicCreated
@@ -308,13 +307,12 @@ export const ReadingResultPage: React.FC<ReadingResultPageProps> = ({
                   </button>
                   <button
                     onClick={onTryAgain}
-                    className="flex-1 flex justify-center items-center px-[20px] py-[7px] rounded-[100px] text-[16px] font-bold hover:opacity-90 transition-opacity"
+                    className="flex-1 flex justify-center items-center px-6 md:px-[20px] py-3 md:py-[7px] rounded-[100px] text-[14px] md:text-[16px] font-bold hover:opacity-90 transition-opacity min-h-[40px] md:h-[43px]"
                     style={{
                       backgroundColor: 'rgba(189, 161, 255, 0.2)',
                       border: '1px solid rgba(189, 161, 255, 0.2)',
                       color: '#BDA1FF',
-                      opacity: 0.8,
-                      height: '43px'
+                      opacity: 0.8
                     }}
                   >
                     {isZh ? '再次占卜' : 'Try Again'}

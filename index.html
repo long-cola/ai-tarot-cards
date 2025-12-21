@@ -114,6 +114,63 @@
       .star, .animate-twinkle {
         animation: twinkle 5s infinite ease-in-out;
       }
+
+      /* Mobile Optimizations */
+      @media (max-width: 640px) {
+        body {
+          font-size: 14px;
+          line-height: 1.5;
+        }
+
+        button, a, [role="button"] {
+          -webkit-tap-highlight-color: rgba(168, 85, 247, 0.1);
+          touch-action: manipulation;
+        }
+      }
+
+      /* Touch-friendly minimum sizes */
+      @media (max-width: 768px) {
+        button,
+        a,
+        [role="button"],
+        input[type="button"],
+        input[type="submit"] {
+          min-height: 44px;
+          min-width: 44px;
+        }
+      }
+
+      /* Optimize scrolling performance */
+      * {
+        -webkit-overflow-scrolling: touch;
+      }
+
+      /* Landscape orientation warning (optional) */
+      @media (max-width: 768px) and (orientation: landscape) {
+        body::before {
+          content: '请竖屏使用以获得最佳体验 / Please use portrait mode';
+          position: fixed;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          background: rgba(15, 23, 42, 0.95);
+          color: #e2e8f0;
+          padding: 20px 30px;
+          border-radius: 12px;
+          z-index: 9999;
+          text-align: center;
+          font-size: 14px;
+          border: 1px solid rgba(168, 85, 247, 0.3);
+        }
+
+        body::after {
+          content: '';
+          position: fixed;
+          inset: 0;
+          background: rgba(0, 0, 0, 0.8);
+          z-index: 9998;
+        }
+      }
     </style>
   <script type="importmap">
 {

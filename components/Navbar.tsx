@@ -65,11 +65,12 @@ export const Navbar: React.FC<NavbarProps> = ({
           : 'bg-[#0F172A]/40 backdrop-blur-sm border-b border-white/5'
       }`}
     >
-      <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-4 md:px-6 h-14 md:h-16 flex items-center justify-between">
         {/* Logo */}
         <div className="flex items-center">
-          <h1 className="text-white text-xl font-semibold tracking-wide">
-            Life Tarotcards
+          <h1 className="text-white text-base md:text-xl font-semibold tracking-wide">
+            <span className="hidden sm:inline">Life Tarotcards</span>
+            <span className="sm:hidden">{isZh ? '塔罗' : 'Tarot'}</span>
           </h1>
         </div>
 
@@ -92,11 +93,11 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
 
         {/* Right Actions */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 md:gap-3">
           {/* Language Toggle */}
           <button
             onClick={onLanguageToggle}
-            className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white/80 hover:text-white text-xs font-medium transition-all"
+            className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white/80 hover:text-white text-xs font-medium transition-all"
           >
             {language.toUpperCase()}
           </button>
@@ -104,15 +105,15 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Login/User */}
           {isAuthenticated ? (
             <details className="group relative">
-              <summary className="list-none flex items-center gap-2 cursor-pointer">
+              <summary className="list-none flex items-center gap-1 md:gap-2 cursor-pointer">
                 {user?.avatar && (
                   <img
                     src={user.avatar}
                     alt={user.name || user.email}
-                    className="w-8 h-8 rounded-full border-2 border-white/20"
+                    className="w-7 h-7 md:w-8 md:h-8 rounded-full border-2 border-white/20"
                   />
                 )}
-                <div className="text-[10px] text-slate-300/80">
+                <div className="text-[9px] md:text-[10px] text-slate-300/80 hidden sm:block">
                   {user?.name || user?.email || (isZh ? '已登录' : 'Logged in')}
                 </div>
                 <svg className="w-3 h-3 text-white/70 group-open:rotate-180 transition-transform" viewBox="0 0 20 20" fill="currentColor">
@@ -120,18 +121,17 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </svg>
               </summary>
               <div
-                className="absolute right-0 mt-2 flex flex-col justify-center items-center z-50"
+                className="absolute right-0 mt-2 w-[200px] sm:w-[229px] flex flex-col justify-center items-center z-50"
                 style={{
-                  width: '229px',
-                  padding: '24px 0px 32px',
-                  gap: '24px',
+                  padding: '20px 0px 24px',
+                  gap: '20px',
                   background: '#282446',
                   border: '1px solid #443E71',
                   borderRadius: '16px',
                 }}
               >
                 {/* User Info Section */}
-                <div className="flex flex-col justify-center items-center w-full" style={{ gap: '12px' }}>
+                <div className="flex flex-col justify-center items-center w-full px-4 sm:px-6" style={{ gap: '12px' }}>
                   {/* Username */}
                   <div
                     className="w-full flex items-center justify-center text-center"
@@ -195,9 +195,8 @@ export const Navbar: React.FC<NavbarProps> = ({
 
                 {/* Quota Info Section */}
                 <div
-                  className="flex flex-col items-start w-full"
+                  className="flex flex-col items-start w-full px-4 sm:px-6"
                   style={{
-                    padding: '0px 24px',
                     gap: '12px',
                   }}
                 >
@@ -251,9 +250,8 @@ export const Navbar: React.FC<NavbarProps> = ({
 
                 {/* Buttons Section */}
                 <div
-                  className="flex flex-col items-start w-full"
+                  className="flex flex-col items-start w-full px-4 sm:px-6"
                   style={{
-                    padding: '0px 24px',
                     gap: '12px',
                   }}
                 >
@@ -316,8 +314,9 @@ export const Navbar: React.FC<NavbarProps> = ({
               variant="outline"
               size="sm"
               onClick={onLoginClick}
+              className="text-xs md:text-sm px-3 md:px-4"
             >
-              {isZh ? '使用 Chrome 登录' : 'Sign in with Chrome'}
+              {isZh ? '登录' : 'Login'}
             </Button>
           )}
         </div>
