@@ -72,6 +72,7 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
   const shuffleTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const eventRefsMap = useRef<Map<string, HTMLDivElement>>(new Map());
   const [newlyAddedEventId, setNewlyAddedEventId] = useState<string | null>(null);
+  const currentReadingRef = useRef<HTMLDivElement | null>(null);
 
   // Initialize deck
   useEffect(() => {
@@ -254,11 +255,18 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
     // Go back to detail page immediately
     setPageState('detail');
 
-    // Scroll to top immediately to show the "generating reading..." state
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth'
-    });
+    // Scroll to the current reading section immediately to show loading state
+    // Use a timeout to ensure the DOM has updated with the new drawnCard
+    setTimeout(() => {
+      if (currentReadingRef.current) {
+        currentReadingRef.current.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+          inline: 'nearest'
+        });
+        console.log('[TopicDetailPage] Scrolled to current reading section');
+      }
+    }, 100);
 
     // Auto-generate reading in background
     handleGenerateReading(card);
@@ -658,7 +666,7 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
 
             {/* Current Reading Result - Show at bottom when drawing/reading */}
             {drawnCard && pageState === 'detail' && (
-              <div className="mt-8 space-y-6 animate-fade-in w-full">
+              <div ref={currentReadingRef} className="mt-8 space-y-6 animate-fade-in w-full">
                 <div className="bg-gradient-to-br from-amber-500/10 to-purple-500/10 backdrop-blur-sm border-2 border-amber-400/40 rounded-xl p-6 w-full">
                   <h3 className="text-[16px] text-amber-300 mb-4 tracking-wide flex items-center gap-2">
                     <span className="inline-block w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>

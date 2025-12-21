@@ -1066,7 +1066,8 @@ const App: React.FC = () => {
     setDeck(newDeck);
 
     if (newDrawn.length === 3) {
-      setTimeout(() => setPhase(AppPhase.REVEAL), 1500); 
+      // Immediately transition to ANALYSIS phase to show loading animation
+      setTimeout(() => setPhase(AppPhase.ANALYSIS), 0);
     } else {
       setTimeout(() => {
         setIsInteracting(false);
@@ -1074,12 +1075,11 @@ const App: React.FC = () => {
     }
   };
 
-  // Analysis Logic
+  // Analysis Logic - triggers immediately after drawing 3 cards
   useEffect(() => {
-    if (phase === AppPhase.REVEAL) {
-      const timer = setTimeout(async () => {
-        setPhase(AppPhase.ANALYSIS);
-
+    if (phase === AppPhase.ANALYSIS && drawnCards.length === 3 && !reading) {
+      // Immediately start the reading process
+      const fetchReading = async () => {
         // Check if user is logged in first
         const allowed = await ensureUsageAllowance();
         if (!allowed) {
@@ -1131,8 +1131,9 @@ const App: React.FC = () => {
         } finally {
           setIsReadingLoading(false);
         }
-      }, 3500);
-      return () => clearTimeout(timer);
+      };
+
+      fetchReading();
     }
   }, [phase, drawnCards, question, language]);
 
@@ -1167,6 +1168,14 @@ const App: React.FC = () => {
 
       // Automatically navigate to the created topic detail page
       await loadTopicDetail(res.topic.id);
+
+      // Ensure scroll to top after page loads
+      setTimeout(() => {
+        window.scrollTo({
+          top: 0,
+          behavior: 'smooth'
+        });
+      }, 200);
     } catch (err: any) {
       console.error("topic save failed", err);
       const reason = err?.data?.reason;
