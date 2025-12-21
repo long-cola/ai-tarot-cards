@@ -576,6 +576,46 @@ const App: React.FC = () => {
     loadSession();
   }, []);
 
+  // Track page view after session is loaded
+  useEffect(() => {
+    if (authLoading) return; // Wait for auth to finish loading
+
+    const trackVisit = async () => {
+      try {
+        // Get or create visitor ID
+        let visitorId = localStorage.getItem('visitor_id');
+        if (!visitorId) {
+          visitorId = `visitor_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+          localStorage.setItem('visitor_id', visitorId);
+        }
+
+        // Get user ID if available
+        const userId = user?.id;
+
+        // Track page view
+        await fetch('/api/analytics', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            visitorId,
+            userId,
+            pagePath: window.location.pathname,
+            userAgent: navigator.userAgent,
+            referrer: document.referrer,
+          }),
+        });
+
+        console.log('[Analytics] Page view tracked for visitor:', visitorId, 'user:', userId);
+      } catch (error) {
+        console.error('[Analytics] Failed to track page view:', error);
+      }
+    };
+
+    trackVisit();
+  }, [authLoading, user]);
+
   // Handle payment success callback
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
