@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import SEOHead from './SEOHead';
 
 interface Card {
   id: string;
@@ -120,7 +121,18 @@ export const ReadingResultPage: React.FC<ReadingResultPageProps> = ({
   };
 
   return (
-    <div className="min-h-screen pt-28 md:pt-[136px] pb-8 md:pb-12 px-4 md:px-6 relative overflow-hidden">
+    <>
+      <SEOHead
+        title={isZh ? `${question.substring(0, 50)}${question.length > 50 ? '...' : ''} - 神秘塔罗 AI` : `${question.substring(0, 50)}${question.length > 50 ? '...' : ''} - Mystic Tarot AI`}
+        description={isZh
+          ? `探索您的塔罗占卜结果：${cards.map(c => c.nameCn).join('、')}。AI为您解读命运的指引。`
+          : `Explore your Tarot reading results: ${cards.map(c => c.name).join(', ')}. AI interprets fate's guidance for you.`}
+        url="https://ai-tarot-cards.vercel.app/"
+        lang={isZh ? 'zh-CN' : 'en'}
+        schemaType="Article"
+        type="article"
+      />
+      <div className="min-h-screen pt-28 md:pt-[136px] pb-8 md:pb-12 px-4 md:px-6 relative overflow-hidden">
       {/* Starry Background Decorations */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute w-[3.04px] h-[3.04px] rounded-full bg-white" style={{ left: '1041.07px', top: '512.86px' }} />
@@ -324,5 +336,6 @@ export const ReadingResultPage: React.FC<ReadingResultPageProps> = ({
         </div>
       </div>
     </div>
+    </>
   );
 };

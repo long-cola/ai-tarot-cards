@@ -1,5 +1,6 @@
 import React from 'react';
 import { Button, Input, QuickQuestionCard } from './ui';
+import SEOHead from './SEOHead';
 
 interface HomePageProps {
   language: 'zh' | 'en';
@@ -53,7 +54,17 @@ export const HomePage: React.FC<HomePageProps> = ({
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4 md:px-6 pt-20 md:pt-24 pb-8 md:pb-12 relative overflow-hidden">
+    <>
+      <SEOHead
+        title={isZh ? '神秘塔罗 AI - AI驱动的塔罗牌占卜体验' : 'Mystic Tarot AI - AI-Powered Tarot Reading Experience'}
+        description={isZh
+          ? '体验沉浸式AI塔罗牌占卜，由阿里云百炼Qwen模型驱动的深度解读。洗牌仪式、神秘氛围，探索命运的指引。'
+          : 'Experience immersive AI-powered Tarot readings with deep interpretations by Alibaba Bailian Qwen models. Card shuffling rituals, mystical atmosphere, explore fate\'s guidance.'}
+        url="https://ai-tarot-cards.vercel.app/"
+        lang={isZh ? 'zh-CN' : 'en'}
+        schemaType="WebSite"
+      />
+      <div className="min-h-screen flex flex-col items-center justify-center px-4 md:px-6 pt-20 md:pt-24 pb-8 md:pb-12 relative overflow-hidden">
       {/* Starry Background Decorations */}
       <div className="absolute inset-0 pointer-events-none">
         {/* Generate white dots as stars - sample positions from CSS */}
@@ -155,5 +166,6 @@ export const HomePage: React.FC<HomePageProps> = ({
         </div>
       </div>
     </div>
+    </>
   );
 };

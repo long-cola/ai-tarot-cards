@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import { HelmetProvider } from 'react-helmet-async';
 import App from './App';
 import AdminApp from './AdminApp';
 
@@ -13,6 +14,8 @@ const isAdmin = typeof window !== 'undefined' && window.location.pathname.starts
 
 root.render(
   <React.StrictMode>
-    {isAdmin ? <AdminApp /> : <App />}
+    <HelmetProvider>
+      {isAdmin ? <AdminApp /> : <App />}
+    </HelmetProvider>
   </React.StrictMode>
 );

@@ -1,6 +1,7 @@
 import path from 'path';
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
+import sitemap from 'vite-plugin-sitemap';
 
 export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, '.', '');
@@ -9,7 +10,23 @@ export default defineConfig(({ mode }) => {
         port: 3000,
         host: '0.0.0.0',
       },
-      plugins: [react()],
+      plugins: [
+        react(),
+        sitemap({
+          hostname: 'https://ai-tarot-cards.vercel.app',
+          dynamicRoutes: [
+            '/topics',
+          ],
+          exclude: ['/admin', '/admin.html'],
+          robots: [
+            {
+              userAgent: '*',
+              allow: '/',
+              disallow: ['/admin', '/api'],
+            }
+          ]
+        })
+      ],
       build: {
         rollupOptions: {
           input: {

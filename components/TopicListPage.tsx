@@ -1,5 +1,6 @@
 import React from 'react';
 import { TopicCard } from './TopicCard';
+import SEOHead from './SEOHead';
 
 interface Topic {
   id: string;
@@ -38,7 +39,17 @@ export const TopicListPage: React.FC<TopicListPageProps> = ({
   });
 
   return (
-    <div className="min-h-screen pt-20 md:pt-24 pb-8 md:pb-12 px-4 md:px-6 relative overflow-hidden" style={{ backgroundColor: 'transparent' }}>
+    <>
+      <SEOHead
+        title={isZh ? '我的命题 - 神秘塔罗 AI' : 'My Topics - Mystic Tarot AI'}
+        description={isZh
+          ? '查看和管理您的塔罗占卜命题，追踪命运的演变轨迹。'
+          : 'View and manage your Tarot reading topics, track the evolution of your destiny.'}
+        url="https://ai-tarot-cards.vercel.app/topics"
+        lang={isZh ? 'zh-CN' : 'en'}
+        schemaType="WebSite"
+      />
+      <div className="min-h-screen pt-20 md:pt-24 pb-8 md:pb-12 px-4 md:px-6 relative overflow-hidden" style={{ backgroundColor: 'transparent' }}>
       {/* Starry Background Decorations */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute w-[3px] h-[3px] rounded-full bg-white" style={{ left: '1041px', top: '512px' }} />
@@ -115,5 +126,6 @@ export const TopicListPage: React.FC<TopicListPageProps> = ({
         )}
       </div>
     </div>
+    </>
   );
 };
