@@ -91,10 +91,10 @@ export const HomePage: React.FC<HomePageProps> = ({
       </div>
 
       {/* Main Content Container */}
-      <div className="w-full max-w-3xl mx-auto flex flex-col items-center gap-6 md:gap-8 relative z-10">
+      <div className="w-full max-w-3xl mx-auto flex flex-col items-center gap-3 md:gap-4 relative z-10">
 
         {/* Tarot Cards Illustration - Three cards in fan layout using real image */}
-        <div className="mb-6 md:mb-8 relative">
+        <div className="mb-3 md:mb-4 relative">
           <div className="w-[280px] sm:w-[400px] md:w-[500px] h-[200px] sm:h-[280px] md:h-[320px] flex items-center justify-center relative">
             {/* Left card */}
             <img
