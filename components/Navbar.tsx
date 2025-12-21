@@ -248,6 +248,37 @@ export const Navbar: React.FC<NavbarProps> = ({
                   )}
                 </div>
 
+                {/* Navigation Section (Mobile only) */}
+                <div className="flex md:hidden flex-col w-full px-4 sm:px-6 gap-2">
+                  <button
+                    onClick={onQuickReadingClick}
+                    className="w-full text-left py-2 px-3 rounded-lg hover:bg-white/5 transition-colors"
+                    style={{
+                      fontFamily: "'Noto Serif SC', serif",
+                      fontWeight: 400,
+                      fontSize: '14px',
+                      color: '#E2DBFF',
+                    }}
+                  >
+                    {isZh ? '🔮 遇事占卜' : '🔮 Quick Reading'}
+                  </button>
+                  <button
+                    onClick={onTopicsClick}
+                    className="w-full text-left py-2 px-3 rounded-lg hover:bg-white/5 transition-colors"
+                    style={{
+                      fontFamily: "'Noto Serif SC', serif",
+                      fontWeight: 400,
+                      fontSize: '14px',
+                      color: '#E2DBFF',
+                    }}
+                  >
+                    {isZh ? '📖 人生命题' : '📖 Life Topics'}
+                  </button>
+                </div>
+
+                {/* Divider (Mobile only) */}
+                <div className="md:hidden w-full h-px bg-white/10"></div>
+
                 {/* Buttons Section */}
                 <div
                   className="flex flex-col items-start w-full px-4 sm:px-6"
