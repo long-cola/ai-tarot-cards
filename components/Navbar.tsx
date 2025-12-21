@@ -36,6 +36,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const isZh = language === 'zh';
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Debug: Log quota info when it changes
   useEffect(() => {
@@ -57,7 +58,23 @@ export const Navbar: React.FC<NavbarProps> = ({
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Close mobile menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (isMobileMenuOpen && !target.closest('nav')) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+
+    if (isMobileMenuOpen) {
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
+    }
+  }, [isMobileMenuOpen]);
+
   return (
+    <>
     <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         isScrolled
@@ -67,12 +84,25 @@ export const Navbar: React.FC<NavbarProps> = ({
     >
       <div className="max-w-7xl mx-auto px-4 md:px-6 h-14 md:h-16 flex items-center justify-between">
         {/* Logo */}
-        <div className="flex items-center">
+        <div className="flex items-center gap-3">
           <h1 className="text-white text-base md:text-xl font-semibold tracking-wide">
             <span className="hidden sm:inline">Life Tarotcards</span>
             <span className="sm:hidden">{isZh ? '塔罗' : 'Tarot'}</span>
           </h1>
         </div>
+
+        {/* Hamburger Menu Button (Mobile only) */}
+        <button
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          className="md:hidden flex items-center justify-center w-9 h-9 rounded-lg hover:bg-white/10 transition-colors"
+          aria-label="Toggle menu"
+        >
+          <div className="flex flex-col gap-1.5 w-5">
+            <span className={`h-0.5 w-full bg-white transition-all duration-300 ${isMobileMenuOpen ? 'rotate-45 translate-y-2' : ''}`}></span>
+            <span className={`h-0.5 w-full bg-white transition-all duration-300 ${isMobileMenuOpen ? 'opacity-0' : ''}`}></span>
+            <span className={`h-0.5 w-full bg-white transition-all duration-300 ${isMobileMenuOpen ? '-rotate-45 -translate-y-2' : ''}`}></span>
+          </div>
+        </button>
 
         {/* Center Navigation */}
         <div className="hidden md:flex items-center gap-8">
@@ -248,37 +278,6 @@ export const Navbar: React.FC<NavbarProps> = ({
                   )}
                 </div>
 
-                {/* Navigation Section (Mobile only) */}
-                <div className="flex md:hidden flex-col w-full px-4 sm:px-6 gap-2">
-                  <button
-                    onClick={onQuickReadingClick}
-                    className="w-full text-left py-2 px-3 rounded-lg hover:bg-white/5 transition-colors"
-                    style={{
-                      fontFamily: "'Noto Serif SC', serif",
-                      fontWeight: 400,
-                      fontSize: '14px',
-                      color: '#E2DBFF',
-                    }}
-                  >
-                    {isZh ? '🔮 遇事占卜' : '🔮 Quick Reading'}
-                  </button>
-                  <button
-                    onClick={onTopicsClick}
-                    className="w-full text-left py-2 px-3 rounded-lg hover:bg-white/5 transition-colors"
-                    style={{
-                      fontFamily: "'Noto Serif SC', serif",
-                      fontWeight: 400,
-                      fontSize: '14px',
-                      color: '#E2DBFF',
-                    }}
-                  >
-                    {isZh ? '📖 人生命题' : '📖 Life Topics'}
-                  </button>
-                </div>
-
-                {/* Divider (Mobile only) */}
-                <div className="md:hidden w-full h-px bg-white/10"></div>
-
                 {/* Buttons Section */}
                 <div
                   className="flex flex-col items-start w-full px-4 sm:px-6"
@@ -352,6 +351,54 @@ export const Navbar: React.FC<NavbarProps> = ({
           )}
         </div>
       </div>
+
+      {/* Mobile Menu Dropdown */}
+      {isMobileMenuOpen && (
+        <div className="md:hidden absolute top-full left-0 right-0 bg-[#282446] border-b border-white/10 shadow-lg animate-slideDown">
+          <div className="px-4 py-4 space-y-2">
+            <button
+              onClick={() => {
+                onQuickReadingClick?.();
+                setIsMobileMenuOpen(false);
+              }}
+              className="w-full text-left py-3 px-4 rounded-lg hover:bg-white/5 transition-colors flex items-center gap-3"
+            >
+              <span className="text-xl">🔮</span>
+              <span className="text-white text-sm font-medium">
+                {isZh ? '遇事占卜' : 'Quick Reading'}
+              </span>
+            </button>
+            <button
+              onClick={() => {
+                onTopicsClick?.();
+                setIsMobileMenuOpen(false);
+              }}
+              className="w-full text-left py-3 px-4 rounded-lg hover:bg-white/5 transition-colors flex items-center gap-3"
+            >
+              <span className="text-xl">📖</span>
+              <span className="text-white text-sm font-medium">
+                {isZh ? '人生命题' : 'Life Topics'}
+              </span>
+            </button>
+          </div>
+        </div>
+      )}
     </nav>
+    <style>{`
+      @keyframes slideDown {
+        from {
+          opacity: 0;
+          transform: translateY(-10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .animate-slideDown {
+        animation: slideDown 0.2s ease-out;
+      }
+    `}</style>
+  </>
   );
 };
