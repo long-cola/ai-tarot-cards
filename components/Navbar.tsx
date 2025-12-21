@@ -83,26 +83,27 @@ export const Navbar: React.FC<NavbarProps> = ({
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 md:px-6 h-14 md:h-16 flex items-center justify-between">
-        {/* Logo */}
+        {/* Left: Hamburger Menu (Mobile) or Logo (Desktop) */}
         <div className="flex items-center gap-3">
+          {/* Hamburger Menu Button (Mobile only) */}
+          <button
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="md:hidden flex items-center justify-center w-9 h-9 rounded-lg hover:bg-white/10 transition-colors"
+            aria-label="Toggle menu"
+          >
+            <div className="flex flex-col gap-1.5 w-5">
+              <span className={`h-0.5 w-full bg-white transition-all duration-300 ${isMobileMenuOpen ? 'rotate-45 translate-y-2' : ''}`}></span>
+              <span className={`h-0.5 w-full bg-white transition-all duration-300 ${isMobileMenuOpen ? 'opacity-0' : ''}`}></span>
+              <span className={`h-0.5 w-full bg-white transition-all duration-300 ${isMobileMenuOpen ? '-rotate-45 -translate-y-2' : ''}`}></span>
+            </div>
+          </button>
+
+          {/* Logo */}
           <h1 className="text-white text-base md:text-xl font-semibold tracking-wide">
             <span className="hidden sm:inline">Life Tarotcards</span>
             <span className="sm:hidden">{isZh ? '塔罗' : 'Tarot'}</span>
           </h1>
         </div>
-
-        {/* Hamburger Menu Button (Mobile only) */}
-        <button
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          className="md:hidden flex items-center justify-center w-9 h-9 rounded-lg hover:bg-white/10 transition-colors"
-          aria-label="Toggle menu"
-        >
-          <div className="flex flex-col gap-1.5 w-5">
-            <span className={`h-0.5 w-full bg-white transition-all duration-300 ${isMobileMenuOpen ? 'rotate-45 translate-y-2' : ''}`}></span>
-            <span className={`h-0.5 w-full bg-white transition-all duration-300 ${isMobileMenuOpen ? 'opacity-0' : ''}`}></span>
-            <span className={`h-0.5 w-full bg-white transition-all duration-300 ${isMobileMenuOpen ? '-rotate-45 -translate-y-2' : ''}`}></span>
-          </div>
-        </button>
 
         {/* Center Navigation */}
         <div className="hidden md:flex items-center gap-8">
