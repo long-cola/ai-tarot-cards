@@ -37,7 +37,7 @@ export const BreadcrumbNav: React.FC<BreadcrumbNavProps> = ({ items, language })
       "@type": "ListItem",
       "position": index + 1,
       "name": item.label,
-      ...(item.url && { "item": `https://ai-tarotcard.com${item.url}` })
+      ...(item.url && { "item": `https://ai-tarotcards.vercel.app${item.url}` })
     }))
   };
 

@@ -125,11 +125,11 @@ export const ReadingResultPage: React.FC<ReadingResultPageProps> = ({
   return (
     <>
       <SEOHead
-        title={isZh ? `${question.substring(0, 50)}${question.length > 50 ? '...' : ''} - 神秘塔罗 AI` : `${question.substring(0, 50)}${question.length > 50 ? '...' : ''} - Mystic Tarot AI`}
+        title={isZh ? `${question.substring(0, 40)} - AI塔罗占卜结果 | 神秘塔罗` : `${question.substring(0, 40)} - AI Tarot Result | Mystic Tarot`}
         description={isZh
-          ? `探索您的塔罗占卜结果：${cards.map(c => c.nameCn).join('、')}。AI为您解读命运的指引。`
-          : `Explore your Tarot reading results: ${cards.map(c => c.name).join(', ')}. AI interprets fate's guidance for you.`}
-        url="https://ai-tarotcard.com/"
+          ? `免费AI塔罗占卜结果：${cards.map(c => c.nameCn).join('、')}。专业解读爱情事业财运，洞察过去现在未来。`
+          : `Free AI tarot reading: ${cards.map(c => c.name).join(', ')}. Professional insights on love, career, fortune. Past, present, future revealed.`}
+        url="https://ai-tarotcards.vercel.app/"
         lang={isZh ? 'zh-CN' : 'en'}
         schemaType="Article"
         type="article"

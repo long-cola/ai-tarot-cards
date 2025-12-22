@@ -140,11 +140,11 @@ export const SharedReadingPage: React.FC<SharedReadingPageProps> = ({
   return (
     <>
       <SEOHead
-        title={isZh ? `${data.question} - 塔罗解读分享` : `${data.question} - Tarot Reading Shared`}
+        title={isZh ? `${data.question.substring(0, 40)} - AI塔罗占卜结果 | 免费在线解读` : `${data.question.substring(0, 40)} - AI Tarot Reading Result | Free Online`}
         description={isZh
-          ? `查看这个超准的塔罗解读：${data.question}。由 AI 驱动的深度塔罗牌占卜。`
-          : `View this super accurate Tarot reading: ${data.question}. AI-powered deep Tarot divination.`}
-        url={`https://ai-tarotcard.com/share/${shareId}`}
+          ? `免费查看这个塔罗占卜解读：${data.question}。AI专业解析爱情事业财运，三牌阵深度洞察过去现在未来。`
+          : `Free AI tarot reading: ${data.question}. Professional analysis on love, career, fortune. Three-card spread reveals past, present, future.`}
+        url={`https://ai-tarotcards.vercel.app/share/${shareId}`}
         lang={isZh ? 'zh-CN' : 'en'}
         schemaType="Article"
         type="article"

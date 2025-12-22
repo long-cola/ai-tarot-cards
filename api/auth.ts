@@ -34,7 +34,7 @@ function handleGoogleLogin(req: any, res: any) {
 
   const {
     GOOGLE_CLIENT_ID,
-    SERVER_URL = 'https://ai-tarotcard.com',
+    SERVER_URL = 'https://ai-tarotcards.vercel.app',
   } = process.env;
 
   console.log('[OAuth Start] GOOGLE_CLIENT_ID:', GOOGLE_CLIENT_ID ? 'present' : 'MISSING');
@@ -73,11 +73,11 @@ async function handleGoogleCallback(req: any, res: any) {
   const {
     GOOGLE_CLIENT_ID,
     GOOGLE_CLIENT_SECRET,
-    SERVER_URL = 'https://ai-tarotcard.com',
+    SERVER_URL = 'https://ai-tarotcards.vercel.app',
     CLIENT_ORIGINS,
   } = process.env;
 
-  const clientOrigin = CLIENT_ORIGINS?.split(',')[0] || 'https://ai-tarotcard.com';
+  const clientOrigin = CLIENT_ORIGINS?.split(',')[0] || 'https://ai-tarotcards.vercel.app';
 
   console.log('[OAuth Callback] Started, code present:', !!code);
 

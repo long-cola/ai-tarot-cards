@@ -12,26 +12,26 @@ interface SEOProps {
 }
 
 const SEOHead: React.FC<SEOProps> = ({
-  title = '神秘塔罗 AI - AI驱动的塔罗牌占卜体验',
-  description = '体验沉浸式AI塔罗牌占卜，由阿里云百炼Qwen模型驱动的深度解读。洗牌仪式、神秘氛围，探索命运的指引。',
+  title = '免费AI塔罗占卜 - 爱情事业财运解读 | 神秘塔罗在线',
+  description = '免费在线AI塔罗占卜，3秒获得专业解读。爱情、事业、财运、人生决策即时指引。神秘三牌阵洞察过去现在未来，24小时随时占卜，AI深度解析命运走向。',
   type = 'website',
-  image = 'https://ai-tarotcard.com/og-image.jpg',
-  url = 'https://ai-tarotcard.com',
+  image = 'https://ai-tarotcards.vercel.app/og-image.jpg',
+  url = 'https://ai-tarotcards.vercel.app',
   lang = 'zh-CN',
   schemaType = 'WebSite'
 }) => {
-  const siteUrl = 'https://ai-tarotcard.com';
+  const siteUrl = 'https://ai-tarotcards.vercel.app';
   const isZh = lang === 'zh-CN';
 
   // 根据语言生成不同的描述
   const defaultDescriptions = {
-    'zh-CN': '体验沉浸式AI塔罗牌占卜，由阿里云百炼Qwen模型驱动的深度解读。洗牌仪式、神秘氛围，探索命运的指引。',
-    'en': 'Experience immersive AI-powered Tarot readings with deep interpretations by Alibaba Bailian Qwen models. Card shuffling rituals, mystical atmosphere, explore fate\'s guidance.'
+    'zh-CN': '免费在线AI塔罗占卜，3秒获得专业解读。爱情、事业、财运、人生决策即时指引。神秘三牌阵洞察过去现在未来，24小时随时占卜，AI深度解析命运走向。',
+    'en': 'Free online AI tarot reading in 3 seconds. Get instant insights on love, career, money & life decisions. Three-card spread reveals past, present, future. 24/7 mystical guidance powered by AI.'
   };
 
   const defaultTitles = {
-    'zh-CN': '神秘塔罗 AI - AI驱动的塔罗牌占卜体验',
-    'en': 'Mystic Tarot AI - AI-Powered Tarot Reading Experience'
+    'zh-CN': '免费AI塔罗占卜 - 爱情事业财运解读 | 神秘塔罗在线',
+    'en': 'Free AI Tarot Reading - Love, Career & Life Guidance | Mystic Tarot'
   };
 
   const finalDescription = description === defaultDescriptions['zh-CN']
@@ -100,7 +100,7 @@ const SEOHead: React.FC<SEOProps> = ({
       <link rel="canonical" href={url} />
 
       {/* SEO关键词和作者 */}
-      <meta name="keywords" content={isZh ? '塔罗牌,AI占卜,塔罗解读,在线占卜,命运指引,塔罗预测,人生命题,神秘学,占卜工具' : 'tarot cards,AI tarot,tarot reading,online divination,fortune telling,tarot prediction,life guidance,mysticism'} />
+      <meta name="keywords" content={isZh ? '免费塔罗牌,AI塔罗占卜,在线塔罗,塔罗牌测试,爱情塔罗,事业占卜,财运预测,塔罗解读,三牌阵,命运指引,塔罗牌在线占卜免费' : 'free tarot reading,AI tarot,online tarot cards,tarot card reading,love tarot,career tarot,fortune telling,three card spread,instant tarot,mystical guidance,free online tarot'} />
       <meta name="author" content="神秘塔罗 AI / Mystic Tarot AI" />
       <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
       <meta name="googlebot" content="index, follow" />

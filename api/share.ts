@@ -117,7 +117,7 @@ async function handleCreateShare(req: any, res: any, pool: any) {
   return res.json({
     ok: true,
     shareId,
-    shareUrl: `https://ai-tarotcard.com/share/${shareId}`
+    shareUrl: `https://ai-tarotcards.vercel.app/share/${shareId}`
   });
 }
 

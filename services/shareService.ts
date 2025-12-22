@@ -33,7 +33,7 @@ export async function createShare(params: CreateShareParams): Promise<{ shareId:
   }
 
   // Use query parameter format instead of path parameter
-  const shareUrl = `https://ai-tarotcard.com/?shareId=${response.shareId}`;
+  const shareUrl = `https://ai-tarotcards.vercel.app/?shareId=${response.shareId}`;
 
   return {
     shareId: response.shareId,

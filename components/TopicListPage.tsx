@@ -41,11 +41,11 @@ export const TopicListPage: React.FC<TopicListPageProps> = ({
   return (
     <>
       <SEOHead
-        title={isZh ? '我的命题 - 神秘塔罗 AI' : 'My Topics - Mystic Tarot AI'}
+        title={isZh ? '我的塔罗命题 - 追踪人生重要决策 | 神秘塔罗AI' : 'My Tarot Topics - Track Life Decisions | Mystic Tarot AI'}
         description={isZh
-          ? '查看和管理您的塔罗占卜命题，追踪命运的演变轨迹。'
-          : 'View and manage your Tarot reading topics, track the evolution of your destiny.'}
-        url="https://ai-tarotcard.com/topics"
+          ? '管理您的塔罗占卜命题，追踪爱情、事业、财运等人生重要决策的演变轨迹。免费AI塔罗占卜助您洞察命运走向。'
+          : 'Manage your tarot reading topics, track important life decisions on love, career, fortune. Free AI tarot insights for your destiny.'}
+        url="https://ai-tarotcards.vercel.app/topics"
         lang={isZh ? 'zh-CN' : 'en'}
         schemaType="WebSite"
       />
