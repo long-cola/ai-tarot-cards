@@ -1,9 +1,7 @@
 {
   "version": 2,
   "rewrites": [
-    { "source": "/api/health", "destination": "/api/health" },
     { "source": "/api/me", "destination": "/api/me" },
-    { "source": "/api/logout", "destination": "/api/logout" },
     { "source": "/api/auth/(.*)", "destination": "/api/auth" },
     { "source": "/api/tarot-reading", "destination": "/api/tarot-reading" },
     { "source": "/api/topics/(.*)", "destination": "/api/topics" },

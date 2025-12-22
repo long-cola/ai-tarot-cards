@@ -1,5 +1,5 @@
 import { getPool } from '../services/db.js';
-import { signToken, setAuthCookie } from '../services/jwt.js';
+import { signToken, setAuthCookie, clearAuthCookie } from '../services/jwt.js';
 
 export default async function handler(req: any, res: any) {
   // Strip query string
@@ -7,6 +7,12 @@ export default async function handler(req: any, res: any) {
   const path = fullPath.split('?')[0];
 
   console.log('[auth] Request:', req.method, path);
+
+  // POST /api/auth/logout - Handle logout
+  if (path.includes('/logout')) {
+    clearAuthCookie(res);
+    return res.json({ ok: true });
+  }
 
   // GET /api/auth/google/callback - Handle OAuth callback
   if (path.includes('/google/callback')) {
