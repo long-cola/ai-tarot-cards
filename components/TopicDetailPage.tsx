@@ -5,6 +5,7 @@ import { getTarotReading } from '../services/bailianService';
 import { addTopicEvent } from '../services/topicService';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { BreadcrumbNav, getBreadcrumbsForTopicDetail } from './BreadcrumbNav';
 import { ShareButton } from './ShareButton';
 
 interface TopicDetailPageProps {
@@ -399,6 +400,12 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
         {/* Detail Page */}
         {pageState === 'detail' && (
           <>
+            {/* Breadcrumb Navigation */}
+            <BreadcrumbNav
+              items={getBreadcrumbsForTopicDetail(topic.title, language)}
+              language={language}
+            />
+
             {/* Back Button */}
             <button
               onClick={onBack}
@@ -520,7 +527,10 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
                           {card.imageUrl ? (
                             <img
                               src={card.imageUrl}
-                              alt={getCardName(card)}
+                              alt={`${getCardName(card)} (${getCardStatus(card)})`}
+                              loading="lazy"
+                              width="140"
+                              height="245"
                               className="w-full h-full object-cover"
                             />
                           ) : (
@@ -655,7 +665,10 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
                                 {card.imageUrl ? (
                                   <img
                                     src={card.imageUrl}
-                                    alt={getCardName(card)}
+                                    alt={`${getCardName(card)} (${getCardStatus(card)})`}
+                                    loading="lazy"
+                                    width="140"
+                                    height="245"
                                     className="w-full h-full object-cover"
                                   />
                                 ) : (
@@ -744,7 +757,10 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
                           {drawnCard.imageUrl ? (
                             <img
                               src={drawnCard.imageUrl}
-                              alt={getCardName(drawnCard)}
+                              alt={`${getCardName(drawnCard)} (${getCardStatus(drawnCard)})`}
+                              loading="lazy"
+                              width="140"
+                              height="245"
                               className="w-full h-full object-cover"
                             />
                           ) : (

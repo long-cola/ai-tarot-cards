@@ -140,7 +140,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                 {user?.avatar && (
                   <img
                     src={user.avatar}
-                    alt={user.name || user.email}
+                    alt={user.name || user.email || (isZh ? '用户头像' : 'User Avatar')}
+                    loading="lazy"
+                    width="32"
+                    height="32"
                     className="w-7 h-7 md:w-8 md:h-8 rounded-full border-2 border-white/20"
                   />
                 )}

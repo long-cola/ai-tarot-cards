@@ -2,6 +2,7 @@ import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import SEOHead from './SEOHead';
+import { BreadcrumbNav, getBreadcrumbsForQuickReading } from './BreadcrumbNav';
 import { ShareButton } from './ShareButton';
 
 interface Card {
@@ -134,6 +135,14 @@ export const ReadingResultPage: React.FC<ReadingResultPageProps> = ({
         type="article"
       />
       <div className="min-h-screen pt-28 md:pt-[136px] pb-8 md:pb-12 px-4 md:px-6 relative overflow-hidden">
+      {/* Breadcrumb Navigation */}
+      <div className="max-w-full sm:max-w-[600px] md:max-w-[800px] mx-auto relative z-10">
+        <BreadcrumbNav
+          items={getBreadcrumbsForQuickReading(language)}
+          language={language}
+        />
+      </div>
+
       {/* Starry Background Decorations */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute w-[3.04px] h-[3.04px] rounded-full bg-white" style={{ left: '1041.07px', top: '512.86px' }} />
@@ -182,7 +191,10 @@ export const ReadingResultPage: React.FC<ReadingResultPageProps> = ({
                   {card.imageUrl ? (
                     <img
                       src={card.imageUrl}
-                      alt={getCardName(card)}
+                      alt={`${getCardName(card)} - ${getCardStatus(card)} (${getCardPosition(card.position)})`}
+                      loading="lazy"
+                      width="180"
+                      height="316"
                       className="w-full h-full object-cover"
                     />
                   ) : (

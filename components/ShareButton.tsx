@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { createShare, copyShareToClipboard, CreateShareParams } from '../services/shareService';
+import { trackShare } from '../services/gaTracking';
 import { Language } from '../types';
 
 interface ShareButtonProps {
@@ -32,6 +33,9 @@ export const ShareButton: React.FC<ShareButtonProps> = ({
       const success = await copyShareToClipboard(question, shareUrl, language);
 
       if (success) {
+        // Track successful share in Google Analytics
+        trackShare(shareParams.shareType, question);
+
         setShowSuccess(true);
         setTimeout(() => setShowSuccess(false), 3000);
       } else {

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import SEOHead from './SEOHead';
+import { BreadcrumbNav, getBreadcrumbsForSharedReading } from './BreadcrumbNav';
 import { getSharedReading, ShareData } from '../services/shareService';
 import { DrawnCard, Language } from '../types';
 
@@ -149,6 +150,14 @@ export const SharedReadingPage: React.FC<SharedReadingPageProps> = ({
         type="article"
       />
       <div className="min-h-screen pt-28 md:pt-[136px] pb-8 md:pb-12 px-4 md:px-6 relative overflow-hidden">
+        {/* Breadcrumb Navigation */}
+        <div className="max-w-full sm:max-w-[600px] md:max-w-[800px] mx-auto relative z-10">
+          <BreadcrumbNav
+            items={getBreadcrumbsForSharedReading(data.question, language)}
+            language={language}
+          />
+        </div>
+
         {/* Starry Background Decorations */}
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute w-[3px] h-[3px] rounded-full bg-white" style={{ left: '1041px', top: '512px' }} />
@@ -205,7 +214,10 @@ export const SharedReadingPage: React.FC<SharedReadingPageProps> = ({
                       {card.imageUrl ? (
                         <img
                           src={card.imageUrl}
-                          alt={getCardName(card)}
+                          alt={`${getCardName(card)} - ${getCardStatus(card)} ${card.position !== undefined ? `(${getCardPosition(card.position)})` : ''}`}
+                          loading="lazy"
+                          width="180"
+                          height="316"
                           className="w-full h-full object-cover"
                         />
                       ) : (

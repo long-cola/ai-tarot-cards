@@ -101,21 +101,30 @@ export const HomePage: React.FC<HomePageProps> = ({
             {/* Left card */}
             <img
               src="/img/tarot-card-back.png"
-              alt="Tarot Card"
+              alt={isZh ? "塔罗牌背面 - 神秘图案" : "Tarot Card Back - Mystical Design"}
+              loading="eager"
+              width="140"
+              height="245"
               className="absolute left-[20px] sm:left-[40px] md:left-[60px] top-1/2 -translate-y-1/2 w-[80px] sm:w-[110px] md:w-[140px] h-auto transform -rotate-[20deg] z-10 drop-shadow-2xl"
             />
 
             {/* Center card */}
             <img
               src="/img/tarot-card-back.png"
-              alt="Tarot Card"
+              alt={isZh ? "塔罗牌背面 - 中央主牌" : "Tarot Card Back - Center Card"}
+              loading="eager"
+              width="160"
+              height="280"
               className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[100px] sm:w-[130px] md:w-[160px] h-auto transform rotate-0 z-30 drop-shadow-2xl"
             />
 
             {/* Right card */}
             <img
               src="/img/tarot-card-back.png"
-              alt="Tarot Card"
+              alt={isZh ? "塔罗牌背面 - 神秘符号" : "Tarot Card Back - Mystical Symbol"}
+              loading="eager"
+              width="140"
+              height="245"
               className="absolute right-[20px] sm:right-[40px] md:right-[60px] top-1/2 -translate-y-1/2 w-[80px] sm:w-[110px] md:w-[140px] h-auto transform rotate-[20deg] z-10 drop-shadow-2xl"
             />
 
