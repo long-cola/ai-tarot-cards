@@ -19,41 +19,23 @@
     <link rel="preload" href="/img/tarot-card-back.png" as="image" type="image/png">
 
     <!-- Google Analytics 4 (GA4) -->
-    <!-- To enable: Get your measurement ID from https://analytics.google.com/ -->
-    <!-- Add VITE_GA_MEASUREMENT_ID to your .env file -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-HMM0NB3C8L"></script>
     <script>
-      (function() {
-        // Check if GA measurement ID is configured
-        const GA_MEASUREMENT_ID = '%VITE_GA_MEASUREMENT_ID%';
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      window.gtag = gtag;
+      gtag('js', new Date());
 
-        // Only load GA if measurement ID is properly configured
-        if (GA_MEASUREMENT_ID && !GA_MEASUREMENT_ID.startsWith('%VITE_')) {
-          // Dynamically load gtag.js
-          const script = document.createElement('script');
-          script.async = true;
-          script.src = 'https://www.googletagmanager.com/gtag/js?id=' + GA_MEASUREMENT_ID;
-          document.head.appendChild(script);
+      // Configure GA4 with privacy-compliant settings
+      gtag('config', 'G-HMM0NB3C8L', {
+        'send_page_view': true,
+        'anonymize_ip': true, // GDPR compliance
+        'cookie_flags': 'SameSite=Lax;Secure',
+        'allow_google_signals': true,
+        'allow_ad_personalization_signals': false
+      });
 
-          // Initialize dataLayer and gtag
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}
-          window.gtag = gtag;
-          gtag('js', new Date());
-
-          // Configure GA4 with privacy-compliant settings
-          gtag('config', GA_MEASUREMENT_ID, {
-            'send_page_view': true,
-            'anonymize_ip': true, // GDPR compliance
-            'cookie_flags': 'SameSite=Lax;Secure',
-            'allow_google_signals': true,
-            'allow_ad_personalization_signals': false
-          });
-
-          console.log('[GA4] Google Analytics initialized with ID:', GA_MEASUREMENT_ID);
-        } else {
-          console.log('[GA4] Google Analytics not configured. Add VITE_GA_MEASUREMENT_ID to .env file.');
-        }
-      })();
+      console.log('[GA4] Google Analytics initialized with ID: G-HMM0NB3C8L');
     </script>
 
     <script src="https://cdn.tailwindcss.com"></script>
