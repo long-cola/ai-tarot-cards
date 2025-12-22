@@ -11,17 +11,42 @@ interface SEOProps {
   schemaType?: 'WebSite' | 'Service' | 'Article';
 }
 
+const SITE_ROOT = 'https://ai-tarotcard.com';
+
 const SEOHead: React.FC<SEOProps> = ({
   title = '免费AI塔罗占卜 - 爱情事业财运解读 | 神秘塔罗在线',
   description = '免费在线AI塔罗占卜，3秒获得专业解读。爱情、事业、财运、人生决策即时指引。神秘三牌阵洞察过去现在未来，24小时随时占卜，AI深度解析命运走向。',
   type = 'website',
-  image = 'https://ai-tarotcards.vercel.app/og-image.jpg',
-  url = 'https://ai-tarotcards.vercel.app',
+  image = `${SITE_ROOT}/og-image.jpg`,
+  url = SITE_ROOT,
   lang = 'zh-CN',
   schemaType = 'WebSite'
 }) => {
-  const siteUrl = 'https://ai-tarotcards.vercel.app';
   const isZh = lang === 'zh-CN';
+
+  // Normalize path from url prop or window.location
+  const normalizedPath = (() => {
+    const fallback = '/';
+    try {
+      const parsed = new URL(url, SITE_ROOT);
+      return parsed.pathname + (parsed.search || '');
+    } catch {
+      if (typeof window !== 'undefined') {
+        return window.location.pathname + window.location.search;
+      }
+      return fallback;
+    }
+  })();
+
+  const pathWithoutLang = normalizedPath.replace(/^\/zh(\/|$)/, '/');
+  const normalizedBasePath = pathWithoutLang === '' ? '/' : pathWithoutLang;
+  const canonicalPath = lang === 'zh-CN'
+    ? `/zh${normalizedBasePath === '/' ? '/' : normalizedBasePath}`
+    : normalizedBasePath;
+
+  const canonicalUrl = `${SITE_ROOT}${canonicalPath}`;
+  const zhHref = `${SITE_ROOT}/zh${normalizedBasePath === '/' ? '/' : normalizedBasePath}`;
+  const enHref = `${SITE_ROOT}${normalizedBasePath}`;
 
   // 根据语言生成不同的描述
   const defaultDescriptions = {
@@ -49,7 +74,7 @@ const SEOHead: React.FC<SEOProps> = ({
       '@type': schemaType,
       name: finalTitle,
       description: finalDescription,
-      url: url,
+      url: canonicalUrl,
     };
 
     if (schemaType === 'WebSite') {
@@ -97,7 +122,7 @@ const SEOHead: React.FC<SEOProps> = ({
       <html lang={lang} />
       <title>{finalTitle}</title>
       <meta name="description" content={finalDescription} />
-      <link rel="canonical" href={url} />
+      <link rel="canonical" href={canonicalUrl} />
 
       {/* SEO关键词和作者 */}
       <meta name="keywords" content={isZh ? '免费塔罗牌,AI塔罗占卜,在线塔罗,塔罗牌测试,爱情塔罗,事业占卜,财运预测,塔罗解读,三牌阵,命运指引,塔罗牌在线占卜免费' : 'free tarot reading,AI tarot,online tarot cards,tarot card reading,love tarot,career tarot,fortune telling,three card spread,instant tarot,mystical guidance,free online tarot'} />
@@ -130,7 +155,7 @@ const SEOHead: React.FC<SEOProps> = ({
       <meta property="og:title" content={finalTitle} />
       <meta property="og:description" content={finalDescription} />
       <meta property="og:image" content={image} />
-      <meta property="og:url" content={url} />
+      <meta property="og:url" content={canonicalUrl} />
       <meta property="og:site_name" content="神秘塔罗 AI" />
       <meta property="og:locale" content={lang === 'zh-CN' ? 'zh_CN' : 'en_US'} />
 
@@ -141,9 +166,9 @@ const SEOHead: React.FC<SEOProps> = ({
       <meta name="twitter:image" content={image} />
 
       {/* Hreflang 多语言标签 */}
-      <link rel="alternate" hreflang="zh-CN" href={`${siteUrl}/?lang=zh`} />
-      <link rel="alternate" hreflang="en" href={`${siteUrl}/?lang=en`} />
-      <link rel="alternate" hreflang="x-default" href={siteUrl} />
+      <link rel="alternate" hreflang="zh-CN" href={zhHref} />
+      <link rel="alternate" hreflang="en" href={enHref} />
+      <link rel="alternate" hreflang="x-default" href={enHref} />
 
       {/* 结构化数据 */}
       <script type="application/ld+json">

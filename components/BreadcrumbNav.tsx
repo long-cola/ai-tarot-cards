@@ -28,6 +28,8 @@ interface BreadcrumbNavProps {
  */
 export const BreadcrumbNav: React.FC<BreadcrumbNavProps> = ({ items, language }) => {
   const isZh = language === 'zh';
+  const siteRoot = 'https://ai-tarotcard.com';
+  const langPrefix = isZh ? '/zh' : '';
 
   // Generate Schema.org BreadcrumbList structured data
   const breadcrumbSchema = {
@@ -37,7 +39,7 @@ export const BreadcrumbNav: React.FC<BreadcrumbNavProps> = ({ items, language })
       "@type": "ListItem",
       "position": index + 1,
       "name": item.label,
-      ...(item.url && { "item": `https://ai-tarotcards.vercel.app${item.url}` })
+      ...(item.url && { "item": `${siteRoot}${item.url}` })
     }))
   };
 
@@ -106,17 +108,19 @@ export const BreadcrumbNav: React.FC<BreadcrumbNavProps> = ({ items, language })
  */
 export const getBreadcrumbsForQuickReading = (language: Language): BreadcrumbItem[] => {
   const isZh = language === 'zh';
+  const prefix = isZh ? '/zh' : '';
   return [
-    { label: isZh ? '首页' : 'Home', url: '/' },
+    { label: isZh ? '首页' : 'Home', url: `${prefix}/` },
     { label: isZh ? '遇事占卜' : 'Quick Reading' }
   ];
 };
 
 export const getBreadcrumbsForTopicList = (language: Language): BreadcrumbItem[] => {
   const isZh = language === 'zh';
+  const prefix = isZh ? '/zh' : '';
   return [
-    { label: isZh ? '首页' : 'Home', url: '/' },
-    { label: isZh ? '人生命题' : 'Life Topics' }
+    { label: isZh ? '首页' : 'Home', url: `${prefix}/` },
+    { label: isZh ? '人生命题' : 'Life Topics', url: `${prefix}/?view=topics` }
   ];
 };
 
@@ -125,9 +129,10 @@ export const getBreadcrumbsForTopicDetail = (
   language: Language
 ): BreadcrumbItem[] => {
   const isZh = language === 'zh';
+  const prefix = isZh ? '/zh' : '';
   return [
-    { label: isZh ? '首页' : 'Home', url: '/' },
-    { label: isZh ? '人生命题' : 'Life Topics', url: '/?view=topics' },
+    { label: isZh ? '首页' : 'Home', url: `${prefix}/` },
+    { label: isZh ? '人生命题' : 'Life Topics', url: `${prefix}/?view=topics` },
     { label: topicTitle }
   ];
 };
@@ -137,11 +142,12 @@ export const getBreadcrumbsForSharedReading = (
   language: Language
 ): BreadcrumbItem[] => {
   const isZh = language === 'zh';
+  const prefix = isZh ? '/zh' : '';
   // Truncate long questions
   const displayQuestion = question.length > 30 ? `${question.substring(0, 30)}...` : question;
   return [
-    { label: isZh ? '首页' : 'Home', url: '/' },
-    { label: isZh ? '分享的解读' : 'Shared Reading', url: '/' },
+    { label: isZh ? '首页' : 'Home', url: `${prefix}/` },
+    { label: isZh ? '分享的解读' : 'Shared Reading', url: `${prefix}/` },
     { label: displayQuestion }
   ];
 };

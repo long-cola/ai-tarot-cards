@@ -16,7 +16,9 @@ export const PrivacyPolicyPage: React.FC<PrivacyPolicyPageProps> = ({ language }
         description={isZh
           ? '神秘塔罗 AI 的隐私政策，了解我们如何收集、使用和保护您的个人信息。'
           : 'Privacy Policy for Mystic Tarot AI. Learn how we collect, use, and protect your personal information.'}
-        url="https://ai-tarotcards.vercel.app/privacy"
+        url={typeof window !== 'undefined'
+          ? window.location.pathname + window.location.search
+          : (isZh ? '/zh/privacy' : '/privacy')}
         lang={isZh ? 'zh-CN' : 'en'}
         schemaType="WebSite"
       />

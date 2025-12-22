@@ -114,10 +114,13 @@ async function handleCreateShare(req: any, res: any, pool: any) {
 
   console.log('[share] Created share:', shareId, 'type:', shareType);
 
+  const siteRoot = 'https://ai-tarotcard.com';
+  const langPrefix = language === 'zh' ? '/zh' : '';
+
   return res.json({
     ok: true,
     shareId,
-    shareUrl: `https://ai-tarotcards.vercel.app/share/${shareId}`
+    shareUrl: `${siteRoot}${langPrefix}/?shareId=${shareId}`
   });
 }
 

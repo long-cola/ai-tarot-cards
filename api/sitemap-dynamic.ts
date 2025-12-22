@@ -17,7 +17,7 @@ export default async function handler(req: any, res: any) {
        LIMIT 1000`
     );
 
-    const baseUrl = 'https://ai-tarotcards.vercel.app';
+    const baseUrl = 'https://ai-tarotcard.com';
     const now = new Date().toISOString();
 
     // Generate XML sitemap
@@ -29,6 +29,12 @@ export default async function handler(req: any, res: any) {
     <lastmod>${now.split('T')[0]}</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>${baseUrl}/zh/</loc>
+    <lastmod>${now.split('T')[0]}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
   </url>
   <url>
     <loc>${baseUrl}/topics</loc>

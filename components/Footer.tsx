@@ -9,6 +9,7 @@ interface FooterProps {
 export const Footer: React.FC<FooterProps> = ({ language, onOpenCookieSettings }) => {
   const isZh = language === 'zh';
   const currentYear = new Date().getFullYear();
+  const prefix = isZh ? '/zh' : '';
 
   return (
     <footer className="relative z-30 w-full border-t border-white/5 bg-slate-950/40 backdrop-blur-sm">
@@ -22,22 +23,22 @@ export const Footer: React.FC<FooterProps> = ({ language, onOpenCookieSettings }
           {/* Links */}
           <div className="flex items-center gap-6 text-sm">
             <a
-              href="/?view=privacy"
+              href={`${prefix}/?view=privacy`}
               className="text-slate-400 hover:text-purple-300 transition-colors"
               onClick={(e) => {
                 e.preventDefault();
-                window.location.href = '/?view=privacy';
+                window.location.href = `${prefix}/?view=privacy`;
               }}
             >
               {isZh ? '隐私政策' : 'Privacy Policy'}
             </a>
             <span className="text-slate-600">|</span>
             <a
-              href="/?view=terms"
+              href={`${prefix}/?view=terms`}
               className="text-slate-400 hover:text-purple-300 transition-colors"
               onClick={(e) => {
                 e.preventDefault();
-                window.location.href = '/?view=terms';
+                window.location.href = `${prefix}/?view=terms`;
               }}
             >
               {isZh ? '服务条款' : 'Terms of Service'}

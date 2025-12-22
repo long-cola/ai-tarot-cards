@@ -13,9 +13,11 @@ export default defineConfig(({ mode }) => {
       plugins: [
         react(),
         sitemap({
-          hostname: 'https://ai-tarotcards.vercel.app',
+          hostname: 'https://ai-tarotcard.com',
           dynamicRoutes: [
             '/topics',
+            '/zh/',
+            '/zh/topics',
             // Note: Individual share pages can be submitted separately via sitemap generation
           ],
           exclude: ['/admin', '/admin.html', '/api'],

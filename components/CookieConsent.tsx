@@ -24,6 +24,7 @@ export const CookieConsent: React.FC<CookieConsentProps> = ({
   const [showBanner, setShowBanner] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const isZh = language === 'zh';
+  const prefix = isZh ? '/zh' : '';
 
   useEffect(() => {
     if (consentStatus === null && !forceShow) {
@@ -106,11 +107,11 @@ export const CookieConsent: React.FC<CookieConsentProps> = ({
                           您可以选择接受或拒绝非必要的 Cookie。
                           查看我们的
                           <a
-                            href="/?view=privacy"
+                            href={`${prefix}/?view=privacy`}
                             className="text-purple-400 hover:text-purple-300 underline mx-1"
                             onClick={(e) => {
                               e.preventDefault();
-                              window.location.href = '/?view=privacy';
+                              window.location.href = `${prefix}/?view=privacy`;
                             }}
                           >
                             隐私政策
@@ -123,11 +124,11 @@ export const CookieConsent: React.FC<CookieConsentProps> = ({
                           You can accept or reject non-essential cookies.
                           See our
                           <a
-                            href="/?view=privacy"
+                            href={`${prefix}/?view=privacy`}
                             className="text-purple-400 hover:text-purple-300 underline mx-1"
                             onClick={(e) => {
                               e.preventDefault();
-                              window.location.href = '/?view=privacy';
+                              window.location.href = `${prefix}/?view=privacy`;
                             }}
                           >
                             Privacy Policy
@@ -260,22 +261,22 @@ export const CookieConsent: React.FC<CookieConsentProps> = ({
                 <div className="text-center text-xs text-slate-500 pt-2">
                   {isZh ? '了解更多：' : 'Learn more:'}
                   <a
-                    href="/?view=privacy"
+                    href={`${prefix}/?view=privacy`}
                     className="text-purple-400 hover:text-purple-300 underline ml-2"
                     onClick={(e) => {
                       e.preventDefault();
-                      window.location.href = '/?view=privacy';
+                      window.location.href = `${prefix}/?view=privacy`;
                     }}
                   >
                     {isZh ? '隐私政策' : 'Privacy Policy'}
                   </a>
                   <span className="mx-2">•</span>
                   <a
-                    href="/?view=terms"
+                    href={`${prefix}/?view=terms`}
                     className="text-purple-400 hover:text-purple-300 underline"
                     onClick={(e) => {
                       e.preventDefault();
-                      window.location.href = '/?view=terms';
+                      window.location.href = `${prefix}/?view=terms`;
                     }}
                   >
                     {isZh ? '服务条款' : 'Terms of Service'}

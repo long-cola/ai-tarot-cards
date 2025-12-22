@@ -129,7 +129,7 @@ export const ReadingResultPage: React.FC<ReadingResultPageProps> = ({
         description={isZh
           ? `免费AI塔罗占卜结果：${cards.map(c => c.nameCn).join('、')}。专业解读爱情事业财运，洞察过去现在未来。`
           : `Free AI tarot reading: ${cards.map(c => c.name).join(', ')}. Professional insights on love, career, fortune. Past, present, future revealed.`}
-        url="https://ai-tarotcards.vercel.app/"
+        url={typeof window !== 'undefined' ? window.location.pathname + window.location.search : (isZh ? '/zh/' : '/')}
         lang={isZh ? 'zh-CN' : 'en'}
         schemaType="Article"
         type="article"

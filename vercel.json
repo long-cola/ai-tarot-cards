@@ -8,6 +8,8 @@
     { "source": "/api/usage/(.*)", "destination": "/api/usage" },
     { "source": "/api/codes/(.*)", "destination": "/api/codes" },
     { "source": "/api/admin/(.*)", "destination": "/api/admin" },
+    { "source": "/zh", "destination": "/" },
+    { "source": "/zh/(.*)", "destination": "/" },
     { "source": "/admin", "destination": "/admin.html" }
   ],
   "functions": {

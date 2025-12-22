@@ -61,7 +61,7 @@ export const HomePage: React.FC<HomePageProps> = ({
         description={isZh
           ? '免费在线AI塔罗占卜，3秒获得专业解读。爱情、事业、财运、人生决策即时指引。神秘三牌阵洞察过去现在未来，24小时随时占卜，AI深度解析命运走向。'
           : 'Free online AI tarot reading in 3 seconds. Get instant insights on love, career, money & life decisions. Three-card spread reveals past, present, future. 24/7 mystical guidance powered by AI.'}
-        url="https://ai-tarotcards.vercel.app/"
+        url={isZh ? '/zh/' : '/'}
         lang={isZh ? 'zh-CN' : 'en'}
         schemaType="WebSite"
       />

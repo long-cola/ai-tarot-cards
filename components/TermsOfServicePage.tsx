@@ -16,7 +16,9 @@ export const TermsOfServicePage: React.FC<TermsOfServicePageProps> = ({ language
         description={isZh
           ? '神秘塔罗 AI 的服务条款，了解使用本服务的规则和限制。'
           : 'Terms of Service for Mystic Tarot AI. Learn about the rules and restrictions for using our service.'}
-        url="https://ai-tarotcards.vercel.app/terms"
+        url={typeof window !== 'undefined'
+          ? window.location.pathname + window.location.search
+          : (isZh ? '/zh/terms' : '/terms')}
         lang={isZh ? 'zh-CN' : 'en'}
         schemaType="WebSite"
       />

@@ -127,7 +127,7 @@ export const SharedReadingPage: React.FC<SharedReadingPageProps> = ({
         <div className="text-center space-y-4">
           <div className="text-6xl mb-4">❌</div>
           <p className="text-white text-lg">{error || (isZh ? '分享内容不存在' : 'Shared content not found')}</p>
-          <a href="/" className="inline-block px-6 py-3 bg-purple-600 hover:bg-purple-500 text-white rounded-lg transition-colors">
+          <a href={isZh ? '/zh/' : '/'} className="inline-block px-6 py-3 bg-purple-600 hover:bg-purple-500 text-white rounded-lg transition-colors">
             {isZh ? '返回首页' : 'Go Home'}
           </a>
         </div>
@@ -144,7 +144,9 @@ export const SharedReadingPage: React.FC<SharedReadingPageProps> = ({
         description={isZh
           ? `免费查看这个塔罗占卜解读：${data.question}。AI专业解析爱情事业财运，三牌阵深度洞察过去现在未来。`
           : `Free AI tarot reading: ${data.question}. Professional analysis on love, career, fortune. Three-card spread reveals past, present, future.`}
-        url={`https://ai-tarotcards.vercel.app/share/${shareId}`}
+        url={typeof window !== 'undefined'
+          ? window.location.pathname + window.location.search
+          : `${isZh ? '/zh' : ''}/?shareId=${shareId}`}
         lang={isZh ? 'zh-CN' : 'en'}
         schemaType="Article"
         type="article"

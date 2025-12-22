@@ -441,7 +441,12 @@ const App: React.FC = () => {
   const [reading, setReading] = useState(initialPending?.reading || '');
   const [isReadingLoading, setIsReadingLoading] = useState(false);
   const [isInteracting, setIsInteracting] = useState(false);
-  const [language, setLanguage] = useState<Language>('en');
+  const [language, setLanguage] = useState<Language>(() => {
+    if (typeof window !== 'undefined') {
+      return window.location.pathname.startsWith('/zh') ? 'zh' : 'en';
+    }
+    return 'en';
+  });
   const [errorMsg, setErrorMsg] = useState('');
   const [user, setUser] = useState<SessionUser | null>(null);
   const [plan, setPlan] = useState<Plan>('guest');
@@ -1344,7 +1349,20 @@ const App: React.FC = () => {
   };
 
   const toggleLanguage = () => {
-    setLanguage(prev => prev === 'zh' ? 'en' : 'zh');
+    setLanguage(prev => {
+      const next = prev === 'zh' ? 'en' : 'zh';
+      if (typeof window !== 'undefined') {
+        const { pathname, search, hash } = window.location;
+        const strippedPath = pathname.startsWith('/zh') ? pathname.replace(/^\\/zh/, '') || '/' : pathname || '/';
+        const normalizedPath = strippedPath.startsWith('/') ? strippedPath : `/${strippedPath}`;
+        const nextPath =
+          next === 'zh'
+            ? `/zh${normalizedPath === '/' ? '/' : normalizedPath}${search}${hash}`
+            : `${normalizedPath}${search}${hash}`;
+        window.history.replaceState({}, '', nextPath);
+      }
+      return next;
+    });
   };
 
   const handleCookieConsentChange = (status: Exclude<CookieConsentStatus, null>) => {
