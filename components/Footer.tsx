@@ -1,0 +1,72 @@
+import React from 'react';
+import { Language } from '../types';
+
+interface FooterProps {
+  language: Language;
+  onOpenCookieSettings?: () => void;
+}
+
+export const Footer: React.FC<FooterProps> = ({ language, onOpenCookieSettings }) => {
+  const isZh = language === 'zh';
+  const currentYear = new Date().getFullYear();
+
+  return (
+    <footer className="relative z-30 w-full border-t border-white/5 bg-slate-950/40 backdrop-blur-sm">
+      <div className="max-w-6xl mx-auto px-4 py-6 md:py-8">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+          {/* Copyright */}
+          <div className="text-sm text-slate-400 text-center md:text-left">
+            © {currentYear} {isZh ? '神秘塔罗 AI' : 'Mystic Tarot AI'}. {isZh ? '保留所有权利。' : 'All rights reserved.'}
+          </div>
+
+          {/* Links */}
+          <div className="flex items-center gap-6 text-sm">
+            <a
+              href="/?view=privacy"
+              className="text-slate-400 hover:text-purple-300 transition-colors"
+              onClick={(e) => {
+                e.preventDefault();
+                window.location.href = '/?view=privacy';
+              }}
+            >
+              {isZh ? '隐私政策' : 'Privacy Policy'}
+            </a>
+            <span className="text-slate-600">|</span>
+            <a
+              href="/?view=terms"
+              className="text-slate-400 hover:text-purple-300 transition-colors"
+              onClick={(e) => {
+                e.preventDefault();
+                window.location.href = '/?view=terms';
+              }}
+            >
+              {isZh ? '服务条款' : 'Terms of Service'}
+            </a>
+            <span className="text-slate-600">|</span>
+            <button
+              type="button"
+              onClick={() => onOpenCookieSettings?.()}
+              className="text-slate-400 hover:text-purple-300 transition-colors"
+            >
+              {isZh ? 'Cookie 设置' : 'Cookie Settings'}
+            </button>
+          </div>
+        </div>
+
+        {/* Trust & Compliance */}
+        <div className="mt-4 pt-4 border-t border-white/5 text-center space-y-1 text-xs text-slate-500">
+          <p>
+            {isZh
+              ? '⚠️ 仅供娱乐，18 岁以上用户使用。AI 生成内容，不构成法律、医疗、财务或心理咨询建议。'
+              : '⚠️ For entertainment purposes only. Must be 18+ to use. AI-generated content is not legal, medical, financial, or mental health advice.'}
+          </p>
+          <p>
+            {isZh
+              ? '联系邮箱：support@ai-tarotcards.vercel.app · 最新更新：2025-01'
+              : 'Contact: support@ai-tarotcards.vercel.app · Last updated: 2025-01'}
+          </p>
+        </div>
+      </div>
+    </footer>
+  );
+};

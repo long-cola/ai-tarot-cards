@@ -10,12 +10,22 @@ import { TopicListPage } from './components/TopicListPage';
 import { TopicDetailPage } from './components/TopicDetailPage';
 import { ReadingResultPage } from './components/ReadingResultPage';
 import { SharedReadingPage } from './components/SharedReadingPage';
+import { PrivacyPolicyPage } from './components/PrivacyPolicyPage';
+import { TermsOfServicePage } from './components/TermsOfServicePage';
+import { Footer } from './components/Footer';
+import { CookieConsent as CookieConsentBanner } from './components/CookieConsent';
 import { QuickQuestionCard } from './components/ui';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { API_BASE_URL, apiClient } from './services/apiClient';
 import { getSession, consumeUsage, redeemMembership, logout } from './services/authService';
 import { listTopics, createTopic, getTopicDetail, addTopicEvent, deleteTopic } from './services/topicService';
+import {
+  CookieConsent as CookieConsentStatus,
+  getCookieConsent,
+  initializeGoogleAnalytics,
+  disableGoogleAnalytics,
+} from './services/cookieConsent';
 import { toPng } from 'html-to-image';
 
 // Header with Title and Language Switch
@@ -480,6 +490,10 @@ const App: React.FC = () => {
   const [showTopicListPage, setShowTopicListPage] = useState(false);
   const [showTopicDetailPage, setShowTopicDetailPage] = useState(false);
   const [showSharedReadingPage, setShowSharedReadingPage] = useState(false);
+  const [showPrivacyPage, setShowPrivacyPage] = useState(false);
+  const [showTermsPage, setShowTermsPage] = useState(false);
+  const [cookieConsent, setCookieConsent] = useState<CookieConsentStatus>(() => getCookieConsent());
+  const [showCookieSettings, setShowCookieSettings] = useState(false);
   const [sharedReadingId, setSharedReadingId] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const readingRef = useRef<HTMLDivElement>(null);
@@ -491,10 +505,34 @@ const App: React.FC = () => {
     setDeck([...MAJOR_ARCANA]);
   }, []);
 
+  // Initialize cookie consent + analytics state
+  useEffect(() => {
+    const consent = getCookieConsent();
+    setCookieConsent(consent);
+    if (consent === 'accepted') {
+      initializeGoogleAnalytics();
+    } else if (consent === 'rejected') {
+      disableGoogleAnalytics();
+    }
+  }, []);
+
   // Parse分享链接
   useEffect(() => {
     if (shareDataLoaded) return;
     const params = new URLSearchParams(window.location.search);
+
+    // Check for privacy/terms view
+    const view = params.get('view');
+    if (view === 'privacy') {
+      setShowPrivacyPage(true);
+      setShareDataLoaded(true);
+      return;
+    }
+    if (view === 'terms') {
+      setShowTermsPage(true);
+      setShareDataLoaded(true);
+      return;
+    }
 
     // Check for new share format (shareId parameter)
     const shareId = params.get('shareId');
@@ -590,9 +628,9 @@ const App: React.FC = () => {
     loadSession();
   }, []);
 
-  // Track page view after session is loaded
+  // Track page view after session is loaded and user accepted analytics cookies
   useEffect(() => {
-    if (authLoading) return; // Wait for auth to finish loading
+    if (authLoading || cookieConsent !== 'accepted') return; // Wait for auth + consent
 
     const trackVisit = async () => {
       try {
@@ -628,7 +666,7 @@ const App: React.FC = () => {
     };
 
     trackVisit();
-  }, [authLoading, user]);
+  }, [authLoading, user, cookieConsent]);
 
   // Handle payment success callback
   useEffect(() => {
@@ -1309,6 +1347,16 @@ const App: React.FC = () => {
     setLanguage(prev => prev === 'zh' ? 'en' : 'zh');
   };
 
+  const handleCookieConsentChange = (status: Exclude<CookieConsentStatus, null>) => {
+    setCookieConsent(status);
+    if (status === 'accepted') {
+      initializeGoogleAnalytics();
+    } else {
+      disableGoogleAnalytics();
+    }
+    setShowCookieSettings(false);
+  };
+
   const handleSuggestionClick = (text: string) => {
     setQuestion(text);
     setErrorMsg('');
@@ -1716,8 +1764,18 @@ Card drawn: ${currentCardStr}`;
           />
         )}
 
+        {/* Privacy Policy Page */}
+        {showPrivacyPage && (
+          <PrivacyPolicyPage language={language} />
+        )}
+
+        {/* Terms of Service Page */}
+        {showTermsPage && (
+          <TermsOfServicePage language={language} />
+        )}
+
         {/* Topic List Page */}
-        {showTopicListPage && !showTopicDetailPage && !showSharedReadingPage && (
+        {showTopicListPage && !showTopicDetailPage && !showSharedReadingPage && !showPrivacyPage && !showTermsPage && (
           <TopicListPage
             topics={topicList}
             language={language}
@@ -1734,7 +1792,7 @@ Card drawn: ${currentCardStr}`;
         )}
 
         {/* Topic Detail Page */}
-        {showTopicDetailPage && selectedTopic && !showSharedReadingPage && (
+        {showTopicDetailPage && selectedTopic && !showSharedReadingPage && !showPrivacyPage && !showTermsPage && (
           <TopicDetailPage
             topic={selectedTopic}
             events={topicEvents}
@@ -1754,7 +1812,7 @@ Card drawn: ${currentCardStr}`;
         )}
 
         {/* Phase: INPUT */}
-        {phase === AppPhase.INPUT && !showTopicListPage && !showTopicDetailPage && !showSharedReadingPage && (
+        {phase === AppPhase.INPUT && !showTopicListPage && !showTopicDetailPage && !showSharedReadingPage && !showPrivacyPage && !showTermsPage && (
           <HomePage
             language={language}
             question={question}
@@ -1770,7 +1828,7 @@ Card drawn: ${currentCardStr}`;
         )}
 
         {/* Phase: SHUFFLING */}
-        {phase === AppPhase.SHUFFLING && !showTopicListPage && !showTopicDetailPage && !showSharedReadingPage && (
+        {phase === AppPhase.SHUFFLING && !showTopicListPage && !showTopicDetailPage && !showSharedReadingPage && !showPrivacyPage && !showTermsPage && (
           <div className="flex flex-col items-center justify-center flex-1 animate-fade-in w-full">
              <div className="relative w-40 h-64">
                 {[0, 1, 2, 3, 4, 5].map((i) => (
@@ -1797,7 +1855,7 @@ Card drawn: ${currentCardStr}`;
         )}
 
         {/* Phase: DRAWING */}
-        {phase === AppPhase.DRAWING && !showTopicListPage && !showTopicDetailPage && !showSharedReadingPage && (
+        {phase === AppPhase.DRAWING && !showTopicListPage && !showTopicDetailPage && !showSharedReadingPage && !showPrivacyPage && !showTermsPage && (
           <div className="w-full h-full flex flex-col animate-fade-in relative pt-20 md:pt-24">
             <div className="text-center z-20 mb-6 md:mb-8">
                <h2 className="text-xl text-purple-100 mb-1 tracking-widest font-mystic">{t.drawTitle}</h2>
@@ -1889,7 +1947,7 @@ Card drawn: ${currentCardStr}`;
         )}
 
         {/* Phase: REVEAL & ANALYSIS */}
-        {(phase === AppPhase.REVEAL || phase === AppPhase.ANALYSIS) && !showTopicListPage && !showTopicDetailPage && !showSharedReadingPage && (
+        {(phase === AppPhase.REVEAL || phase === AppPhase.ANALYSIS) && !showTopicListPage && !showTopicDetailPage && !showSharedReadingPage && !showPrivacyPage && !showTermsPage && (
           <ReadingResultPage
             question={question}
             cards={drawnCards}
@@ -1906,6 +1964,19 @@ Card drawn: ${currentCardStr}`;
         )}
 
       </main>
+
+      {/* Footer */}
+      <Footer
+        language={language}
+        onOpenCookieSettings={() => setShowCookieSettings(true)}
+      />
+
+      <CookieConsentBanner
+        language={language}
+        forceShow={showCookieSettings}
+        onConsentChange={handleCookieConsentChange}
+        onClose={() => setShowCookieSettings(false)}
+      />
 
       {(phase === AppPhase.INPUT || phase === AppPhase.ANALYSIS) && (
          <div className="fixed bottom-4 left-0 w-full text-center pointer-events-none z-0">
