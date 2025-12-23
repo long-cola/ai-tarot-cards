@@ -66,7 +66,7 @@ export const HomePage: React.FC<HomePageProps> = ({
         schemaType="WebSite"
       />
       <FAQSchema language={language} />
-      <div className="min-h-screen flex flex-col items-center justify-start px-4 md:px-6 pt-20 md:pt-24 pb-16 md:pb-20 relative overflow-hidden">
+      <div className="min-h-screen flex flex-col items-center justify-start px-4 md:px-6 pt-16 md:pt-20 pb-16 md:pb-20 relative overflow-hidden">
         {/* Starry Background Decorations */}
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute w-[3px] h-[3px] rounded-full bg-white" style={{ left: '1041px', top: '512px' }} />
@@ -80,40 +80,34 @@ export const HomePage: React.FC<HomePageProps> = ({
         </div>
 
         {/* Main Content Container */}
-        <div className="w-full max-w-5xl mx-auto flex flex-col items-center gap-8 md:gap-12 relative z-10">
+        <div className="w-full max-w-5xl mx-auto flex flex-col items-center gap-4 md:gap-6 relative z-10">
 
           {/* Hero Section */}
-          <div className="text-center space-y-4 md:space-y-6 max-w-3xl">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-500/10 border border-purple-400/30 mb-4">
+          <div className="text-center space-y-2 md:space-y-3 max-w-3xl">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-500/10 border border-purple-400/30 mb-2">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-purple-500"></span>
               </span>
               <span className="text-purple-200 text-xs md:text-sm font-medium">
-                {isZh ? '🎉 完全免费 • AI驱动 • 24/7 在线' : '🎉 Completely Free • AI-Powered • 24/7 Online'}
+                {isZh ? '🎉 免费开始 • AI驱动 • 24/7 在线' : '🎉 Free to Start • AI-Powered • 24/7 Online'}
               </span>
             </div>
 
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-200 via-purple-100 to-purple-300 leading-tight">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-200 via-purple-100 to-purple-300 leading-tight">
               {isZh ? '神秘塔罗 AI' : 'Mystic Tarot AI'}
             </h1>
 
-            <p className="text-lg sm:text-xl md:text-2xl text-purple-200/90 font-light">
+            <p className="text-base sm:text-lg md:text-xl text-purple-200/90 font-light">
               {isZh
                 ? '3秒获得专业AI塔罗解读'
                 : 'Get Professional AI Tarot Reading in 3 Seconds'}
-            </p>
-
-            <p className="text-sm sm:text-base md:text-lg text-slate-400 max-w-2xl mx-auto leading-relaxed">
-              {isZh
-                ? '深度洞察爱情、事业、财运决策。神秘三牌阵揭示过去、现在、未来，AI为您解析命运走向。'
-                : 'Deep insights into love, career, and financial decisions. Three-card spread reveals past, present, future with AI-powered destiny analysis.'}
             </p>
           </div>
 
           {/* Tarot Cards Illustration */}
           <div className="relative">
-            <div className="w-[280px] sm:w-[400px] md:w-[500px] h-[200px] sm:h-[280px] md:h-[320px] flex items-center justify-center relative">
+            <div className="w-[240px] sm:w-[320px] md:w-[400px] h-[140px] sm:h-[180px] md:h-[220px] flex items-center justify-center relative">
               {/* Left card */}
               <img
                 src="/img/tarot-card-back.png"
@@ -121,7 +115,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                 loading="eager"
                 width="140"
                 height="245"
-                className="absolute left-[20px] sm:left-[40px] md:left-[60px] top-1/2 -translate-y-1/2 w-[80px] sm:w-[110px] md:w-[140px] h-auto transform -rotate-[20deg] z-10 drop-shadow-2xl"
+                className="absolute left-[15px] sm:left-[30px] md:left-[40px] top-1/2 -translate-y-1/2 w-[60px] sm:w-[80px] md:w-[100px] h-auto transform -rotate-[20deg] z-10 drop-shadow-2xl"
               />
 
               {/* Center card */}
@@ -131,7 +125,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                 loading="eager"
                 width="160"
                 height="280"
-                className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[100px] sm:w-[130px] md:w-[160px] h-auto transform rotate-0 z-30 drop-shadow-2xl"
+                className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[75px] sm:w-[95px] md:w-[115px] h-auto transform rotate-0 z-30 drop-shadow-2xl"
               />
 
               {/* Right card */}
@@ -141,24 +135,24 @@ export const HomePage: React.FC<HomePageProps> = ({
                 loading="eager"
                 width="140"
                 height="245"
-                className="absolute right-[20px] sm:right-[40px] md:right-[60px] top-1/2 -translate-y-1/2 w-[80px] sm:w-[110px] md:w-[140px] h-auto transform rotate-[20deg] z-10 drop-shadow-2xl"
+                className="absolute right-[15px] sm:right-[30px] md:right-[40px] top-1/2 -translate-y-1/2 w-[60px] sm:w-[80px] md:w-[100px] h-auto transform rotate-[20deg] z-10 drop-shadow-2xl"
               />
 
               {/* Floating stars */}
-              <div className="absolute top-[5%] left-[25%] text-[#d4af37] text-sm md:text-lg animate-pulse">✦</div>
-              <div className="absolute top-[15%] right-[20%] text-[#d4af37] text-sm animate-pulse" style={{ animationDelay: '0.5s' }}>✦</div>
-              <div className="absolute bottom-[20%] left-[15%] text-[#d4af37] text-sm animate-pulse" style={{ animationDelay: '1s' }}>✦</div>
-              <div className="absolute bottom-[15%] right-[25%] text-[#d4af37] text-sm md:text-lg animate-pulse" style={{ animationDelay: '1.5s' }}>✦</div>
+              <div className="absolute top-[5%] left-[25%] text-[#d4af37] text-xs md:text-sm animate-pulse">✦</div>
+              <div className="absolute top-[15%] right-[20%] text-[#d4af37] text-xs animate-pulse" style={{ animationDelay: '0.5s' }}>✦</div>
+              <div className="absolute bottom-[20%] left-[15%] text-[#d4af37] text-xs animate-pulse" style={{ animationDelay: '1s' }}>✦</div>
+              <div className="absolute bottom-[15%] right-[25%] text-[#d4af37] text-xs md:text-sm animate-pulse" style={{ animationDelay: '1.5s' }}>✦</div>
             </div>
           </div>
 
           {/* Input Section */}
-          <div className="w-full max-w-md md:max-w-2xl space-y-4 md:space-y-6">
-            <div className="text-center mb-3">
-              <h2 className="text-xl md:text-2xl font-semibold text-purple-200 mb-2">
+          <div className="w-full max-w-md md:max-w-2xl space-y-3">
+            <div className="text-center mb-2">
+              <h2 className="text-lg md:text-xl font-semibold text-purple-200 mb-1">
                 {isZh ? '💭 说出你的困惑' : '💭 Share Your Question'}
               </h2>
-              <p className="text-sm text-slate-400">
+              <p className="text-xs md:text-sm text-slate-400">
                 {isZh ? '输入任何关于爱情、事业、财运的问题' : 'Ask anything about love, career, or finances'}
               </p>
             </div>
@@ -170,13 +164,13 @@ export const HomePage: React.FC<HomePageProps> = ({
               onKeyPress={handleKeyPress}
             />
 
-            <div className="flex flex-col items-center gap-4 md:gap-6">
+            <div className="flex flex-col items-center gap-3">
               <Button
                 variant="primary"
                 size="lg"
                 onClick={handleSubmit}
                 disabled={!localQuestion.trim()}
-                className="w-full sm:w-auto px-8 py-4 text-base md:text-lg font-semibold"
+                className="w-full sm:w-auto px-8 py-3 text-base font-semibold"
               >
                 {isZh ? '🔮 开始占卜（免费）' : '🔮 Start Reading (Free)'}
               </Button>
@@ -249,12 +243,12 @@ export const HomePage: React.FC<HomePageProps> = ({
               <div className="bg-slate-900/40 backdrop-blur-sm border border-purple-500/20 rounded-2xl p-6 hover:border-purple-400/40 transition-all duration-300 hover:transform hover:scale-105">
                 <div className="text-4xl mb-4">💝</div>
                 <h3 className="text-lg md:text-xl font-semibold text-purple-200 mb-3">
-                  {isZh ? '完全免费使用' : 'Completely Free'}
+                  {isZh ? '免费试用可用' : 'Free Trial Available'}
                 </h3>
                 <p className="text-sm text-slate-400 leading-relaxed">
                   {isZh
-                    ? '无需付费，无需注册，每天5次免费占卜额度，会员享受无限次数。'
-                    : '5 free readings daily. No payment or registration required. Unlimited for members.'}
+                    ? '无需注册，每天5次免费占卜额度。升级会员可享受无限次数和更多高级功能。'
+                    : '5 free readings daily, no registration required. Upgrade to premium for unlimited readings and advanced features.'}
                 </p>
               </div>
 
@@ -351,6 +345,90 @@ export const HomePage: React.FC<HomePageProps> = ({
                     : 'AI provides deep analysis, insights, and guidance to help your decision.'}
                 </p>
               </div>
+            </div>
+          </div>
+
+          {/* Pricing Section */}
+          <div className="w-full max-w-4xl mt-12 md:mt-16 mb-8">
+            <h2 className="text-2xl md:text-3xl font-bold text-center text-purple-200 mb-8 md:mb-12">
+              {isZh ? '💎 定价说明' : '💎 Pricing'}
+            </h2>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+              {/* Free Plan */}
+              <div className="bg-slate-900/40 backdrop-blur-sm border border-purple-500/20 rounded-2xl p-6 md:p-8 hover:border-purple-400/40 transition-all duration-300">
+                <div className="text-center mb-6">
+                  <h3 className="text-xl md:text-2xl font-bold text-purple-200 mb-2">
+                    {isZh ? '免费体验' : 'Free Trial'}
+                  </h3>
+                  <div className="text-3xl md:text-4xl font-bold text-purple-100 mb-4">
+                    {isZh ? '¥0' : '$0'}
+                  </div>
+                </div>
+                <ul className="space-y-3 text-sm text-slate-300">
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-400 mt-0.5">✓</span>
+                    <span>{isZh ? '每天 5 次免费占卜' : '5 free readings per day'}</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-400 mt-0.5">✓</span>
+                    <span>{isZh ? '仅 3 次事件占卜' : 'Only 3 event readings'}</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-400 mt-0.5">✓</span>
+                    <span>{isZh ? '基础 AI 塔罗解读' : 'Basic AI tarot readings'}</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-400 mt-0.5">✓</span>
+                    <span>{isZh ? '无需注册' : 'No registration required'}</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-400 mt-0.5">✓</span>
+                    <span>{isZh ? '三牌阵解读' : 'Three-card spread'}</span>
+                  </li>
+                </ul>
+              </div>
+
+              {/* Premium Plan */}
+              <div className="bg-gradient-to-br from-purple-900/40 to-purple-800/40 backdrop-blur-sm border border-purple-400/40 rounded-2xl p-6 md:p-8 hover:border-purple-400/60 transition-all duration-300 relative overflow-hidden">
+                <div className="absolute top-4 right-4 bg-purple-500 text-white text-xs px-3 py-1 rounded-full font-semibold">
+                  {isZh ? '推荐' : 'Popular'}
+                </div>
+                <div className="text-center mb-6">
+                  <h3 className="text-xl md:text-2xl font-bold text-purple-100 mb-2">
+                    {isZh ? '高级会员' : 'Premium'}
+                  </h3>
+                  <div className="text-3xl md:text-4xl font-bold text-purple-100 mb-4">
+                    {isZh ? '¥29/月' : '$9.9/mo'}
+                  </div>
+                </div>
+                <ul className="space-y-3 text-sm text-slate-200">
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-400 mt-0.5">✓</span>
+                    <span className="font-semibold">{isZh ? '近乎无限次命题和事件占卜' : 'Near unlimited topic & event readings'}</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-400 mt-0.5">✓</span>
+                    <span>{isZh ? '深度 AI 解读与建议' : 'Deep AI analysis & guidance'}</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-400 mt-0.5">✓</span>
+                    <span>{isZh ? '命题追踪与管理' : 'Topic tracking & management'}</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-400 mt-0.5">✓</span>
+                    <span>{isZh ? '历史记录保存' : 'Extended reading history'}</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="mt-8 text-center">
+              <p className="text-sm text-slate-400 leading-relaxed max-w-2xl mx-auto">
+                {isZh
+                  ? 'AI 塔罗提供免费体验版本，包含每日有限次数的解读。用户可选择升级付费方案，以获得无限使用次数、更深入的解读功能和命题追踪管理。'
+                  : 'AI Tarot offers a free trial with limited daily usage for new users. Users can upgrade to a premium plan to unlock unlimited readings, advanced features, topic tracking, and extended history.'}
+              </p>
             </div>
           </div>
 

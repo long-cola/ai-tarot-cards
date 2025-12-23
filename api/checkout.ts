@@ -41,7 +41,7 @@ export default async function handler(req: any, res: any) {
     console.log('[/api/checkout] Test mode:', isTestMode);
 
     // Get the client origin from the request
-    const origin = req.headers.origin || req.headers.referer?.replace(/\/$/, '') || 'https://ai-tarotcards.vercel.app';
+    const origin = req.headers.origin || req.headers.referer?.replace(/\/$/, '') || 'https://ai-tarotcard.com';
     const successUrl = `${origin}/?payment=success`;
 
     console.log('[/api/checkout] Success URL:', successUrl);

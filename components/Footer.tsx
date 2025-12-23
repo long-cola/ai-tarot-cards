@@ -55,16 +55,21 @@ export const Footer: React.FC<FooterProps> = ({ language, onOpenCookieSettings }
         </div>
 
         {/* Trust & Compliance */}
-        <div className="mt-4 pt-4 border-t border-white/5 text-center space-y-1 text-xs text-slate-500">
+        <div className="mt-4 pt-4 border-t border-white/5 text-center space-y-2 text-xs text-slate-500">
           <p>
             {isZh
-              ? '⚠️ 仅供娱乐，18 岁以上用户使用。AI 生成内容，不构成法律、医疗、财务或心理咨询建议。'
-              : '⚠️ For entertainment purposes only. Must be 18+ to use. AI-generated content is not legal, medical, financial, or mental health advice.'}
+              ? '⚠️ 本服务仅供娱乐与自我反思，18 岁以上用户使用。AI 塔罗用于个人思考辅助，不提供算命、预测、保证或专业建议。'
+              : '⚠️ For entertainment and personal reflection only. Must be 18+ to use. AI Tarot is designed for personal insight and does not provide fortune-telling, guarantees, or professional advice.'}
           </p>
           <p>
             {isZh
-              ? '联系邮箱：support@ai-tarotcards.vercel.app · 最新更新：2025-01'
-              : 'Contact: support@ai-tarotcards.vercel.app · Last updated: 2025-01'}
+              ? 'AI 生成内容不构成法律、医疗、财务或心理咨询建议。重大决策请咨询专业人士。'
+              : 'AI-generated content is not legal, medical, financial, or mental health advice. Please consult professionals for important decisions.'}
+          </p>
+          <p>
+            {isZh
+              ? '联系邮箱：support@ai-tarotcard.com · 最新更新：2025-01'
+              : 'Contact: support@ai-tarotcard.com · Last updated: 2025-01'}
           </p>
         </div>
       </div>

@@ -261,8 +261,8 @@ export const TermsOfServicePage: React.FC<TermsOfServicePageProps> = ({ language
                     <div className="mt-4 p-4 bg-slate-800/50 rounded-lg border border-purple-500/30">
                       <p className="text-purple-200">
                         <strong>神秘塔罗 AI</strong><br />
-                        电子邮件：<a href="mailto:support@ai-tarotcards.vercel.app" className="text-purple-400 hover:text-purple-300">support@ai-tarotcards.vercel.app</a><br />
-                        网站：<a href="https://ai-tarotcards.vercel.app" className="text-purple-400 hover:text-purple-300">https://ai-tarotcards.vercel.app</a>
+                        电子邮件：<a href="mailto:support@ai-tarotcard.com" className="text-purple-400 hover:text-purple-300">support@ai-tarotcard.com</a><br />
+                        网站：<a href="https://ai-tarotcard.com" className="text-purple-400 hover:text-purple-300">https://ai-tarotcard.com</a>
                       </p>
                     </div>
                   </section>
@@ -484,8 +484,8 @@ export const TermsOfServicePage: React.FC<TermsOfServicePageProps> = ({ language
                     <div className="mt-4 p-4 bg-slate-800/50 rounded-lg border border-purple-500/30">
                       <p className="text-purple-200">
                         <strong>Mystic Tarot AI</strong><br />
-                        Email: <a href="mailto:support@ai-tarotcards.vercel.app" className="text-purple-400 hover:text-purple-300">support@ai-tarotcards.vercel.app</a><br />
-                        Website: <a href="https://ai-tarotcards.vercel.app" className="text-purple-400 hover:text-purple-300">https://ai-tarotcards.vercel.app</a>
+                        Email: <a href="mailto:support@ai-tarotcard.com" className="text-purple-400 hover:text-purple-300">support@ai-tarotcard.com</a><br />
+                        Website: <a href="https://ai-tarotcard.com" className="text-purple-400 hover:text-purple-300">https://ai-tarotcard.com</a>
                       </p>
                     </div>
                   </section>
