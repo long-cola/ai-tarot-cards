@@ -24,7 +24,7 @@ export const WhyChooseSection: React.FC<WhyChooseSectionProps> = ({ language }) 
         : 'Experience deep resonance as our advanced AI mirrors your soul. We blend ancient symbolism with modern psychology for nuanced, heartfelt guidance.',
     },
     {
-      icon: '/img/image 16.png',
+      icon: '/img/image 17.png',
       title: isZh ? '独家"塔罗之旅"' : 'Exclusive "Tarot Journeys"',
       description: isZh
         ? '超越当下时刻，体验我们的标志性"塔罗之旅"功能。通过持续的牌阵追踪您命运的演变，揭示人生的宏大叙事。'
