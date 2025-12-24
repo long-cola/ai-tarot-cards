@@ -12,8 +12,8 @@ export const Input: React.FC<InputProps> = ({
   ...props
 }) => {
   return (
-    <div className="w-full">
-      <div className="relative">
+    <div className="w-full flex justify-center">
+      <div className="relative w-full max-w-[915px]">
         {icon && (
           <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white/50">
             {icon}
@@ -21,15 +21,15 @@ export const Input: React.FC<InputProps> = ({
         )}
         <input
           className={`
-            w-full max-w-full sm:max-w-[500px] md:max-w-[800px] mx-auto
-            h-[60px] sm:h-[68px] md:h-[75px]
-            px-6 sm:px-12 md:px-[147px]
-            py-4 sm:py-5 md:py-[23px]
-            text-[18px] sm:text-[20px] md:text-[24px]
-            placeholder:text-[18px] sm:placeholder:text-[20px] md:placeholder:text-[24px]
+            w-full
+            h-[60px] sm:h-[70px] md:h-[75px]
+            px-4 sm:px-16 md:px-[147px]
+            py-[16px] sm:py-[20px] md:py-[23px]
+            text-[16px] sm:text-[20px] md:text-[24px]
+            placeholder:text-[16px] sm:placeholder:text-[20px] md:placeholder:text-[24px]
             bg-[rgba(168,85,247,0.1)]
             border border-[rgba(168,85,247,0.3)]
-            rounded-[12px] md:rounded-[16px]
+            rounded-[16px]
             text-white placeholder:text-[#9B83C6] text-center
             focus:outline-none focus:border-[rgba(168,85,247,0.5)]
             transition-all duration-200

@@ -7,6 +7,8 @@ interface NavbarProps {
   onLanguageToggle?: () => void;
   onQuickReadingClick?: () => void;
   onTopicsClick?: () => void;
+  onBlogClick?: () => void;
+  onPricingClick?: () => void;
   onUpgradeClick?: () => void;
   language: 'zh' | 'en';
   user: any;
@@ -27,6 +29,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   onLanguageToggle,
   onQuickReadingClick,
   onTopicsClick,
+  onBlogClick,
+  onPricingClick,
   onUpgradeClick,
   language,
   user,
@@ -99,10 +103,25 @@ export const Navbar: React.FC<NavbarProps> = ({
           </button>
 
           {/* Logo */}
-          <h1 className="text-white text-base md:text-xl font-semibold tracking-wide">
-            <span className="hidden sm:inline">Life Tarotcards</span>
-            <span className="sm:hidden">{isZh ? '塔罗' : 'Tarot'}</span>
-          </h1>
+          <button
+            onClick={onQuickReadingClick}
+            className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
+          >
+            <img
+              src="/img/logo.png"
+              alt="Mystic Tarotcard"
+              style={{
+                width: '38.58px',
+                height: '16.79px',
+              }}
+            />
+            <h1
+              className="text-white text-sm md:text-xl font-semibold tracking-wide"
+              style={{ fontFamily: "'Almendra', serif" }}
+            >
+              Mystic Tarotcard
+            </h1>
+          </button>
         </div>
 
         {/* Center Navigation */}
@@ -110,16 +129,30 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             onClick={onQuickReadingClick}
             className="text-white hover:text-white/80 transition-colors text-[16px]"
-            style={{ fontWeight: 400 }}
+            style={{ fontWeight: 400, fontFamily: "'Noto Serif SC', serif" }}
           >
             {isZh ? '遇事占卜' : 'Quick Reading'}
           </button>
           <button
             onClick={onTopicsClick}
             className="text-white hover:text-white/80 transition-colors text-[16px]"
-            style={{ fontWeight: 400 }}
+            style={{ fontWeight: 400, fontFamily: "'Noto Serif SC', serif" }}
           >
             {isZh ? '人生命题' : 'Life Topics'}
+          </button>
+          <button
+            onClick={onPricingClick}
+            className="text-white hover:text-white/80 transition-colors text-[16px]"
+            style={{ fontWeight: 400, fontFamily: "'Noto Serif SC', serif" }}
+          >
+            {isZh ? '定价' : 'Pricing'}
+          </button>
+          <button
+            onClick={onBlogClick}
+            className="text-white hover:text-white/80 transition-colors text-[16px]"
+            style={{ fontWeight: 400, fontFamily: "'Noto Serif SC', serif" }}
+          >
+            {isZh ? '博客' : 'Blog'}
           </button>
         </div>
 
@@ -382,6 +415,30 @@ export const Navbar: React.FC<NavbarProps> = ({
               <span className="text-xl">📖</span>
               <span className="text-white text-sm font-medium">
                 {isZh ? '人生命题' : 'Life Topics'}
+              </span>
+            </button>
+            <button
+              onClick={() => {
+                onPricingClick?.();
+                setIsMobileMenuOpen(false);
+              }}
+              className="w-full text-left py-3 px-4 rounded-lg hover:bg-white/5 transition-colors flex items-center gap-3"
+            >
+              <span className="text-xl">💎</span>
+              <span className="text-white text-sm font-medium">
+                {isZh ? '定价' : 'Pricing'}
+              </span>
+            </button>
+            <button
+              onClick={() => {
+                onBlogClick?.();
+                setIsMobileMenuOpen(false);
+              }}
+              className="w-full text-left py-3 px-4 rounded-lg hover:bg-white/5 transition-colors flex items-center gap-3"
+            >
+              <span className="text-xl">📝</span>
+              <span className="text-white text-sm font-medium">
+                {isZh ? '博客' : 'Blog'}
               </span>
             </button>
           </div>

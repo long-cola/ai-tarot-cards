@@ -203,17 +203,31 @@ export const ReadingResultPage: React.FC<ReadingResultPageProps> = ({
                     </div>
                   )}
                 </div>
-                <p
-                  className="text-[18px] sm:text-[20px] md:text-[24px] leading-[22px] sm:leading-[24px] md:leading-[29px] font-normal text-center"
-                  style={{
-                    background: 'linear-gradient(90deg, #D5C8FF 0%, #807899 100%)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    backgroundClip: 'text',
-                  }}
-                >
-                  {getCardPosition(card.position)}
-                </p>
+                <div className="flex flex-col items-center gap-1">
+                  <p
+                    className="text-[16px] sm:text-[18px] md:text-[20px] leading-[20px] sm:leading-[22px] md:leading-[24px] font-semibold text-center"
+                    style={{ color: '#E2DBFF' }}
+                  >
+                    {getCardName(card)}
+                  </p>
+                  <p
+                    className="text-[12px] sm:text-[13px] md:text-[14px] leading-[16px] sm:leading-[17px] md:leading-[18px] font-normal text-center"
+                    style={{ color: '#DD8424' }}
+                  >
+                    {getCardStatus(card)}
+                  </p>
+                  <p
+                    className="text-[14px] sm:text-[16px] md:text-[18px] leading-[18px] sm:leading-[20px] md:leading-[22px] font-normal text-center"
+                    style={{
+                      background: 'linear-gradient(90deg, #D5C8FF 0%, #807899 100%)',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                      backgroundClip: 'text',
+                    }}
+                  >
+                    {getCardPosition(card.position)}
+                  </p>
+                </div>
               </div>
             ))}
           </div>

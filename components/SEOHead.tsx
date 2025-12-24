@@ -84,14 +84,14 @@ const SEOHead: React.FC<SEOProps> = ({
           '@type': 'SearchAction',
           target: {
             '@type': 'EntryPoint',
-            urlTemplate: `${siteUrl}/?q={search_term_string}`
+            urlTemplate: `${SITE_ROOT}/?q={search_term_string}`
           },
           'query-input': 'required name=search_term_string'
         },
         publisher: {
           '@type': 'Organization',
           name: '神秘塔罗 AI',
-          url: siteUrl
+          url: SITE_ROOT
         }
       };
     }

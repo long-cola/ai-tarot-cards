@@ -6,12 +6,15 @@ import { Card } from './components/Card';
 import { StarryBackground } from './components/StarryBackground';
 import { Navbar } from './components/Navbar';
 import { HomePage } from './components/HomePage';
+import { BlogListPage } from './components/BlogListPage';
+import { BlogDetailPage } from './components/BlogDetailPage';
 import { TopicListPage } from './components/TopicListPage';
 import { TopicDetailPage } from './components/TopicDetailPage';
 import { ReadingResultPage } from './components/ReadingResultPage';
 import { SharedReadingPage } from './components/SharedReadingPage';
 import { PrivacyPolicyPage } from './components/PrivacyPolicyPage';
 import { TermsOfServicePage } from './components/TermsOfServicePage';
+import { PricingPage } from './components/PricingPage';
 import { Footer } from './components/Footer';
 import { CookieConsent as CookieConsentBanner } from './components/CookieConsent';
 import { QuickQuestionCard } from './components/ui';
@@ -413,6 +416,15 @@ const formatCardLabel = (card: DrawnCard, language: Language) => {
 const App: React.FC = () => {
   // Check if we have pending reading in localStorage to restore after OAuth
   const getPendingReading = () => {
+    // Only restore pending reading if coming from OAuth callback
+    const params = new URLSearchParams(window.location.search);
+    const isOAuthCallback = params.get('auth') === 'success';
+
+    if (!isOAuthCallback) {
+      // Not an OAuth callback, don't restore pending reading
+      return null;
+    }
+
     try {
       const pendingStr = localStorage.getItem('pendingReading');
       if (pendingStr) {
@@ -420,7 +432,7 @@ const App: React.FC = () => {
         const age = Date.now() - (pending.timestamp || 0);
         // Only restore if less than 30 minutes old
         if (age < 30 * 60 * 1000) {
-          console.log('[App Init] Found pending reading in localStorage');
+          console.log('[App Init] Found pending reading in localStorage (OAuth callback)');
           return pending;
         } else {
           localStorage.removeItem('pendingReading');
@@ -497,6 +509,9 @@ const App: React.FC = () => {
   const [showSharedReadingPage, setShowSharedReadingPage] = useState(false);
   const [showPrivacyPage, setShowPrivacyPage] = useState(false);
   const [showTermsPage, setShowTermsPage] = useState(false);
+  const [showBlogPage, setShowBlogPage] = useState(false);
+  const [selectedBlogId, setSelectedBlogId] = useState<string | null>(null);
+  const [showPricingPage, setShowPricingPage] = useState(false);
   const [cookieConsent, setCookieConsent] = useState<CookieConsentStatus>(() => getCookieConsent());
   const [showCookieSettings, setShowCookieSettings] = useState(false);
   const [sharedReadingId, setSharedReadingId] = useState<string | null>(null);
@@ -846,6 +861,9 @@ const App: React.FC = () => {
         console.log('[PendingBaseline] Reading already exists from localStorage, skipping API call');
         setPendingBaseline(null);
         setProcessingPending(false);
+        // Clean up pendingReading from localStorage since it's been used
+        localStorage.removeItem('pendingReading');
+        console.log('[PendingBaseline] Cleaned up pendingReading from localStorage');
         return;
       }
 
@@ -886,8 +904,9 @@ const App: React.FC = () => {
         setReading(result);
         setUsageError('');
         setPendingBaseline(null);
-
-        console.log('[PendingBaseline] Reading fetched successfully');
+        // Clean up pendingReading from localStorage since it's been used
+        localStorage.removeItem('pendingReading');
+        console.log('[PendingBaseline] Reading fetched successfully and cleaned up localStorage');
       } catch (err: any) {
         console.error("[PendingBaseline] Fetch failed", err);
         if (err.message === 'UNAUTHORIZED') {
@@ -1346,6 +1365,9 @@ const App: React.FC = () => {
     setShareError('');
     setShowTopicListPage(false);
     setShowTopicDetailPage(false);
+    setShowPricingPage(false);
+    // Clean up any pending reading from localStorage
+    localStorage.removeItem('pendingReading');
   };
 
   const toggleLanguage = () => {
@@ -1353,7 +1375,7 @@ const App: React.FC = () => {
       const next = prev === 'zh' ? 'en' : 'zh';
       if (typeof window !== 'undefined') {
         const { pathname, search, hash } = window.location;
-        const strippedPath = pathname.startsWith('/zh') ? pathname.replace(/^\\/zh/, '') || '/' : pathname || '/';
+        const strippedPath = pathname.startsWith('/zh') ? pathname.replace(/^\/zh/, '') || '/' : pathname || '/';
         const normalizedPath = strippedPath.startsWith('/') ? strippedPath : `/${strippedPath}`;
         const nextPath =
           next === 'zh'
@@ -1720,7 +1742,7 @@ Card drawn: ${currentCardStr}`;
   return (
     <div
       className="min-h-full flex flex-col items-center overflow-x-hidden font-sans relative"
-      style={{ backgroundColor: '#0F172A' }}
+      style={{ backgroundColor: '#140F2A' }}
     >
       <StarryBackground />
 
@@ -1730,10 +1752,14 @@ Card drawn: ${currentCardStr}`;
         onLanguageToggle={toggleLanguage}
         onQuickReadingClick={() => {
           setShowTopicListPage(false);
+          setShowBlogPage(false);
+          setShowPricingPage(false);
           resetApp();
         }}
         onTopicsClick={async () => {
           setShowTopicListPage(true);
+          setShowBlogPage(false);
+          setShowPricingPage(false);
           setTopicError('');
           setTopicsLoading(true);
           try {
@@ -1746,6 +1772,24 @@ Card drawn: ${currentCardStr}`;
           } finally {
             setTopicsLoading(false);
           }
+        }}
+        onBlogClick={() => {
+          setShowBlogPage(true);
+          setShowTopicListPage(false);
+          setShowTopicDetailPage(false);
+          setShowPrivacyPage(false);
+          setShowTermsPage(false);
+          setShowPricingPage(false);
+          setSelectedBlogId(null);
+        }}
+        onPricingClick={() => {
+          setShowPricingPage(true);
+          setShowBlogPage(false);
+          setShowTopicListPage(false);
+          setShowTopicDetailPage(false);
+          setShowPrivacyPage(false);
+          setShowTermsPage(false);
+          setSelectedBlogId(null);
         }}
         language={language}
         user={user}
@@ -1767,70 +1811,131 @@ Card drawn: ${currentCardStr}`;
         </div>
       )}
 
-      <main className="relative z-10 w-full flex-1 flex flex-col items-center px-4 py-4 min-h-0">
+      <main className="relative z-10 w-full flex-1 flex flex-col items-center min-h-0">
         {upgradeHint && (
-          <div className="w-full max-w-3xl mb-4 bg-amber-500/15 border border-amber-400/40 text-amber-100 text-sm px-4 py-3 rounded-lg">
+          <div className="w-full max-w-3xl mb-4 mx-4 bg-amber-500/15 border border-amber-400/40 text-amber-100 text-sm px-4 py-3 rounded-lg">
             {upgradeHint}
           </div>
         )}
 
         {/* Shared Reading Page */}
         {showSharedReadingPage && sharedReadingId && (
-          <SharedReadingPage
-            shareId={sharedReadingId}
-            language={language}
-          />
+          <div className="px-4 py-4 w-full">
+            <SharedReadingPage
+              shareId={sharedReadingId}
+              language={language}
+            />
+          </div>
         )}
 
         {/* Privacy Policy Page */}
         {showPrivacyPage && (
-          <PrivacyPolicyPage language={language} />
+          <div className="px-4 py-4 w-full">
+            <PrivacyPolicyPage language={language} />
+          </div>
         )}
 
         {/* Terms of Service Page */}
         {showTermsPage && (
-          <TermsOfServicePage language={language} />
+          <div className="px-4 py-4 w-full">
+            <TermsOfServicePage language={language} />
+          </div>
+        )}
+
+        {/* Pricing Page */}
+        {showPricingPage && !showTopicListPage && !showTopicDetailPage && !showSharedReadingPage && !showPrivacyPage && !showTermsPage && !showBlogPage && (
+          <PricingPage
+            language={language}
+            onStartReading={() => {
+              setShowPricingPage(false);
+              resetApp();
+            }}
+            onUpgrade={() => setShowPaywall(true)}
+          />
+        )}
+
+        {/* Blog Page */}
+        {showBlogPage && !selectedBlogId && (
+          <BlogListPage
+            language={language}
+            onStartReading={() => {
+              setShowBlogPage(false);
+              resetApp();
+            }}
+            onStartBigTopic={() => {
+              setShowBlogPage(false);
+              setShowTopicListPage(true);
+            }}
+            onBlogClick={(blogId) => {
+              setSelectedBlogId(blogId);
+            }}
+          />
+        )}
+
+        {/* Blog Detail Page */}
+        {showBlogPage && selectedBlogId && (
+          <BlogDetailPage
+            language={language}
+            blogId={selectedBlogId}
+            onBack={() => {
+              setSelectedBlogId(null);
+            }}
+            onStartReading={() => {
+              setShowBlogPage(false);
+              setSelectedBlogId(null);
+              resetApp();
+            }}
+            onStartBigTopic={() => {
+              setShowBlogPage(false);
+              setSelectedBlogId(null);
+              setShowTopicListPage(true);
+            }}
+          />
         )}
 
         {/* Topic List Page */}
-        {showTopicListPage && !showTopicDetailPage && !showSharedReadingPage && !showPrivacyPage && !showTermsPage && (
-          <TopicListPage
-            topics={topicList}
-            language={language}
-            quota={topicQuota}
-            onCreateNewTopic={() => {
-              setShowTopicListPage(false);
-              resetApp();
-            }}
-            onTopicClick={(topicId) => {
-              loadTopicDetail(topicId);
-            }}
-            onDeleteTopic={handleDeleteTopic}
-          />
+        {showTopicListPage && !showTopicDetailPage && !showSharedReadingPage && !showPrivacyPage && !showTermsPage && !showBlogPage && (
+          <div className="px-4 py-4 w-full">
+            <TopicListPage
+              topics={topicList}
+              language={language}
+              quota={topicQuota}
+              onCreateNewTopic={() => {
+                setShowTopicListPage(false);
+                resetApp();
+              }}
+              onTopicClick={(topicId) => {
+                loadTopicDetail(topicId);
+              }}
+              onDeleteTopic={handleDeleteTopic}
+            />
+          </div>
         )}
 
         {/* Topic Detail Page */}
-        {showTopicDetailPage && selectedTopic && !showSharedReadingPage && !showPrivacyPage && !showTermsPage && (
-          <TopicDetailPage
-            topic={selectedTopic}
-            events={topicEvents}
-            language={language}
-            plan={plan}
-            eventUsage={topicEventUsage}
-            onBack={() => {
-              setShowTopicDetailPage(false);
-              setShowTopicListPage(true);
-              setSelectedTopic(null);
-              setTopicEvents([]);
-            }}
-            onEventAdded={(newEvent) => {
-              setTopicEvents(prev => [...prev, newEvent]);
-            }}
-          />
+        {showTopicDetailPage && selectedTopic && !showSharedReadingPage && !showPrivacyPage && !showTermsPage && !showBlogPage && (
+          <div className="px-4 py-4 w-full">
+            <TopicDetailPage
+              topic={selectedTopic}
+              events={topicEvents}
+              language={language}
+              plan={plan}
+              eventUsage={topicEventUsage}
+              onBack={() => {
+                setShowTopicDetailPage(false);
+                setShowTopicListPage(true);
+                setSelectedTopic(null);
+                setTopicEvents([]);
+              }}
+              onEventAdded={(newEvent) => {
+                setTopicEvents(prev => [...prev, newEvent]);
+              }}
+            />
+          </div>
         )}
 
         {/* Phase: INPUT */}
-        {phase === AppPhase.INPUT && !showTopicListPage && !showTopicDetailPage && !showSharedReadingPage && !showPrivacyPage && !showTermsPage && (
+        {phase === AppPhase.INPUT && !showTopicListPage && !showTopicDetailPage && !showSharedReadingPage && !showPrivacyPage && !showTermsPage && !showBlogPage && !showPricingPage && (
           <HomePage
             language={language}
             question={question}
@@ -1842,11 +1947,15 @@ Card drawn: ${currentCardStr}`;
               setQuestion(q);
               // Don't auto-start, just fill the input
             }}
+            onBlogClick={(blogId) => {
+              setSelectedBlogId(blogId);
+              setShowBlogPage(true);
+            }}
           />
         )}
 
         {/* Phase: SHUFFLING */}
-        {phase === AppPhase.SHUFFLING && !showTopicListPage && !showTopicDetailPage && !showSharedReadingPage && !showPrivacyPage && !showTermsPage && (
+        {phase === AppPhase.SHUFFLING && !showTopicListPage && !showTopicDetailPage && !showSharedReadingPage && !showPrivacyPage && !showTermsPage && !showBlogPage && !showPricingPage && (
           <div className="flex flex-col items-center justify-center flex-1 animate-fade-in w-full">
              <div className="relative w-40 h-64">
                 {[0, 1, 2, 3, 4, 5].map((i) => (
@@ -1873,7 +1982,7 @@ Card drawn: ${currentCardStr}`;
         )}
 
         {/* Phase: DRAWING */}
-        {phase === AppPhase.DRAWING && !showTopicListPage && !showTopicDetailPage && !showSharedReadingPage && !showPrivacyPage && !showTermsPage && (
+        {phase === AppPhase.DRAWING && !showTopicListPage && !showTopicDetailPage && !showSharedReadingPage && !showPrivacyPage && !showTermsPage && !showBlogPage && !showPricingPage && (
           <div className="w-full h-full flex flex-col animate-fade-in relative pt-20 md:pt-24">
             <div className="text-center z-20 mb-6 md:mb-8">
                <h2 className="text-xl text-purple-100 mb-1 tracking-widest font-mystic">{t.drawTitle}</h2>
@@ -1884,7 +1993,7 @@ Card drawn: ${currentCardStr}`;
                </div>
             </div>
             
-            <div className="grid grid-cols-3 gap-2 sm:gap-6 w-full max-w-lg mx-auto mb-4 z-20 px-2">
+            <div className="grid grid-cols-3 gap-3 sm:gap-4 w-full max-w-lg mx-auto mb-6 z-20 px-2">
               {[0, 1, 2].map((slot) => (
                 <div key={slot} className="flex flex-col">
                   <div className="aspect-[2/3.5] border border-purple-500/20 rounded-lg flex items-center justify-center bg-slate-900/40 backdrop-blur-sm relative transition-all duration-500 shadow-inner">
@@ -1904,27 +2013,14 @@ Card drawn: ${currentCardStr}`;
                       <div className="absolute inset-0 border border-amber-500/50 rounded-lg animate-pulse shadow-[0_0_15px_rgba(245,158,11,0.15)] pointer-events-none"></div>
                     )}
                   </div>
-                  {drawnCards[slot] && (
-                    <div className="mt-2 text-center animate-fade-in">
-                      <div className="text-xs font-semibold text-purple-200/90 leading-tight">
-                        {language === 'zh' ? drawnCards[slot].nameCn : drawnCards[slot].name}
-                      </div>
-                      <div className="text-[10px] text-amber-400/80 mt-0.5">
-                        {drawnCards[slot].isReversed
-                          ? (language === 'zh' ? '逆位' : 'Reversed')
-                          : (language === 'zh' ? '正位' : 'Upright')
-                        }
-                      </div>
-                    </div>
-                  )}
                 </div>
               ))}
             </div>
 
-            <div className={`relative flex-1 w-full min-h-[400px] flex justify-center items-end perspective-1000 overflow-hidden ${isInteracting ? 'pointer-events-none grayscale-[0.5]' : ''} transition-all duration-500`}>
+            <div className={`relative flex-1 w-full min-h-[280px] flex justify-center items-end perspective-1000 overflow-hidden ${isInteracting ? 'pointer-events-none grayscale-[0.5]' : ''} transition-all duration-500`}>
                <div className="absolute inset-x-0 bottom-0 h-3/4 bg-gradient-to-t from-slate-950 via-purple-950/30 to-transparent pointer-events-none"></div>
 
-               <div className="relative w-full max-w-md h-80 mb-12 md:mb-16">
+               <div className="relative w-full max-w-md h-80 mb-6 md:mb-8">
                  {deck.map((card, index) => {
                     const total = deck.length;
                     const center = (total - 1) / 2;
@@ -1965,7 +2061,7 @@ Card drawn: ${currentCardStr}`;
         )}
 
         {/* Phase: REVEAL & ANALYSIS */}
-        {(phase === AppPhase.REVEAL || phase === AppPhase.ANALYSIS) && !showTopicListPage && !showTopicDetailPage && !showSharedReadingPage && !showPrivacyPage && !showTermsPage && (
+        {(phase === AppPhase.REVEAL || phase === AppPhase.ANALYSIS) && !showTopicListPage && !showTopicDetailPage && !showSharedReadingPage && !showPrivacyPage && !showTermsPage && !showBlogPage && !showPricingPage && (
           <ReadingResultPage
             question={question}
             cards={drawnCards}
