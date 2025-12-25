@@ -420,26 +420,38 @@ const App: React.FC = () => {
     const params = new URLSearchParams(window.location.search);
     const isOAuthCallback = params.get('auth') === 'success';
 
+    console.log('[getPendingReading] OAuth callback check:', { isOAuthCallback, url: window.location.href });
+
     if (!isOAuthCallback) {
       // Not an OAuth callback, don't restore pending reading
+      console.log('[getPendingReading] Not OAuth callback, skipping restore');
       return null;
     }
 
     try {
       const pendingStr = localStorage.getItem('pendingReading');
+      console.log('[getPendingReading] localStorage pendingReading:', pendingStr ? 'exists' : 'not found');
+
       if (pendingStr) {
         const pending = JSON.parse(pendingStr);
         const age = Date.now() - (pending.timestamp || 0);
+        console.log('[getPendingReading] Pending age:', age, 'ms, question:', pending.question, 'cards:', pending.cards?.length);
+
         // Only restore if less than 30 minutes old
         if (age < 30 * 60 * 1000) {
-          console.log('[App Init] Found pending reading in localStorage (OAuth callback)');
+          console.log('[getPendingReading] ✅ Restoring pending reading:', {
+            question: pending.question,
+            cardsCount: pending.cards?.length,
+            hasReading: !!pending.reading
+          });
           return pending;
         } else {
+          console.log('[getPendingReading] ❌ Pending reading too old, removing');
           localStorage.removeItem('pendingReading');
         }
       }
     } catch (e) {
-      console.error('[App Init] Failed to parse pending reading:', e);
+      console.error('[getPendingReading] Failed to parse pending reading:', e);
     }
     return null;
   };
@@ -925,25 +937,49 @@ const App: React.FC = () => {
   }, [user, pendingBaseline, processingPending, phase, language, reading]);
 
   const loginWithGoogle = () => {
+    console.log('[loginWithGoogle] Starting login flow, current state:', {
+      phase,
+      hasQuestion: !!question,
+      cardsCount: drawnCards.length,
+      hasReading: !!reading,
+      userAgent: navigator.userAgent
+    });
+
     // Save current reading state before redirecting to OAuth
-    if (phase === AppPhase.ANALYSIS && question && drawnCards.length > 0 && reading) {
+    // Save even if reading is empty - it will be fetched after login
+    if (phase === AppPhase.ANALYSIS && question && drawnCards.length > 0) {
       try {
-        localStorage.setItem('pendingReading', JSON.stringify({
+        const pendingData = {
           question,
           cards: drawnCards,
-          reading,  // Also save the reading text
+          reading: reading || '',  // Save reading if exists, empty string otherwise
           timestamp: Date.now()
-        }));
-        console.log('[Login] Saved current reading to localStorage before OAuth:', {
+        };
+        const pendingStr = JSON.stringify(pendingData);
+        localStorage.setItem('pendingReading', pendingStr);
+
+        // Verify it was saved
+        const saved = localStorage.getItem('pendingReading');
+        console.log('[loginWithGoogle] ✅ Saved pendingReading to localStorage:', {
           question,
           cardsCount: drawnCards.length,
-          hasReading: !!reading
+          hasReading: !!reading,
+          savedLength: saved?.length,
+          verified: saved === pendingStr
         });
       } catch (e) {
-        console.error('[Login] Failed to save reading to localStorage:', e);
+        console.error('[loginWithGoogle] ❌ Failed to save reading to localStorage:', e);
+        alert('Warning: Failed to save your reading state. You may need to draw cards again after login.');
       }
+    } else {
+      console.log('[loginWithGoogle] ⚠️ Skipping save - conditions not met:', {
+        isAnalysisPhase: phase === AppPhase.ANALYSIS,
+        hasQuestion: !!question,
+        hasCards: drawnCards.length > 0
+      });
     }
 
+    console.log('[loginWithGoogle] Redirecting to Google OAuth...');
     window.location.href = `${API_BASE_URL}/api/auth/google`;
   };
 
