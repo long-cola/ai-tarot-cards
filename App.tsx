@@ -2110,6 +2110,7 @@ Card drawn: ${currentCardStr}`;
             topicCreated={!!createdTopicId}
             user={user}
             onLogin={loginWithGoogle}
+            onUpgrade={() => setShowPaywall(true)}
           />
         )}
 

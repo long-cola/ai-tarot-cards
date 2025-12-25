@@ -26,6 +26,7 @@ interface ReadingResultPageProps {
   topicCreated: boolean;
   user?: { id: string; email: string; name?: string } | null;
   onLogin?: () => void;
+  onUpgrade?: () => void;
 }
 
 const markdownComponents = {
@@ -98,11 +99,15 @@ export const ReadingResultPage: React.FC<ReadingResultPageProps> = ({
   topicCreated,
   user,
   onLogin,
+  onUpgrade,
 }) => {
   const isZh = language === 'zh';
 
   // Show login prompt if user is not logged in and reading is empty
   const showLoginPrompt = !user && !reading && !isLoading;
+
+  // Show upgrade prompt if user is logged in but reading is empty (quota exhausted)
+  const showUpgradePrompt = user && !reading && !isLoading;
 
   const getCardPosition = (position: number) => {
     if (isZh) {
@@ -271,6 +276,29 @@ export const ReadingResultPage: React.FC<ReadingResultPageProps> = ({
                 }}
               >
                 {isZh ? '登录后查看命运之启示' : 'Login to View Your Reading'}
+              </button>
+            </div>
+          ) : showUpgradePrompt ? (
+            <div className="flex flex-col items-center justify-center py-12 space-y-6 w-full">
+              <div className="text-center space-y-4">
+                <div className="text-5xl mb-4">💎</div>
+                <p className="text-[18px] font-medium" style={{ color: '#E2DBFF' }}>
+                  {isZh ? '今日免费次数已用完' : 'Daily Free Readings Exhausted'}
+                </p>
+                <p className="text-[14px] text-slate-300/80">
+                  {isZh ? '升级为 Pro 用户，享受每日 30 次免费占卜' : 'Upgrade to Pro for 30 daily readings'}
+                </p>
+              </div>
+              <button
+                onClick={onUpgrade}
+                className="flex justify-center items-center px-[64px] py-[12px] rounded-[100px] text-[16px] font-bold hover:opacity-90 transition-opacity"
+                style={{
+                  backgroundColor: '#DD8424',
+                  color: '#000000',
+                  opacity: 0.8
+                }}
+              >
+                {isZh ? '升级为 Pro 用户' : 'Upgrade to Pro'}
               </button>
             </div>
           ) : isLoading ? (
