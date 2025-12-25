@@ -548,10 +548,44 @@ const App: React.FC = () => {
     }
   }, []);
 
-  // Parse分享链接
+  // Parse URL for initial page routing
   useEffect(() => {
     if (shareDataLoaded) return;
+
+    const pathname = window.location.pathname;
     const params = new URLSearchParams(window.location.search);
+
+    // Extract route from pathname (handle both /en/route and /zh/route)
+    const pathParts = pathname.split('/').filter(p => p);
+    // Remove language prefix if present
+    const route = pathParts.filter(p => p !== 'zh' && p !== 'en')[0];
+
+    // Check for page routes
+    if (route === 'pricing') {
+      setShowPricingPage(true);
+      setShareDataLoaded(true);
+      return;
+    }
+    if (route === 'blog') {
+      setShowBlogPage(true);
+      setShareDataLoaded(true);
+      return;
+    }
+    if (route === 'bigtopic') {
+      setShowTopicListPage(true);
+      setShareDataLoaded(true);
+      // Load topics
+      setTopicsLoading(true);
+      listTopics().then(res => {
+        setTopicList(res.topics || []);
+        if (res.quota) setTopicQuota(res.quota);
+      }).catch(err => {
+        console.error("load topics failed", err);
+      }).finally(() => {
+        setTopicsLoading(false);
+      });
+      return;
+    }
 
     // Check for privacy/terms view
     const view = params.get('view');
@@ -611,6 +645,47 @@ const App: React.FC = () => {
     console.log("document.cookie:", document.cookie || "empty");
     console.log("User-Agent:", navigator.userAgent);
     console.log("==================");
+  }, []);
+
+  // Handle browser back/forward navigation
+  useEffect(() => {
+    const handlePopState = () => {
+      const pathname = window.location.pathname;
+      const pathParts = pathname.split('/').filter(p => p);
+      const route = pathParts.filter(p => p !== 'zh' && p !== 'en')[0];
+
+      // Reset all page states
+      setShowPricingPage(false);
+      setShowBlogPage(false);
+      setShowTopicListPage(false);
+      setShowTopicDetailPage(false);
+      setShowPrivacyPage(false);
+      setShowTermsPage(false);
+      setSelectedBlogId(null);
+
+      // Set the correct page based on route
+      if (route === 'pricing') {
+        setShowPricingPage(true);
+      } else if (route === 'blog') {
+        setShowBlogPage(true);
+      } else if (route === 'bigtopic') {
+        setShowTopicListPage(true);
+        // Load topics
+        setTopicsLoading(true);
+        listTopics().then(res => {
+          setTopicList(res.topics || []);
+          if (res.quota) setTopicQuota(res.quota);
+        }).catch(err => {
+          console.error("load topics failed", err);
+        }).finally(() => {
+          setTopicsLoading(false);
+        });
+      }
+      // If no route matches, user is back on home page (default state)
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
   // Load session
@@ -1379,6 +1454,13 @@ const App: React.FC = () => {
     }
   };
 
+  // Update browser URL for client-side routing
+  const updateUrl = (route: string) => {
+    const langPrefix = language === 'zh' ? '/zh' : '';
+    const newUrl = route === '/' ? langPrefix || '/' : `${langPrefix}/${route}`;
+    window.history.pushState({}, '', newUrl);
+  };
+
   const resetApp = () => {
     setPhase(AppPhase.INPUT);
     setQuestion('');
@@ -1790,12 +1872,14 @@ Card drawn: ${currentCardStr}`;
           setShowTopicListPage(false);
           setShowBlogPage(false);
           setShowPricingPage(false);
+          updateUrl('/');
           resetApp();
         }}
         onTopicsClick={async () => {
           setShowTopicListPage(true);
           setShowBlogPage(false);
           setShowPricingPage(false);
+          updateUrl('bigtopic');
           setTopicError('');
           setTopicsLoading(true);
           try {
@@ -1817,6 +1901,7 @@ Card drawn: ${currentCardStr}`;
           setShowTermsPage(false);
           setShowPricingPage(false);
           setSelectedBlogId(null);
+          updateUrl('blog');
         }}
         onPricingClick={() => {
           setShowPricingPage(true);
@@ -1826,6 +1911,7 @@ Card drawn: ${currentCardStr}`;
           setShowPrivacyPage(false);
           setShowTermsPage(false);
           setSelectedBlogId(null);
+          updateUrl('pricing');
         }}
         language={language}
         user={user}
