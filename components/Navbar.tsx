@@ -108,7 +108,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
           >
             <img
-              src="/img/logo.png"
+              src="/img/logo.png?v=2"
               alt="Mystic Tarotcard"
               style={{
                 width: '38.58px',
