@@ -119,8 +119,8 @@ export const TopicListPage: React.FC<TopicListPageProps> = ({
           <div className="flex justify-center">
             <button
               onClick={onCreateNewTopic}
-              className="w-full sm:w-auto px-6 md:px-8 py-3 md:py-4 rounded-[12px] text-[18px] md:text-[20px] font-bold hover:opacity-90 transition-opacity min-w-[180px] h-[52px] md:h-[56px]"
-              style={{ backgroundColor: 'rgb(221, 132, 37)', color: '#000000', maxWidth: '228px' }}
+              className="w-full sm:w-auto px-6 md:px-8 py-3 md:py-4 rounded-full text-[18px] md:text-[20px] font-bold hover:opacity-90 transition-opacity min-w-[180px] h-[52px] md:h-[56px]"
+              style={{ backgroundColor: 'rgb(221, 132, 37)', color: '#000000', maxWidth: '280px' }}
             >
               {isZh ? '开启新命题' : 'Create New Topic'}
             </button>

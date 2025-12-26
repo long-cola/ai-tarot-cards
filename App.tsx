@@ -2407,9 +2407,9 @@ Card drawn: ${currentCardStr}`;
                 disabled={isUpgrading}
                 className="flex flex-row justify-center items-center"
                 style={{
-                  width: '130px',
+                  minWidth: '160px',
                   height: '40px',
-                  padding: '16px 64px',
+                  padding: '16px 32px',
                   background: '#DD8424',
                   borderRadius: '100px',
                   opacity: isUpgrading ? 0.5 : 1,
