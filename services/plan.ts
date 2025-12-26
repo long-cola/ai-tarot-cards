@@ -7,11 +7,10 @@ const addDays = (date: Date, days: number): Date => {
   return copy;
 };
 
-const topicQuotaForDuration = (durationDays: number = 30): number => {
-  const months = Math.max(1, Math.round(durationDays / 30));
-  return months * 30;
-};
+// ✅ Pro users get 30 topics per cycle (fixed, not based on duration)
+const topicQuotaForProUser = 30;
 
+// ✅ Pro users get 500 events per topic
 const eventQuotaPerTopic = 500;
 
 export async function startMembershipCycle({
@@ -42,7 +41,7 @@ export async function startMembershipCycle({
     `INSERT INTO membership_cycles (user_id, plan, starts_at, ends_at, topic_quota, event_quota_per_topic, source)
      VALUES ($1,$2,$3,$4,$5,$6,$7)
      RETURNING *`,
-    [userId, 'member', now, ends_at, topicQuotaForDuration(durationDays), eventQuotaPerTopic, source]
+    [userId, 'member', now, ends_at, topicQuotaForProUser, eventQuotaPerTopic, source]
   );
   return insert.rows[0];
 }
@@ -59,9 +58,7 @@ const defaultCycleForUser = (user: User) => {
     plan,
     starts_at: now,
     ends_at,
-    topic_quota: membershipValid
-      ? topicQuotaForDuration(Math.ceil((ends_at.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)))
-      : 1,
+    topic_quota: membershipValid ? topicQuotaForProUser : 1,
     event_quota_per_topic: membershipValid ? eventQuotaPerTopic : 3,
     source: membershipValid ? 'membership' : 'free-default',
   };

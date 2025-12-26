@@ -9,6 +9,7 @@
  */
 
 import { query } from '../services/db.js';
+import { snapshotTopicsOnDowngrade } from '../services/topicQuota.js';
 
 export default async function handler(req: any, res: any) {
   // Only allow POST requests
@@ -109,7 +110,7 @@ async function handleOrderCompleted(data: any) {
   await query(
     `INSERT INTO membership_cycles (user_id, plan, starts_at, ends_at, topic_quota, event_quota_per_topic, source)
      VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-    [userId, 'pro', startsAt, endsAt, 999, 999, 'creem']
+    [userId, 'pro', startsAt, endsAt, 30, 500, 'creem']
   );
 
   // Update user's membership_expires_at
@@ -165,7 +166,7 @@ async function handleSubscriptionActivated(data: any) {
   await query(
     `INSERT INTO membership_cycles (user_id, plan, starts_at, ends_at, topic_quota, event_quota_per_topic, source)
      VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-    [userId, 'pro', startsAt, endsAt, 999, 999, 'creem_subscription']
+    [userId, 'pro', startsAt, endsAt, 30, 500, 'creem_subscription']
   );
 
   // Update user's membership_expires_at
@@ -227,7 +228,7 @@ async function handleSubscriptionRenewed(data: any) {
   await query(
     `INSERT INTO membership_cycles (user_id, plan, starts_at, ends_at, topic_quota, event_quota_per_topic, source)
      VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-    [userId, 'pro', startsAt, endsAt, 999, 999, 'creem_subscription']
+    [userId, 'pro', startsAt, endsAt, 30, 500, 'creem_subscription']
   );
 
   // Update user's membership_expires_at
@@ -255,8 +256,14 @@ async function handleSubscriptionCancelled(data: any) {
   }
 
   console.log('[Creem Webhook] Subscription cancelled for user:', userId);
+  console.log('[Creem Webhook] Creating topic event snapshots for downgrade...');
+
+  // ✅ Create snapshots for all user topics before downgrade
+  await snapshotTopicsOnDowngrade(userId);
+
+  console.log('[Creem Webhook] Snapshots created successfully');
+  console.log('[Creem Webhook] User will downgrade to free plan at cycle end');
   // Note: We don't immediately revoke access - let it expire naturally
-  console.log('[Creem Webhook] Membership will expire at the end of current cycle');
 }
 
 export const config = {

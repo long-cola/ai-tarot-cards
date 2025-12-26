@@ -10,7 +10,8 @@
     "db:init": "tsx scripts/init-db.ts",
     "db:migrate-prompts": "tsx scripts/migrate-prompts.ts",
     "db:migrate-analytics": "tsx scripts/migrate-analytics.ts",
-    "db:migrate-shared-readings": "tsx scripts/migrate-shared-readings.ts"
+    "db:migrate-shared-readings": "tsx scripts/migrate-shared-readings.ts",
+    "db:migrate-weekly-quota": "tsx scripts/migrate-weekly-quota.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.2",

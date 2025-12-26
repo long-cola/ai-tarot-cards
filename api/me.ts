@@ -1,6 +1,7 @@
 import { getUserFromRequest } from '../services/jwt.js';
 import { getPlanInfo, getTodayUsage } from '../services/usage.js';
 import { getPlanQuotaSummary } from '../services/plan.js';
+import { getWeeklyTopicCount, getNextMonday } from '../services/topicQuota.js';
 
 export default async function handler(req: any, res: any) {
   // Get user from JWT token
@@ -20,7 +21,28 @@ export default async function handler(req: any, res: any) {
   try {
     const planInfo = await getPlanInfo(user);
     const today = await getTodayUsage(user.id);
-    const quota = await getPlanQuotaSummary(user);
+
+    // ✅ Determine if user is Pro
+    const now = new Date();
+    const isPro = user?.membership_expires_at && new Date(user.membership_expires_at) > now;
+
+    // ✅ Get quota based on plan type
+    let quota;
+    if (isPro) {
+      // Pro user: return cycle quota
+      quota = await getPlanQuotaSummary(user);
+    } else {
+      // Free user: return weekly quota
+      const weeklyCount = await getWeeklyTopicCount(user.id);
+      quota = {
+        plan: 'free',
+        topic_quota_total: 1,
+        topic_quota_remaining: Math.max(1 - weeklyCount, 0),
+        event_quota_per_topic: 3,
+        expires_at: getNextMonday(), // 下周一
+        downgrade_limited_topic_id: null,
+      };
+    }
 
     console.log('[/api/me] Calculated planInfo:', planInfo);
     console.log('[/api/me] Today usage:', today);

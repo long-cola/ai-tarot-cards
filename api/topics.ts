@@ -1,6 +1,11 @@
 import { getUserFromRequest } from '../services/jwt.js';
 import { getPool } from '../services/db.js';
 import { getPlanQuotaSummary, ensureActiveCycleForUser } from '../services/plan.js';
+import {
+  canCreateTopic,
+  canAddTopicEvent,
+  incrementWeeklyTopicCount,
+} from '../services/topicQuota.js';
 
 export default async function handler(req: any, res: any) {
   const user = getUserFromRequest(req);
@@ -106,15 +111,34 @@ async function handleCreateTopic(req: any, res: any, user: any, pool: any) {
     return res.status(400).json({ ok: false, message: 'missing_title' });
   }
 
-  const quota = await getPlanQuotaSummary(user);
+  // ✅ Check quota using new system
+  const quotaCheck = await canCreateTopic(user);
+  if (!quotaCheck.allowed) {
+    const message =
+      quotaCheck.reason === 'free_weekly_quota_exceeded'
+        ? '本周配额已用完，下周一重置'
+        : 'Pro 配额已达上限（30个topics）';
 
-  if (quota && quota.topic_quota_remaining !== null && quota.topic_quota_remaining <= 0) {
-    return res.status(403).json({ ok: false, reason: 'topic_quota_exhausted', quota });
+    return res.status(403).json({
+      ok: false,
+      error: 'quota_exceeded',
+      message,
+      reason: quotaCheck.reason,
+    });
   }
 
-  const cycle = quota?.cycle || (await ensureActiveCycleForUser(user));
-  if (!cycle) {
-    return res.status(500).json({ ok: false, message: 'cycle_unavailable' });
+  // Determine if user is Pro
+  const now = new Date();
+  const isPro = user?.membership_expires_at && new Date(user.membership_expires_at) > now;
+
+  // Pro users need a cycle, free users don't
+  let cycle = null;
+  if (isPro) {
+    const quota = await getPlanQuotaSummary(user);
+    cycle = quota?.cycle || (await ensureActiveCycleForUser(user));
+    if (!cycle) {
+      return res.status(500).json({ ok: false, message: 'cycle_unavailable' });
+    }
   }
 
   // Parse baseline_cards - handle multiple levels of encoding
@@ -137,8 +161,13 @@ async function handleCreateTopic(req: any, res: any, user: any, pool: any) {
     `INSERT INTO topics (user_id, cycle_id, title, language, baseline_cards, baseline_reading)
      VALUES ($1,$2,$3,$4,$5::jsonb,$6)
      RETURNING *`,
-    [user.id, cycle.id, title.trim(), language, cardsJson, baseline_reading]
+    [user.id, cycle?.id || null, title.trim(), language, cardsJson, baseline_reading]
   );
+
+  // ✅ Increment weekly topic count for free users
+  if (!isPro) {
+    await incrementWeeklyTopicCount(user.id);
+  }
 
   const updatedQuota = await getPlanQuotaSummary(user);
   return res.json({ ok: true, topic: insert.rows[0], quota: updatedQuota });
@@ -196,27 +225,35 @@ async function handleAddEvent(req: any, res: any, user: any, pool: any, topicId:
   }
 
   const topic = topicRes.rows[0];
-  const quota = await getPlanQuotaSummary(user);
 
-  if (
-    quota?.plan === 'free' &&
-    quota?.downgrade_limited_topic_id &&
-    quota.downgrade_limited_topic_id !== topic.id
-  ) {
-    return res.status(403).json({ ok: false, reason: 'downgraded_topic_locked', quota });
+  // ✅ Check event quota using new system
+  const eventQuotaCheck = await canAddTopicEvent(user, topicId);
+  if (!eventQuotaCheck.allowed) {
+    let message = '';
+    if (eventQuotaCheck.reason === 'free_event_quota_exceeded') {
+      message = '免费用户每个命题最多 3 个事件';
+    } else if (eventQuotaCheck.reason === 'downgraded_event_quota_exceeded') {
+      message = '降级用户该命题已达上限';
+    } else if (eventQuotaCheck.reason === 'pro_event_quota_exceeded') {
+      message = 'Pro 用户该命题已达上限（500个events）';
+    }
+
+    return res.status(403).json({
+      ok: false,
+      error: 'quota_exceeded',
+      message,
+      reason: eventQuotaCheck.reason,
+    });
   }
 
+  // Get current event count for response
   const eventCountRes = await pool.query(
     `SELECT COUNT(*) as count FROM topic_events WHERE topic_id=$1 AND user_id=$2`,
     [topicId, user.id]
   );
   const eventCount = Number(eventCountRes.rows[0]?.count ?? 0);
 
-  if (quota?.event_quota_per_topic != null && eventCount >= quota.event_quota_per_topic) {
-    return res.status(403).json({ ok: false, reason: 'event_quota_exhausted', quota, used: eventCount });
-  }
-
-  const cycleId = topic.cycle_id || quota?.cycle?.id || null;
+  const cycleId = topic.cycle_id || null;
 
   // Parse cards
   let parsedCards = cards;
@@ -242,8 +279,10 @@ async function handleAddEvent(req: any, res: any, user: any, pool: any, topicId:
   await pool.query(`UPDATE topics SET updated_at=NOW() WHERE id=$1`, [topicId]);
 
   const newCount = eventCount + 1;
-  const remaining =
-    quota?.event_quota_per_topic != null ? Math.max(quota.event_quota_per_topic - newCount, 0) : null;
+  // Calculate remaining from quota check (which already accounts for downgrade logic)
+  const remaining = eventQuotaCheck.remaining != null ? eventQuotaCheck.remaining - 1 : null;
+
+  const quota = await getPlanQuotaSummary(user);
 
   res.json({
     ok: true,

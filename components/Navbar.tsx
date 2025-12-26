@@ -277,9 +277,13 @@ export const Navbar: React.FC<NavbarProps> = ({
                       color: '#8F88AB',
                     }}
                   >
-                    {isZh
-                      ? `本周期命题剩余 ${topicQuota?.topic_quota_remaining ?? '?'}/${topicQuota?.topic_quota_total ?? '?'}`
-                      : `Topics remaining ${topicQuota?.topic_quota_remaining ?? '?'}/${topicQuota?.topic_quota_total ?? '?'}`}
+                    {plan === 'member'
+                      ? isZh
+                        ? `本周期命题剩余 ${topicQuota?.topic_quota_remaining ?? '?'}/${topicQuota?.topic_quota_total ?? '?'}`
+                        : `Cycle topics ${topicQuota?.topic_quota_remaining ?? '?'}/${topicQuota?.topic_quota_total ?? '?'}`
+                      : isZh
+                      ? `本周命题剩余 ${topicQuota?.topic_quota_remaining ?? '?'}/${topicQuota?.topic_quota_total ?? '?'}`
+                      : `This week ${topicQuota?.topic_quota_remaining ?? '?'}/${topicQuota?.topic_quota_total ?? '?'}`}
                   </div>
 
                   {/* Event Quota */}
@@ -297,8 +301,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                       : `Events per topic ${topicQuota?.event_quota_per_topic ?? '?'}`}
                   </div>
 
-                  {/* Expiry Date (for Pro users only) */}
-                  {plan === 'member' && topicQuota?.expires_at && (
+                  {/* Expiry/Reset Date */}
+                  {topicQuota?.expires_at && (
                     <div
                       style={{
                         fontFamily: "'Noto Serif SC', serif",
@@ -308,9 +312,13 @@ export const Navbar: React.FC<NavbarProps> = ({
                         color: '#8F88AB',
                       }}
                     >
-                      {isZh
-                        ? `Pro 会员到期： ${new Date(topicQuota.expires_at).toLocaleDateString('zh-CN', { year: 'numeric', month: 'numeric', day: 'numeric' }).replace(/\//g, '/')}`
-                        : `Pro expires: ${new Date(topicQuota.expires_at).toLocaleDateString('en-US', { year: 'numeric', month: 'numeric', day: 'numeric' })}`}
+                      {plan === 'member'
+                        ? isZh
+                          ? `Pro 会员到期： ${new Date(topicQuota.expires_at).toLocaleDateString('zh-CN', { year: 'numeric', month: 'numeric', day: 'numeric' }).replace(/\//g, '/')}`
+                          : `Pro expires: ${new Date(topicQuota.expires_at).toLocaleDateString('en-US', { year: 'numeric', month: 'numeric', day: 'numeric' })}`
+                        : isZh
+                        ? `配额重置： 下周一`
+                        : `Resets: Next Monday`}
                     </div>
                   )}
                 </div>

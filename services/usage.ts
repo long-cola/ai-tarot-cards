@@ -41,7 +41,7 @@ export async function getPlanInfo(user: User | null) {
     // Use cycle info if available, fallback to user table
     const membershipValid = membershipValidFromCycle || membershipValidFromUser;
     const plan = membershipValid ? 'member' : 'free';
-    const dailyLimit = membershipValid ? 50 : 2;
+    const dailyLimit = 5; // ✅ Both free and Pro users get 5 quick readings per day
 
     console.log('[getPlanInfo] User plan calculation:', {
       userId: user.id,
@@ -61,7 +61,7 @@ export async function getPlanInfo(user: User | null) {
 
     // Fallback to user table only
     const plan = membershipValidFromUser ? 'member' : 'free';
-    const dailyLimit = membershipValidFromUser ? 50 : 2;
+    const dailyLimit = 5; // ✅ Both free and Pro users get 5 quick readings per day
     return { plan, dailyLimit, membershipValid: membershipValidFromUser };
   }
 }
