@@ -7,6 +7,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { BreadcrumbNav, getBreadcrumbsForTopicDetail } from './BreadcrumbNav';
 import { ShareButton } from './ShareButton';
+import { ScrollToTopButton } from './ScrollToTopButton';
 
 interface TopicDetailPageProps {
   topic: Topic;
@@ -59,7 +60,6 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
 }) => {
   const isZh = language === 'zh';
   const [expandedEvents, setExpandedEvents] = useState<Set<string>>(new Set(['baseline']));
-  const [showScrollTop, setShowScrollTop] = useState(false);
 
   // Page state: 'detail' | 'shuffling' | 'drawing' | 'reading'
   const [pageState, setPageState] = useState<'detail' | 'shuffling' | 'drawing' | 'reading'>('detail');
@@ -140,21 +140,6 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
       };
     }
   }, [newlyAddedEventId, events, pageState]);
-
-  // Handle scroll to show/hide scroll-to-top button
-  useEffect(() => {
-    const handleScroll = () => {
-      setShowScrollTop(window.scrollY > 300);
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  // Scroll to top function
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
 
   const toggleEvent = (eventId: string) => {
     setExpandedEvents((prev) => {
@@ -932,28 +917,7 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
       </div>
 
       {/* Scroll to Top Button */}
-      {showScrollTop && (
-        <button
-          onClick={scrollToTop}
-          className="fixed bottom-6 right-6 z-50 w-12 h-12 rounded-full bg-purple-600 hover:bg-purple-500 text-white shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center group"
-          aria-label={isZh ? '回到顶部' : 'Scroll to top'}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-6 w-6 transform group-hover:-translate-y-0.5 transition-transform"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M5 10l7-7m0 0l7 7m-7-7v18"
-            />
-          </svg>
-        </button>
-      )}
+      <ScrollToTopButton showAfter={300} />
 
       <style>{`
         @keyframes fadeIn {

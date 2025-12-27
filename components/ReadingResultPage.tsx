@@ -4,6 +4,7 @@ import remarkGfm from 'remark-gfm';
 import SEOHead from './SEOHead';
 import { BreadcrumbNav, getBreadcrumbsForQuickReading } from './BreadcrumbNav';
 import { ShareButton } from './ShareButton';
+import { ScrollToTopButton } from './ScrollToTopButton';
 
 interface Card {
   id: string;
@@ -406,6 +407,9 @@ export const ReadingResultPage: React.FC<ReadingResultPageProps> = ({
         </div>
       </div>
     </div>
+
+    {/* Scroll to Top Button */}
+    <ScrollToTopButton showAfter={300} />
     </>
   );
 };
