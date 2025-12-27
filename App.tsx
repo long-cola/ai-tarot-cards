@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { AppPhase, DrawnCard, SPREAD_LABELS, Language, SessionUser, Plan, Topic, TopicEvent, PlanQuota, TopicWithUsage } from './types';
 import { MAJOR_ARCANA, TRANSLATIONS } from './constants';
 import { getTarotReading } from './services/bailianService';
@@ -534,6 +534,31 @@ const App: React.FC = () => {
   const inputRef = useRef<HTMLInputElement>(null);
   const readingRef = useRef<HTMLDivElement>(null);
 
+  const viewKey = useMemo(() => {
+    if (showSharedReadingPage && sharedReadingId) return `share:${sharedReadingId}`;
+    if (showPrivacyPage) return 'privacy';
+    if (showTermsPage) return 'terms';
+    if (showPricingPage) return 'pricing';
+    if (showBlogPage) return selectedBlogId ? `blog:${selectedBlogId}` : 'blog';
+    if (showBigTopicIntroPage) return 'bigtopic';
+    if (showTopicDetailPage && selectedTopic) return `topic:${selectedTopic.id}`;
+    if (showTopicListPage) return 'topics';
+    return `phase:${phase}`;
+  }, [
+    showSharedReadingPage,
+    sharedReadingId,
+    showPrivacyPage,
+    showTermsPage,
+    showPricingPage,
+    showBlogPage,
+    selectedBlogId,
+    showBigTopicIntroPage,
+    showTopicDetailPage,
+    selectedTopic,
+    showTopicListPage,
+    phase,
+  ]);
+
   const t = TRANSLATIONS[language];
   
   // Initialize Deck
@@ -551,6 +576,17 @@ const App: React.FC = () => {
       disableGoogleAnalytics();
     }
   }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if ('scrollRestoration' in window.history) {
+      window.history.scrollRestoration = 'manual';
+    }
+  }, []);
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'auto' });
+  }, [viewKey]);
 
   // Parse URL for initial page routing
   useEffect(() => {
@@ -1539,13 +1575,18 @@ const App: React.FC = () => {
     }
   };
 
+  const scrollToTop = (behavior: ScrollBehavior = 'auto') => {
+    if (typeof window === 'undefined') return;
+    window.scrollTo({
+      top: 0,
+      behavior,
+    });
+  };
+
   const navigateToPath = (path: string) => {
     if (typeof window === 'undefined') return;
     window.history.pushState({}, '', path);
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth',
-    });
+    scrollToTop('auto');
   };
 
   // Update browser URL for client-side routing
