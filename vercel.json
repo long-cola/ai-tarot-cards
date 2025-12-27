@@ -10,9 +10,10 @@
     { "source": "/api/admin/(.*)", "destination": "/api/admin" },
     { "source": "/api/share/(.*)", "destination": "/api/share" },
     { "source": "/api/share", "destination": "/api/share" },
+    { "source": "/admin", "destination": "/admin.html" },
     { "source": "/zh", "destination": "/" },
     { "source": "/zh/(.*)", "destination": "/" },
-    { "source": "/admin", "destination": "/admin.html" }
+    { "source": "/(.*)", "destination": "/" }
   ],
   "functions": {
     "api/*.ts": {
