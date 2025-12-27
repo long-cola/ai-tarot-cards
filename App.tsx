@@ -558,7 +558,8 @@ const App: React.FC = () => {
     // Extract route from pathname (handle both /en/route and /zh/route)
     const pathParts = pathname.split('/').filter(p => p);
     // Remove language prefix if present
-    const route = pathParts.filter(p => p !== 'zh' && p !== 'en')[0];
+    const routeParts = pathParts.filter(p => p !== 'zh' && p !== 'en');
+    const route = routeParts[0];
 
     // Check for page routes
     if (route === 'pricing') {
@@ -571,19 +572,32 @@ const App: React.FC = () => {
       setShareDataLoaded(true);
       return;
     }
-    if (route === 'bigtopic') {
-      setShowTopicListPage(true);
-      setShareDataLoaded(true);
-      // Load topics
-      setTopicsLoading(true);
-      listTopics().then(res => {
-        setTopicList(res.topics || []);
-        if (res.quota) setTopicQuota(res.quota);
-      }).catch(err => {
-        console.error("load topics failed", err);
-      }).finally(() => {
-        setTopicsLoading(false);
-      });
+
+    // Handle /topics or /bigtopic (both map to topics list)
+    if (route === 'topics' || route === 'bigtopic') {
+      // Check if there's a topic ID in the path (e.g., /topics/:id)
+      const topicId = routeParts[1];
+
+      if (topicId) {
+        // Load topic detail page
+        console.log('[Router] Loading topic detail for ID:', topicId);
+        setShareDataLoaded(true);
+        loadTopicDetail(topicId, false); // Don't update URL again
+      } else {
+        // Load topics list page
+        setShowTopicListPage(true);
+        setShareDataLoaded(true);
+        // Load topics
+        setTopicsLoading(true);
+        listTopics().then(res => {
+          setTopicList(res.topics || []);
+          if (res.quota) setTopicQuota(res.quota);
+        }).catch(err => {
+          console.error("load topics failed", err);
+        }).finally(() => {
+          setTopicsLoading(false);
+        });
+      }
       return;
     }
 
@@ -652,7 +666,10 @@ const App: React.FC = () => {
     const handlePopState = () => {
       const pathname = window.location.pathname;
       const pathParts = pathname.split('/').filter(p => p);
-      const route = pathParts.filter(p => p !== 'zh' && p !== 'en')[0];
+      const routeParts = pathParts.filter(p => p !== 'zh' && p !== 'en');
+      const route = routeParts[0];
+
+      console.log('[PopState] Navigating to:', pathname, 'Route parts:', routeParts);
 
       // Reset all page states
       setShowPricingPage(false);
@@ -668,18 +685,27 @@ const App: React.FC = () => {
         setShowPricingPage(true);
       } else if (route === 'blog') {
         setShowBlogPage(true);
-      } else if (route === 'bigtopic') {
-        setShowTopicListPage(true);
-        // Load topics
-        setTopicsLoading(true);
-        listTopics().then(res => {
-          setTopicList(res.topics || []);
-          if (res.quota) setTopicQuota(res.quota);
-        }).catch(err => {
-          console.error("load topics failed", err);
-        }).finally(() => {
-          setTopicsLoading(false);
-        });
+      } else if (route === 'topics' || route === 'bigtopic') {
+        const topicId = routeParts[1];
+
+        if (topicId) {
+          // Load topic detail page
+          console.log('[PopState] Loading topic detail for ID:', topicId);
+          loadTopicDetail(topicId, false); // Don't update URL again
+        } else {
+          // Load topics list page
+          setShowTopicListPage(true);
+          // Load topics
+          setTopicsLoading(true);
+          listTopics().then(res => {
+            setTopicList(res.topics || []);
+            if (res.quota) setTopicQuota(res.quota);
+          }).catch(err => {
+            console.error("load topics failed", err);
+          }).finally(() => {
+            setTopicsLoading(false);
+          });
+        }
       }
       // If no route matches, user is back on home page (default state)
     };
@@ -1549,7 +1575,7 @@ const App: React.FC = () => {
     }
   };
 
-  const loadTopicDetail = async (id: string) => {
+  const loadTopicDetail = async (id: string, updateUrl = true) => {
     setTopicsLoading(true);
     setTopicError('');
     try {
@@ -1566,6 +1592,14 @@ const App: React.FC = () => {
       // Show detail page instead of modal
       setShowTopicListPage(false);
       setShowTopicDetailPage(true);
+
+      // Update URL to reflect the current topic
+      if (updateUrl) {
+        const langPrefix = language === 'zh' ? '/zh' : '';
+        const newUrl = `${langPrefix}/topics/${id}`;
+        window.history.pushState({ topicId: id }, '', newUrl);
+        console.log('[loadTopicDetail] Updated URL to:', newUrl);
+      }
 
       // Scroll to top to show the event input form
       setTimeout(() => {
@@ -2058,6 +2092,9 @@ Card drawn: ${currentCardStr}`;
                 setShowTopicListPage(true);
                 setSelectedTopic(null);
                 setTopicEvents([]);
+                // Update URL to topics list
+                const langPrefix = language === 'zh' ? '/zh' : '';
+                window.history.pushState({}, '', `${langPrefix}/topics`);
               }}
               onEventAdded={(newEvent) => {
                 setTopicEvents(prev => [...prev, newEvent]);
