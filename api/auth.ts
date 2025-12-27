@@ -150,12 +150,14 @@ async function handleGoogleCallback(req: any, res: any) {
     let user;
     if (existing.rows.length) {
       console.log('[OAuth Callback] Existing user found, updating...');
-      user = existing.rows[0];
-      // Update user info
-      await pool.query(
-        `UPDATE users SET email=$1, name=$2, avatar=$3, updated_at=NOW() WHERE id=$4`,
-        [email, name, avatar, user.id]
+      const existingUserId = existing.rows[0].id;
+      // Update user info and return updated row
+      const updateResult = await pool.query(
+        `UPDATE users SET email=$1, name=$2, avatar=$3, updated_at=NOW() WHERE id=$4 RETURNING *`,
+        [email, name, avatar, existingUserId]
       );
+      user = updateResult.rows[0];
+      console.log('[OAuth Callback] User updated, id:', user.id);
     } else {
       console.log('[OAuth Callback] Creating new user...');
       // Create new user
@@ -168,7 +170,12 @@ async function handleGoogleCallback(req: any, res: any) {
     }
 
     // Sign JWT and set cookie
-    console.log('[OAuth Callback] Signing JWT for user:', user.id);
+    console.log('[OAuth Callback] Signing JWT for user:', {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      membership_expires_at: user.membership_expires_at,
+    });
     const token = signToken(user);
     setAuthCookie(res, token);
     console.log('[OAuth Callback] Cookie set with token (length:', token?.length, ')');
