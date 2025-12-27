@@ -72,12 +72,10 @@ export const BigTopicIntroPage: React.FC<BigTopicIntroPageProps> = ({
             value={topicTitle}
             onChange={(e) => setTopicTitle(e.target.value)}
             placeholder={isZh ? '请输入新命题' : 'Please enter the new topic'}
-            className="w-full max-w-[1000px] px-6 py-6 text-[20px] md:text-[24px] font-semibold text-center rounded-2xl"
+            className="w-full max-w-[1000px] px-6 py-6 text-[20px] md:text-[24px] font-semibold text-center rounded-2xl outline-none"
             style={{
-              background: 'rgba(168, 85, 247, 0.1)',
+              background: 'transparent',
               border: '1px solid rgba(168, 85, 247, 0.3)',
-              boxShadow: 'inset 0px 2px 4px 1px rgba(0, 0, 0, 0.05)',
-              backdropFilter: 'blur(12px)',
               color: topicTitle ? '#E8E3FF' : '#9B83C6',
             }}
             onKeyDown={(e) => {
