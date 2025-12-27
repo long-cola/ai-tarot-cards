@@ -1243,6 +1243,16 @@ const App: React.FC = () => {
     // Note: Don't set isUpgrading to false on success since we're redirecting
   };
 
+  // Fisher-Yates shuffle algorithm for proper randomization
+  const shuffleArray = <T,>(array: T[]): T[] => {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  };
+
   // Handle Input Submit
   const handleStart = () => {
     if (!question.trim()) return;
@@ -1255,7 +1265,7 @@ const App: React.FC = () => {
   useEffect(() => {
     if (phase === AppPhase.SHUFFLING) {
       const shuffleInterval = setInterval(() => {
-        setDeck(prev => [...prev].sort(() => Math.random() - 0.5));
+        setDeck(prev => shuffleArray(prev));
       }, 100);
 
       const timer = setTimeout(() => {

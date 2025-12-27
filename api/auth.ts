@@ -77,8 +77,16 @@ async function handleGoogleCallback(req: any, res: any) {
     CLIENT_ORIGINS,
   } = process.env;
 
-  const clientOrigin = CLIENT_ORIGINS?.split(',')[0] || 'https://ai-tarotcard.com';
+  // Prioritize SERVER_URL for production environments
+  // Only use CLIENT_ORIGINS for local development
+  const isLocalDev = SERVER_URL.includes('localhost') || SERVER_URL.includes('127.0.0.1');
+  const clientOrigin = isLocalDev && CLIENT_ORIGINS
+    ? CLIENT_ORIGINS.split(',')[0]
+    : SERVER_URL;
 
+  console.log('[OAuth Callback] Environment - SERVER_URL:', SERVER_URL);
+  console.log('[OAuth Callback] Environment - Is Local Dev:', isLocalDev);
+  console.log('[OAuth Callback] Redirect to:', clientOrigin);
   console.log('[OAuth Callback] Started, code present:', !!code);
 
   if (!code) {
