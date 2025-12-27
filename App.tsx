@@ -8,6 +8,7 @@ import { Navbar } from './components/Navbar';
 import { HomePage } from './components/HomePage';
 import { BlogListPage } from './components/BlogListPage';
 import { BlogDetailPage } from './components/BlogDetailPage';
+import { BigTopicIntroPage } from './components/BigTopicIntroPage';
 import { TopicListPage } from './components/TopicListPage';
 import { TopicDetailPage } from './components/TopicDetailPage';
 import { ReadingResultPage } from './components/ReadingResultPage';
@@ -517,6 +518,7 @@ const App: React.FC = () => {
   const eventShuffleInterval = useRef<NodeJS.Timeout | null>(null);
   const eventShuffleTimeout = useRef<NodeJS.Timeout | null>(null);
   const [shareDataLoaded, setShareDataLoaded] = useState(false);
+  const [showBigTopicIntroPage, setShowBigTopicIntroPage] = useState(false);
   const [showTopicListPage, setShowTopicListPage] = useState(false);
   const [showTopicDetailPage, setShowTopicDetailPage] = useState(false);
   const [showSharedReadingPage, setShowSharedReadingPage] = useState(false);
@@ -525,6 +527,7 @@ const App: React.FC = () => {
   const [showBlogPage, setShowBlogPage] = useState(false);
   const [selectedBlogId, setSelectedBlogId] = useState<string | null>(null);
   const [showPricingPage, setShowPricingPage] = useState(false);
+  const [pendingTopicTitle, setPendingTopicTitle] = useState<string>('');
   const [cookieConsent, setCookieConsent] = useState<CookieConsentStatus>(() => getCookieConsent());
   const [showCookieSettings, setShowCookieSettings] = useState(false);
   const [sharedReadingId, setSharedReadingId] = useState<string | null>(null);
@@ -1401,6 +1404,14 @@ const App: React.FC = () => {
     }
   }, [phase, drawnCards, question, language]);
 
+  // Auto-save topic when reading completes from Big Topic Intro flow
+  useEffect(() => {
+    if (reading && pendingTopicTitle && user && !createdTopicId && !isSavingTopic) {
+      console.log('[Auto-save] Detected Big Topic flow, auto-saving topic...');
+      handleSaveTopic();
+    }
+  }, [reading, pendingTopicTitle, user, createdTopicId]);
+
   const handleSaveTopic = async () => {
     if (!user) {
       setTopicError(language === 'zh' ? '请先登录后再创建命题。' : 'Please log in to save as a topic.');
@@ -1541,9 +1552,11 @@ const App: React.FC = () => {
     setShareMode(false);
     setShareLink('');
     setShareError('');
+    setShowBigTopicIntroPage(false);
     setShowTopicListPage(false);
     setShowTopicDetailPage(false);
     setShowPricingPage(false);
+    setPendingTopicTitle('');
     // Clean up any pending reading from localStorage
     localStorage.removeItem('pendingReading');
   };
@@ -1943,23 +1956,14 @@ Card drawn: ${currentCardStr}`;
           updateUrl('/');
           resetApp();
         }}
-        onTopicsClick={async () => {
-          setShowTopicListPage(true);
+        onTopicsClick={() => {
+          // Show Big Topic Intro Page
+          setShowBigTopicIntroPage(true);
+          setShowTopicListPage(false);
           setShowBlogPage(false);
           setShowPricingPage(false);
+          setShowTopicDetailPage(false);
           updateUrl('bigtopic');
-          setTopicError('');
-          setTopicsLoading(true);
-          try {
-            const res = await listTopics();
-            setTopicList(res.topics || []);
-            if (res.quota) setTopicQuota(res.quota);
-          } catch (err) {
-            console.error("load topics failed", err);
-            setTopicError(language === 'zh' ? '加载命题列表失败' : 'Failed to load topics');
-          } finally {
-            setTopicsLoading(false);
-          }
         }}
         onBlogClick={() => {
           setShowBlogPage(true);
@@ -2083,8 +2087,42 @@ Card drawn: ${currentCardStr}`;
           />
         )}
 
+        {/* Big Topic Intro Page */}
+        {showBigTopicIntroPage && !showTopicListPage && !showTopicDetailPage && !showSharedReadingPage && !showPrivacyPage && !showTermsPage && !showBlogPage && !showPricingPage && (
+          <BigTopicIntroPage
+            language={language}
+            onStartNewTopic={(title) => {
+              // Store the topic title and start the reading flow
+              setShowBigTopicIntroPage(false);
+              resetApp();
+              // Set these AFTER resetApp to avoid being cleared
+              setPendingTopicTitle(title);
+              setQuestion(title);
+              setPhase(AppPhase.SHUFFLING);
+              setTimeout(() => setPhase(AppPhase.DRAWING), 1500);
+            }}
+            onViewMyTopics={async () => {
+              // Load and show topics list
+              setShowBigTopicIntroPage(false);
+              setShowTopicListPage(true);
+              setTopicError('');
+              setTopicsLoading(true);
+              try {
+                const res = await listTopics();
+                setTopicList(res.topics || []);
+                if (res.quota) setTopicQuota(res.quota);
+              } catch (err) {
+                console.error("load topics failed", err);
+                setTopicError(language === 'zh' ? '加载命题列表失败' : 'Failed to load topics');
+              } finally {
+                setTopicsLoading(false);
+              }
+            }}
+          />
+        )}
+
         {/* Topic List Page */}
-        {showTopicListPage && !showTopicDetailPage && !showSharedReadingPage && !showPrivacyPage && !showTermsPage && !showBlogPage && (
+        {showTopicListPage && !showTopicDetailPage && !showSharedReadingPage && !showPrivacyPage && !showTermsPage && !showBlogPage && !showPricingPage && (
           <div className="px-4 py-4 w-full">
             <TopicListPage
               topics={topicList}
@@ -2129,7 +2167,7 @@ Card drawn: ${currentCardStr}`;
         )}
 
         {/* Phase: INPUT */}
-        {phase === AppPhase.INPUT && !showTopicListPage && !showTopicDetailPage && !showSharedReadingPage && !showPrivacyPage && !showTermsPage && !showBlogPage && !showPricingPage && (
+        {phase === AppPhase.INPUT && !showBigTopicIntroPage && !showTopicListPage && !showTopicDetailPage && !showSharedReadingPage && !showPrivacyPage && !showTermsPage && !showBlogPage && !showPricingPage && (
           <HomePage
             language={language}
             question={question}
@@ -2149,7 +2187,7 @@ Card drawn: ${currentCardStr}`;
         )}
 
         {/* Phase: SHUFFLING */}
-        {phase === AppPhase.SHUFFLING && !showTopicListPage && !showTopicDetailPage && !showSharedReadingPage && !showPrivacyPage && !showTermsPage && !showBlogPage && !showPricingPage && (
+        {phase === AppPhase.SHUFFLING && !showBigTopicIntroPage && !showTopicListPage && !showTopicDetailPage && !showSharedReadingPage && !showPrivacyPage && !showTermsPage && !showBlogPage && !showPricingPage && (
           <div className="flex flex-col items-center justify-center flex-1 animate-fade-in w-full">
              <div className="relative w-40 h-64">
                 {[0, 1, 2, 3, 4, 5].map((i) => (
@@ -2176,7 +2214,7 @@ Card drawn: ${currentCardStr}`;
         )}
 
         {/* Phase: DRAWING */}
-        {phase === AppPhase.DRAWING && !showTopicListPage && !showTopicDetailPage && !showSharedReadingPage && !showPrivacyPage && !showTermsPage && !showBlogPage && !showPricingPage && (
+        {phase === AppPhase.DRAWING && !showBigTopicIntroPage && !showTopicListPage && !showTopicDetailPage && !showSharedReadingPage && !showPrivacyPage && !showTermsPage && !showBlogPage && !showPricingPage && (
           <div className="w-full h-full flex flex-col animate-fade-in relative pt-20 md:pt-24">
             <div className="text-center z-20 mb-6 md:mb-8">
                <h2 className="text-xl text-purple-100 mb-1 tracking-widest font-mystic">{t.drawTitle}</h2>
@@ -2255,7 +2293,7 @@ Card drawn: ${currentCardStr}`;
         )}
 
         {/* Phase: REVEAL & ANALYSIS */}
-        {(phase === AppPhase.REVEAL || phase === AppPhase.ANALYSIS) && !showTopicListPage && !showTopicDetailPage && !showSharedReadingPage && !showPrivacyPage && !showTermsPage && !showBlogPage && !showPricingPage && (
+        {(phase === AppPhase.REVEAL || phase === AppPhase.ANALYSIS) && !showBigTopicIntroPage && !showTopicListPage && !showTopicDetailPage && !showSharedReadingPage && !showPrivacyPage && !showTermsPage && !showBlogPage && !showPricingPage && (
           <ReadingResultPage
             question={question}
             cards={drawnCards}
