@@ -1539,11 +1539,20 @@ const App: React.FC = () => {
     }
   };
 
+  const navigateToPath = (path: string) => {
+    if (typeof window === 'undefined') return;
+    window.history.pushState({}, '', path);
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth',
+    });
+  };
+
   // Update browser URL for client-side routing
   const updateUrl = (route: string) => {
     const langPrefix = language === 'zh' ? '/zh' : '';
     const newUrl = route === '/' ? langPrefix || '/' : `${langPrefix}/${route}`;
-    window.history.pushState({}, '', newUrl);
+    navigateToPath(newUrl);
   };
 
   const resetApp = () => {
@@ -1573,6 +1582,34 @@ const App: React.FC = () => {
     setPendingTopicTitle('');
     // Clean up any pending reading from localStorage
     localStorage.removeItem('pendingReading');
+  };
+
+  const goToDailyReading = () => {
+    setShowBlogPage(false);
+    setSelectedBlogId(null);
+    setShowPricingPage(false);
+    setShowBigTopicIntroPage(false);
+    setShowTopicListPage(false);
+    setShowTopicDetailPage(false);
+    setShowSharedReadingPage(false);
+    setShowPrivacyPage(false);
+    setShowTermsPage(false);
+    resetApp();
+    navigateToPath('/');
+  };
+
+  const goToBigTopic = () => {
+    setShowBlogPage(false);
+    setSelectedBlogId(null);
+    setShowPricingPage(false);
+    setShowTopicListPage(false);
+    setShowTopicDetailPage(false);
+    setShowSharedReadingPage(false);
+    setShowPrivacyPage(false);
+    setShowTermsPage(false);
+    resetApp();
+    setShowBigTopicIntroPage(true);
+    navigateToPath('/zh/bigtopic');
   };
 
   const toggleLanguage = () => {
@@ -2055,8 +2092,7 @@ Card drawn: ${currentCardStr}`;
           <PricingPage
             language={language}
             onStartReading={() => {
-              setShowPricingPage(false);
-              resetApp();
+              goToDailyReading();
             }}
             onUpgrade={() => setShowPaywall(true)}
           />
@@ -2067,12 +2103,10 @@ Card drawn: ${currentCardStr}`;
           <BlogListPage
             language={language}
             onStartReading={() => {
-              setShowBlogPage(false);
-              resetApp();
+              goToDailyReading();
             }}
             onStartBigTopic={() => {
-              setShowBlogPage(false);
-              setShowTopicListPage(true);
+              goToBigTopic();
             }}
             onBlogClick={(blogId) => {
               setSelectedBlogId(blogId);
@@ -2089,14 +2123,10 @@ Card drawn: ${currentCardStr}`;
               setSelectedBlogId(null);
             }}
             onStartReading={() => {
-              setShowBlogPage(false);
-              setSelectedBlogId(null);
-              resetApp();
+              goToDailyReading();
             }}
             onStartBigTopic={() => {
-              setShowBlogPage(false);
-              setSelectedBlogId(null);
-              setShowTopicListPage(true);
+              goToBigTopic();
             }}
           />
         )}
