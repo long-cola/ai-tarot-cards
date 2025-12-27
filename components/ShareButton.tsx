@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { createShare, copyShareToClipboard, CreateShareParams } from '../services/shareService';
 import { trackShare } from '../services/gaTracking';
 import { Language } from '../types';
@@ -211,7 +212,7 @@ export const ShareButton: React.FC<ShareButtonProps> = ({
     : 'bg-[rgba(189,161,255,0.2)] border border-[rgba(189,161,255,0.2)] text-[#BDA1FF] opacity-80 hover:opacity-90';
 
   return (
-    <div className="relative inline-block">
+    <>
       <button
         onClick={handleShareClick}
         disabled={isSharing}
@@ -235,11 +236,12 @@ export const ShareButton: React.FC<ShareButtonProps> = ({
         )}
       </button>
 
-      {/* Share options modal */}
-      {showShareModal && (
+      {/* Share options modal - Rendered via Portal */}
+      {showShareModal && typeof document !== 'undefined' && createPortal(
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          className="fixed inset-0 flex items-center justify-center p-4"
           style={{
+            zIndex: 9999,
             background: 'rgba(0, 0, 0, 0.6)',
             backdropFilter: 'blur(8px)',
           }}
@@ -304,12 +306,19 @@ export const ShareButton: React.FC<ShareButtonProps> = ({
               {isZh ? '取消' : 'Cancel'}
             </button>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
-      {/* Success toast */}
-      {showSuccess && (
-        <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 animate-slideDown">
+      {/* Success toast - Rendered via Portal */}
+      {showSuccess && typeof document !== 'undefined' && createPortal(
+        <div
+          className="fixed left-1/2 transform -translate-x-1/2 animate-slideDown"
+          style={{
+            top: '80px',
+            zIndex: 10000,
+          }}
+        >
           <div className="flex items-center gap-3 px-6 py-4 rounded-lg shadow-xl"
             style={{
               background: 'rgba(40, 36, 70, 0.95)',
@@ -325,7 +334,8 @@ export const ShareButton: React.FC<ShareButtonProps> = ({
               {isZh ? '成功！请分享给朋友们吧' : 'Success! Share it with your friends'}
             </span>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       <style>{`
@@ -343,6 +353,6 @@ export const ShareButton: React.FC<ShareButtonProps> = ({
           animation: slideDown 0.3s ease-out;
         }
       `}</style>
-    </div>
+    </>
   );
 };
