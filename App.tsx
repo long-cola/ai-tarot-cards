@@ -1442,13 +1442,36 @@ const App: React.FC = () => {
       }, 200);
     } catch (err: any) {
       console.error("topic save failed", err);
+      const status = err?.status;
       const reason = err?.data?.reason;
-      if (reason === 'topic_quota_exhausted') {
-        setTopicError(language === 'zh' ? '命题额度已用尽，请稍后重试或升级会员。' : 'Topic quota reached. Please retry or upgrade.');
-        setUpgradeHint(language === 'zh' ? '命题额度已用尽，请升级会员或兑换会员码。' : 'Topic quota reached. Upgrade or redeem.');
-        setShowPaywall(true);
+      const errorMessage = err?.data?.message;
+
+      // Check if it's a quota-related error (403 status or specific reason codes)
+      const isQuotaError = status === 403 ||
+                          reason === 'topic_quota_exhausted' ||
+                          reason === 'free_weekly_quota_exceeded' ||
+                          reason === 'pro_quota_exceeded';
+
+      if (isQuotaError) {
+        // Show user-friendly error message
+        const errorText = errorMessage ||
+                         (language === 'zh' ? '命题额度已用尽' : 'Topic quota reached');
+        setTopicError(errorText);
+
+        // Show upgrade hint and paywall for free users
+        if (user?.plan === 'free' || !user?.membership_expires_at) {
+          setUpgradeHint(language === 'zh'
+            ? '本周免费配额已用完，升级 Pro 享每周 30 个命题'
+            : 'Free weekly quota exhausted. Upgrade to Pro for 30 topics per week.');
+          setShowPaywall(true);
+        } else {
+          // Pro users who hit quota
+          setUpgradeHint(language === 'zh'
+            ? '已达本周命题上限（30个），下周一重置'
+            : 'Weekly topic limit reached (30). Resets next Monday.');
+        }
       } else {
-        setTopicError(language === 'zh' ? '保存失败，请稍后重试或升级会员。' : 'Save failed, retry or upgrade.');
+        setTopicError(language === 'zh' ? '保存失败，请稍后重试。' : 'Save failed, please retry.');
       }
     } finally {
       setIsSavingTopic(false);

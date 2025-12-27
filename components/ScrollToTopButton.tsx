@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 
 interface ScrollToTopButtonProps {
   /**
@@ -13,6 +14,7 @@ interface ScrollToTopButtonProps {
  *
  * A fixed position button that appears in the bottom-right corner
  * when the user scrolls down. Clicking it smoothly scrolls back to the top.
+ * Uses React Portal to render directly to document.body for proper z-index layering.
  */
 export const ScrollToTopButton: React.FC<ScrollToTopButtonProps> = ({
   showAfter = 300
@@ -40,14 +42,14 @@ export const ScrollToTopButton: React.FC<ScrollToTopButtonProps> = ({
     });
   };
 
-  if (!isVisible) {
+  if (!isVisible || typeof document === 'undefined') {
     return null;
   }
 
-  return (
+  return createPortal(
     <button
       onClick={scrollToTop}
-      className="fixed z-50 transition-all duration-300 hover:bg-white/25"
+      className="fixed transition-all duration-300 hover:bg-white/25"
       style={{
         display: 'flex',
         flexDirection: 'row',
@@ -62,6 +64,7 @@ export const ScrollToTopButton: React.FC<ScrollToTopButtonProps> = ({
         borderRadius: '100px',
         backdropFilter: 'blur(8px)',
         WebkitBackdropFilter: 'blur(8px)',
+        zIndex: 9999,
       }}
       aria-label="Scroll to top"
     >
@@ -80,6 +83,7 @@ export const ScrollToTopButton: React.FC<ScrollToTopButtonProps> = ({
           strokeLinejoin="round"
         />
       </svg>
-    </button>
+    </button>,
+    document.body
   );
 };
