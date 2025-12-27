@@ -2062,6 +2062,7 @@ Card drawn: ${currentCardStr}`;
               onEventAdded={(newEvent) => {
                 setTopicEvents(prev => [...prev, newEvent]);
               }}
+              onUpgrade={() => setShowPaywall(true)}
             />
           </div>
         )}

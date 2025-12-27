@@ -16,6 +16,7 @@ interface TopicDetailPageProps {
   onEventAdded?: (event: TopicEvent) => void;
   plan?: Plan;
   eventUsage?: { used: number; remaining: number | null };
+  onUpgrade?: () => void;
 }
 
 const markdownComponents = {
@@ -54,6 +55,7 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
   onEventAdded,
   plan = 'free',
   eventUsage,
+  onUpgrade,
 }) => {
   const isZh = language === 'zh';
   const [expandedEvents, setExpandedEvents] = useState<Set<string>>(new Set(['baseline']));
@@ -230,9 +232,14 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
 
       // For free users: check if remaining is 0 (or null means no limit for members)
       if (plan === 'free' && remaining !== null && remaining <= 0) {
-        setError(isZh
-          ? '该命题事件次数已用完（免费用户每命题3次），请升级会员'
-          : 'Event quota exhausted for this topic (free: 3 events per topic). Please upgrade.');
+        const errorMsg = isZh
+          ? '该命题事件次数已用完（免费用户每命题3次）'
+          : 'Event quota exhausted for this topic (free: 3 events per topic).';
+        setError(errorMsg);
+        // Show paywall immediately for free users
+        if (onUpgrade) {
+          onUpgrade();
+        }
         return;
       }
 
@@ -386,7 +393,12 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
       console.error("[TopicDetailPage] Failed to generate or save event", err);
       const reason = err?.data?.reason;
       if (reason === 'event_quota_exhausted') {
-        setError(isZh ? '该命题事件次数已用完，请升级会员' : 'Event quota exhausted for this topic');
+        const errorMsg = isZh ? '该命题事件次数已用完（免费用户每命题3次）' : 'Event quota exhausted for this topic (free: 3 events per topic).';
+        setError(errorMsg);
+        // Show paywall for free users
+        if (plan === 'free' && onUpgrade) {
+          onUpgrade();
+        }
       } else if (reason === 'downgraded_topic_locked') {
         setError(isZh ? '降级后仅可在最近的命题继续添加事件' : 'Only the latest topic can receive events after downgrade');
       } else {
@@ -472,7 +484,20 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
                 </button>
               </div>
               {error && (
-                <p className="text-center text-sm text-red-400">{error}</p>
+                <div className="text-center">
+                  <p className="text-sm text-red-400 inline">
+                    {error}
+                  </p>
+                  {/* Show upgrade button for quota errors */}
+                  {plan === 'free' && error.includes('quota') && onUpgrade && (
+                    <button
+                      onClick={onUpgrade}
+                      className="ml-2 text-sm text-amber-400 hover:text-amber-300 underline font-semibold transition-colors"
+                    >
+                      {isZh ? '升级会员' : 'Upgrade'}
+                    </button>
+                  )}
+                </div>
               )}
             </div>
 
