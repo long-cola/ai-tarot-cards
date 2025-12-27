@@ -34,22 +34,7 @@ export const BigTopicIntroPage: React.FC<BigTopicIntroPageProps> = ({
   };
 
   return (
-    <div className="min-h-screen pt-28 md:pt-32 pb-12 px-4 md:px-6 relative overflow-hidden" style={{ background: '#140F2A' }}>
-      {/* Background decorations */}
-      <div className="absolute inset-0 pointer-events-none opacity-30">
-        <div className="absolute w-full h-full" style={{
-          backgroundImage: 'url(/img/starry-bg.png)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-        }} />
-      </div>
-
-      {/* Blur overlays */}
-      <div className="absolute top-0 left-0 w-full h-[400px]" style={{
-        background: '#140F2A',
-        filter: 'blur(200px)',
-      }} />
-
+    <div className="min-h-screen pt-28 md:pt-32 pb-12 px-4 md:px-6 relative">
       <div className="max-w-[1000px] mx-auto relative z-10">
         {/* Hero Section */}
         <div className="flex flex-col items-center gap-3 mb-12 md:mb-16">
