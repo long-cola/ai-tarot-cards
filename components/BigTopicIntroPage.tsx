@@ -35,6 +35,19 @@ export const BigTopicIntroPage: React.FC<BigTopicIntroPageProps> = ({
 
   return (
     <div className="min-h-screen pt-28 md:pt-32 pb-12 px-4 md:px-6 relative">
+      {/* Background Pattern */}
+      <div
+        className="fixed inset-0 opacity-30 pointer-events-none"
+        style={{
+          backgroundImage: 'url(/img/bg.png)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          width: '100vw',
+          height: '100vh',
+        }}
+      />
+
       <div className="max-w-[1000px] mx-auto relative z-10">
         {/* Hero Section */}
         <div className="flex flex-col items-center gap-3 mb-12 md:mb-16">

@@ -1357,6 +1357,20 @@ const App: React.FC = () => {
           return;
         }
 
+        // If this is Big Topic flow (will auto-save), check topic quota before fetching reading
+        if (pendingTopicTitle && topicQuota) {
+          if (topicQuota.topic_quota_remaining <= 0) {
+            // Topic quota exhausted, don't fetch reading, show in-page upgrade prompt
+            console.log('[First Reading] Topic quota exhausted for Big Topic flow, showing upgrade prompt');
+            setReading('');
+            setIsReadingLoading(false);
+            setUpgradeHint(language === 'zh'
+              ? '本周免费配额已用完，升级 Pro 享每周 30 个命题'
+              : 'Free weekly quota exhausted. Upgrade to Pro for 30 topics per week.');
+            return;
+          }
+        }
+
         // User is logged in, proceed with loading and fetching
         setIsReadingLoading(true);
 
@@ -1402,7 +1416,7 @@ const App: React.FC = () => {
 
       fetchReading();
     }
-  }, [phase, drawnCards, question, language]);
+  }, [phase, drawnCards, question, language, pendingTopicTitle, topicQuota]);
 
   // Auto-save topic when reading completes from Big Topic Intro flow
   useEffect(() => {
