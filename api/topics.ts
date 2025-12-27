@@ -10,8 +10,21 @@ import {
 export default async function handler(req: any, res: any) {
   const user = getUserFromRequest(req);
 
+  console.log('[topics] User from JWT:', {
+    exists: !!user,
+    id: user?.id,
+    email: user?.email,
+    id_type: typeof user?.id,
+  });
+
   if (!user) {
     return res.status(401).json({ ok: false, message: 'not_authenticated' });
+  }
+
+  // Additional check: if user exists but id is undefined, treat as unauthenticated
+  if (!user.id) {
+    console.error('[topics] User object exists but id is undefined! This indicates a broken JWT token.');
+    return res.status(401).json({ ok: false, message: 'invalid_token', reason: 'user_id_missing' });
   }
 
   const pool = getPool();
@@ -20,7 +33,7 @@ export default async function handler(req: any, res: any) {
   const path = fullPath.split('?')[0];
   const method = req.method;
 
-  console.log('[topics] Request:', method, path);
+  console.log('[topics] Request:', method, path, 'User ID:', user.id);
 
   try {
     // Extract topic ID from path if present
