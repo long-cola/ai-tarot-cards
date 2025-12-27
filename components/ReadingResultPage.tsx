@@ -351,8 +351,8 @@ export const ReadingResultPage: React.FC<ReadingResultPageProps> = ({
               <div className="flex flex-col items-start gap-4 md:gap-[20px] w-full">
                 <p className="text-[12px] md:text-[14px] leading-[18px] md:leading-[22px] text-center w-full px-2" style={{ color: 'rgba(205, 191, 238, 0.5)' }}>
                   {isZh
-                    ? '将你的问题创建为一个人生命题吧！创建后，当你需要对这个人生命题进行新的启示时，可以再次进行抽牌，延续人生命题，查看演进记录。'
-                    : 'Create a life topic from your question! After creation, when you need new insights, you can draw cards again to continue and view the evolution.'
+                    ? '将你的问题创建为一个人生大命题吧！创建后，当你需要对这个人生大命题进行新的启示时，可以再次进行抽牌，延续人生大命题，查看演进记录。'
+                    : 'Create a big topic from your question! After creation, when you need new insights, you can draw cards again to continue and view the evolution.'
                   }
                 </p>
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-start gap-3 md:gap-[20px] w-full">
@@ -370,7 +370,7 @@ export const ReadingResultPage: React.FC<ReadingResultPageProps> = ({
                       ? (isZh ? '已创建命题' : 'Topic Created')
                       : isSaving
                       ? (isZh ? '保存中...' : 'Saving...')
-                      : (isZh ? '保存为人生命题' : 'Save as Life Topic')}
+                      : (isZh ? '保存为人生大命题' : 'Save as Big Topic')}
                   </button>
                   <button
                     onClick={onTryAgain}

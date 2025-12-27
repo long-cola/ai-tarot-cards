@@ -138,7 +138,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             className="text-white hover:text-white/80 transition-colors text-[16px]"
             style={{ fontWeight: 400, fontFamily: "'Noto Serif SC', serif" }}
           >
-            {isZh ? '人生命题' : 'Life Topics'}
+            {isZh ? '人生大命题' : 'Big Topics'}
           </button>
           <button
             onClick={onPricingClick}
@@ -422,7 +422,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             >
               <span className="text-xl">📖</span>
               <span className="text-white text-sm font-medium">
-                {isZh ? '人生命题' : 'Life Topics'}
+                {isZh ? '人生大命题' : 'Big Topics'}
               </span>
             </button>
             <button

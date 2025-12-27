@@ -103,15 +103,15 @@ export const FAQSchema: React.FC<FAQSchemaProps> = ({ language }) => {
         "name": "What's the difference between free users and members?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Free users can create 1 life topic per week with up to 3 event readings per topic. Pro members can create 30 topics per week with up to 500 event readings per topic, ideal for users who want to deeply explore different life stages and events."
+          "text": "Free users can create 1 big topic per week with up to 3 event readings per topic. Pro members can create 30 topics per week with up to 500 event readings per topic, ideal for users who want to deeply explore different life stages and events."
         }
       },
       {
         "@type": "Question",
-        "name": "What is a Life Topic?",
+        "name": "What is a Big Topic?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "A Life Topic is an important question or life theme you can track long-term. After creating a topic, you can continue drawing cards for different stages and events related to this theme, viewing the evolution trajectory and receiving ongoing guidance. For example, a 'Career Development' topic can be consulted when changing jobs, getting promoted, or starting a business."
+          "text": "A Big Topic is an important question or life theme you can track long-term. After creating a topic, you can continue drawing cards for different stages and events related to this theme, viewing the evolution trajectory and receiving ongoing guidance. For example, a 'Career Development' topic can be consulted when changing jobs, getting promoted, or starting a business."
         }
       },
       {

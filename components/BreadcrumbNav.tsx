@@ -20,7 +20,7 @@ interface BreadcrumbNavProps {
  * <BreadcrumbNav
  *   items={[
  *     { label: '首页', url: '/' },
- *     { label: '人生命题', url: '/?view=topics' },
+ *     { label: '人生大命题', url: '/?view=topics' },
  *     { label: '我的命题' } // Current page (no url)
  *   ]}
  *   language="zh"
@@ -120,7 +120,7 @@ export const getBreadcrumbsForTopicList = (language: Language): BreadcrumbItem[]
   const prefix = isZh ? '/zh' : '';
   return [
     { label: isZh ? '首页' : 'Home', url: `${prefix}/` },
-    { label: isZh ? '人生命题' : 'Life Topics', url: `${prefix}/?view=topics` }
+    { label: isZh ? '人生大命题' : 'Big Topics', url: `${prefix}/?view=topics` }
   ];
 };
 
@@ -132,7 +132,7 @@ export const getBreadcrumbsForTopicDetail = (
   const prefix = isZh ? '/zh' : '';
   return [
     { label: isZh ? '首页' : 'Home', url: `${prefix}/` },
-    { label: isZh ? '人生命题' : 'Life Topics', url: `${prefix}/?view=topics` },
+    { label: isZh ? '人生大命题' : 'Big Topics', url: `${prefix}/?view=topics` },
     { label: topicTitle }
   ];
 };

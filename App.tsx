@@ -244,11 +244,11 @@ const Header = ({
                   {/* Upgrade Button (for free users only) */}
                   {plan === 'free' && (
                     <button
-                      onClick={() => setShowPaywall(true)}
+                      onClick={handleUpgrade}
                       className="flex flex-row justify-center items-center w-full"
                       style={{
                         height: '40px',
-                        padding: '16px 64px',
+                        padding: '16px 48px',
                         background: '#DD8424',
                         borderRadius: '100px',
                       }}
@@ -261,6 +261,7 @@ const Header = ({
                           lineHeight: '19px',
                           color: '#000000',
                           opacity: 0.8,
+                          whiteSpace: 'nowrap',
                         }}
                       >
                         {language === 'zh' ? '升级为 Pro 用户' : 'Upgrade to Pro'}

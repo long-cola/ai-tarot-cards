@@ -39,13 +39,13 @@ export const trackCardDrawn = (cardName: string, position: string, isReversed: b
 };
 
 /**
- * Track when a user creates a new life topic
+ * Track when a user creates a new big topic
  */
 export const trackTopicCreation = (topicTitle: string) => {
   if (isGAEnabled()) {
     window.gtag!('event', 'topic_created', {
       'event_category': 'conversion',
-      'event_label': 'life_topic',
+      'event_label': 'big_topic',
       'value': 1,
     });
   }

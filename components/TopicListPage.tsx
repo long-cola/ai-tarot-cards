@@ -75,7 +75,7 @@ export const TopicListPage: React.FC<TopicListPageProps> = ({
         {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-4 mb-6 md:mb-8">
           <h1 className="text-[20px] md:text-[24px] font-bold leading-[24px] md:leading-[29px]" style={{ color: '#E2DBFF' }}>
-            {isZh ? '我的人生命题' : 'My Life Topics'}
+            {isZh ? '我的人生大命题' : 'My Big Topics'}
           </h1>
           {quota && (
             <div className="text-[14px] md:text-[16px] leading-[17px] md:leading-[19px]" style={{ color: 'rgba(205, 191, 238, 0.5)' }}>
