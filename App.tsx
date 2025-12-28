@@ -1803,13 +1803,25 @@ const buildEventQuestion = (card: DrawnCard, topic?: Topic, events: TopicEvent[]
       : (isZh ? "暂无" : "None");
     const baselineReading = topic?.baseline_reading ? topic.baseline_reading.slice(0, 800) : '';
     const historyStr = events.length
-      ? events.map(ev => {
+      ? events.map((ev, idx) => {
           const dateStr = ev.created_at ? new Date(ev.created_at).toLocaleDateString() : '';
           const cardStr = ev.cards?.map(c => formatCardLabel(c as DrawnCard, language)).join(isZh ? "，" : ", ");
-          return isZh
-            ? `${dateStr}、${ev.name}${cardStr ? `、${cardStr}` : ""}`
-            : `${dateStr}: ${ev.name}${cardStr ? ` | ${cardStr}` : ""}`;
-        }).join(isZh ? "；" : "; ")
+          const readingSummary = ev.reading ? (ev.reading.length > 300 ? ev.reading.slice(0, 300) + '...' : ev.reading) : '';
+
+          if (isZh) {
+            return `【历史事件 ${idx + 1}】
+日期：${dateStr}
+事件名称：${ev.name}
+抽到的牌：${cardStr || "无"}
+解读摘要：${readingSummary || "无"}`;
+          } else {
+            return `[Event ${idx + 1}]
+Date: ${dateStr}
+Event Name: ${ev.name}
+Card Drawn: ${cardStr || "None"}
+Reading Summary: ${readingSummary || "None"}`;
+          }
+        }).join(isZh ? "\n\n" : "\n\n")
       : (isZh ? "暂无历史事件" : "No past events");
 
     const currentCardStr = formatCardLabel(card, language);
@@ -1928,15 +1940,28 @@ Card drawn: ${currentCardStr}`;
         ? baselineCards.map(c => formatCardLabel(c, language)).join(isZh ? "，" : ", ")
         : (isZh ? "暂无" : "None");
 
-      // Build history string
+      // Build history string with full event details
       const historyStr = topicEvents.length
-        ? topicEvents.map(ev => {
+        ? topicEvents.map((ev, idx) => {
             const dateStr = ev.created_at ? new Date(ev.created_at).toLocaleDateString() : '';
             const cardStr = ev.cards?.map(c => formatCardLabel(c as DrawnCard, language)).join(isZh ? "，" : ", ");
-            return isZh
-              ? `${dateStr}、${ev.name}${cardStr ? `、${cardStr}` : ""}`
-              : `${dateStr}: ${ev.name}${cardStr ? ` | ${cardStr}` : ""}`;
-          }).join(isZh ? "；" : "; ")
+            // Include reading summary (limit to 300 chars to avoid too long context)
+            const readingSummary = ev.reading ? (ev.reading.length > 300 ? ev.reading.slice(0, 300) + '...' : ev.reading) : '';
+
+            if (isZh) {
+              return `【历史事件 ${idx + 1}】
+日期：${dateStr}
+事件名称：${ev.name}
+抽到的牌：${cardStr || "无"}
+解读摘要：${readingSummary || "无"}`;
+            } else {
+              return `[Event ${idx + 1}]
+Date: ${dateStr}
+Event Name: ${ev.name}
+Card Drawn: ${cardStr || "None"}
+Reading Summary: ${readingSummary || "None"}`;
+            }
+          }).join(isZh ? "\n\n" : "\n\n")
         : (isZh ? "暂无历史事件" : "No past events");
 
       const currentCardStr = formatCardLabel(eventCard, language);
