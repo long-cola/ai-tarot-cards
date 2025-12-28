@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { markdownComponents } from './markdownConfig';
 import SEOHead from './SEOHead';
 import { BreadcrumbNav, getBreadcrumbsForSharedReading } from './BreadcrumbNav';
 import { getSharedReading, ShareData } from '../services/shareService';

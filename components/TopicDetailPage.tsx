@@ -5,6 +5,7 @@ import { getTarotReading } from '../services/bailianService';
 import { addTopicEvent } from '../services/topicService';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { markdownComponents } from './markdownConfig';
 import { BreadcrumbNav, getBreadcrumbsForTopicDetail } from './BreadcrumbNav';
 import { ShareButton } from './ShareButton';
 import { ScrollToTopButton } from './ScrollToTopButton';
