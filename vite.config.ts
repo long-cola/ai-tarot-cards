@@ -23,14 +23,7 @@ export default defineConfig(({ mode }) => {
           exclude: ['/admin', '/admin.html', '/api'],
           changefreq: 'daily',
           priority: 0.7,
-          lastmod: new Date().toISOString().split('T')[0],
-          robots: [
-            {
-              userAgent: '*',
-              allow: '/',
-              disallow: ['/admin', '/api'],
-            }
-          ]
+          lastmod: new Date().toISOString().split('T')[0]
         })
       ],
       build: {
