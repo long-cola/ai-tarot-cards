@@ -1922,10 +1922,13 @@ Card drawn: ${currentCardStr}`;
       // Prepare variables for prompt template
       const isZh = language === 'zh';
       const baselineCards = selectedTopic?.baseline_cards || [];
+
+      // Build detailed baseline cards info with position labels
       const baselineCardsStr = baselineCards.length
         ? baselineCards.map(c => formatCardLabel(c, language)).join(isZh ? "，" : ", ")
         : (isZh ? "暂无" : "None");
 
+      // Build history string
       const historyStr = topicEvents.length
         ? topicEvents.map(ev => {
             const dateStr = ev.created_at ? new Date(ev.created_at).toLocaleDateString() : '';
@@ -1937,16 +1940,23 @@ Card drawn: ${currentCardStr}`;
         : (isZh ? "暂无历史事件" : "No past events");
 
       const currentCardStr = formatCardLabel(eventCard, language);
+      const currentDate = new Date().toLocaleDateString(isZh ? 'zh-CN' : 'en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
 
       // Use prompt_case_zh or prompt_case_en
       const promptKey = isZh ? 'prompt_case_zh' : 'prompt_case_en';
       const variables = {
         question: selectedTopic?.title || question,
         baseline_cards: baselineCardsStr,
-        baseline_reading: selectedTopic?.baseline_reading || '',
+        baseline_reading: (selectedTopic?.baseline_reading || '').slice(0, 500),
         history: historyStr,
         event_name: eventName.trim(),
-        current_card: currentCardStr
+        current_card: currentCardStr,
+        event_date: currentDate,
+        reading_type: isZh ? '这是一次事件解读，请针对本次抽到的事件牌进行解读，不要重复解读基准三张牌。' : 'This is an event reading. Please interpret the current event card, not the baseline cards.'
       };
 
       console.log('[Event Reading] Sending to API:', {
