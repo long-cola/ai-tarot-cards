@@ -37,9 +37,7 @@ const markdownSchema = {
 };
 
 const normalizeMarkdown = (text: string) => (
-  text
-    .replace(/<br\s*\/?>\s*-\s+/gi, '\n- ')
-    .replace(/<br\s*\/?>/gi, '<br />')
+  text.replace(/<br\s*\/?>/gi, '<br />')
 );
 
 const markdownComponents = {
