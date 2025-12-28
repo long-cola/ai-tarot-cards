@@ -249,7 +249,7 @@ const Header = ({
                       className="flex flex-row justify-center items-center w-full"
                       style={{
                         height: '40px',
-                        padding: '16px 48px',
+                        padding: '12px 20px',
                         background: '#DD8424',
                         borderRadius: '100px',
                       }}
