@@ -7,22 +7,22 @@ interface SEOProps {
   type?: 'website' | 'article';
   image?: string;
   url?: string;
-  lang?: 'zh-CN' | 'en';
+  lang?: 'zh-Hans' | 'en';
   schemaType?: 'WebSite' | 'Service' | 'Article';
 }
 
 const SITE_ROOT = 'https://ai-tarotcard.com';
 
 const SEOHead: React.FC<SEOProps> = ({
-  title = '免费AI塔罗占卜 - 爱情事业财运解读 | 神秘塔罗在线',
-  description = '免费在线AI塔罗占卜，3秒获得专业解读。爱情、事业、财运、人生决策即时指引。神秘三牌阵洞察过去现在未来，24小时随时占卜，AI深度解析命运走向。',
+  title = 'Free AI Tarot Reading - Love, Career & Life Guidance | Mystic Tarot',
+  description = 'Free online AI tarot reading in 3 seconds. Get instant insights on love, career, money & life decisions. Three-card spread reveals past, present, future. 24/7 mystical guidance powered by AI.',
   type = 'website',
   image = `${SITE_ROOT}/og-image.jpg`,
   url = SITE_ROOT,
-  lang = 'zh-CN',
+  lang = 'en',
   schemaType = 'WebSite'
 }) => {
-  const isZh = lang === 'zh-CN';
+  const isZh = lang === 'zh-Hans';
 
   // Normalize path from url prop or window.location
   const normalizedPath = (() => {
@@ -40,7 +40,7 @@ const SEOHead: React.FC<SEOProps> = ({
 
   const pathWithoutLang = normalizedPath.replace(/^\/zh(\/|$)/, '/');
   const normalizedBasePath = pathWithoutLang === '' ? '/' : pathWithoutLang;
-  const canonicalPath = lang === 'zh-CN'
+  const canonicalPath = lang === 'zh-Hans'
     ? `/zh${normalizedBasePath === '/' ? '/' : normalizedBasePath}`
     : normalizedBasePath;
 
@@ -50,20 +50,20 @@ const SEOHead: React.FC<SEOProps> = ({
 
   // 根据语言生成不同的描述
   const defaultDescriptions = {
-    'zh-CN': '免费在线AI塔罗占卜，3秒获得专业解读。爱情、事业、财运、人生决策即时指引。神秘三牌阵洞察过去现在未来，24小时随时占卜，AI深度解析命运走向。',
+    'zh-Hans': '免费在线AI塔罗占卜，3秒获得专业解读。爱情、事业、财运、人生决策即时指引。神秘三牌阵洞察过去现在未来，24小时随时占卜，AI深度解析命运走向。',
     'en': 'Free online AI tarot reading in 3 seconds. Get instant insights on love, career, money & life decisions. Three-card spread reveals past, present, future. 24/7 mystical guidance powered by AI.'
   };
 
   const defaultTitles = {
-    'zh-CN': '免费AI塔罗占卜 - 爱情事业财运解读 | 神秘塔罗在线',
+    'zh-Hans': '免费AI塔罗占卜 - 爱情事业财运解读 | 神秘塔罗在线',
     'en': 'Free AI Tarot Reading - Love, Career & Life Guidance | Mystic Tarot'
   };
 
-  const finalDescription = description === defaultDescriptions['zh-CN']
+  const finalDescription = description === defaultDescriptions['zh-Hans'] || description === '免费在线AI塔罗占卜，3秒获得专业解读。爱情、事业、财运、人生决策即时指引。神秘三牌阵洞察过去现在未来，24小时随时占卜，AI深度解析命运走向。'
     ? defaultDescriptions[lang]
     : description;
 
-  const finalTitle = title === defaultTitles['zh-CN']
+  const finalTitle = title === defaultTitles['zh-Hans'] || title === '免费AI塔罗占卜 - 爱情事业财运解读 | 神秘塔罗在线'
     ? defaultTitles[lang]
     : title;
 
@@ -156,8 +156,8 @@ const SEOHead: React.FC<SEOProps> = ({
       <meta property="og:description" content={finalDescription} />
       <meta property="og:image" content={image} />
       <meta property="og:url" content={canonicalUrl} />
-      <meta property="og:site_name" content="神秘塔罗 AI" />
-      <meta property="og:locale" content={lang === 'zh-CN' ? 'zh_CN' : 'en_US'} />
+      <meta property="og:site_name" content={isZh ? "神秘塔罗 AI" : "Mystic Tarot AI"} />
+      <meta property="og:locale" content={lang === 'zh-Hans' ? 'zh_Hans_CN' : 'en_US'} />
 
       {/* Twitter Card 标签 */}
       <meta name="twitter:card" content="summary_large_image" />
@@ -166,7 +166,7 @@ const SEOHead: React.FC<SEOProps> = ({
       <meta name="twitter:image" content={image} />
 
       {/* Hreflang 多语言标签 */}
-      <link rel="alternate" hreflang="zh-CN" href={zhHref} />
+      <link rel="alternate" hreflang="zh-Hans" href={zhHref} />
       <link rel="alternate" hreflang="en" href={enHref} />
       <link rel="alternate" hreflang="x-default" href={enHref} />
 

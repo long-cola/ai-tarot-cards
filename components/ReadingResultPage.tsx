@@ -1,7 +1,8 @@
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { markdownComponents } from './markdownConfig';
+import rehypeRaw from 'rehype-raw';
+import rehypeSanitize, { defaultSchema } from 'rehype-sanitize';
 import SEOHead from './SEOHead';
 import { BreadcrumbNav, getBreadcrumbsForQuickReading } from './BreadcrumbNav';
 import { ShareButton } from './ShareButton';
@@ -31,6 +32,20 @@ interface ReadingResultPageProps {
   onUpgrade?: () => void;
 }
 
+const markdownSchema = {
+  ...defaultSchema,
+  tagNames: [
+    ...(defaultSchema.tagNames || []),
+    'br',
+    'table',
+    'thead',
+    'tbody',
+    'tr',
+    'th',
+    'td',
+  ],
+};
+
 const markdownComponents = {
   h1: ({ children }: { children: React.ReactNode }) => {
     console.log('[Markdown] h1 rendered:', children);
@@ -54,13 +69,13 @@ const markdownComponents = {
     </h3>
   ),
   ul: ({ children }: { children: React.ReactNode }) => (
-    <ul className="list-disc list-inside space-y-1.5 md:space-y-2 text-[#A38FFF] text-[13px] md:text-[14px] leading-[20px] md:leading-[22px] my-3 md:my-4">{children}</ul>
+    <ul className="list-disc list-outside pl-5 space-y-1.5 md:space-y-2 text-[#A38FFF] text-[13px] md:text-[14px] leading-[20px] md:leading-[22px] my-3 md:my-4">{children}</ul>
   ),
   ol: ({ children }: { children: React.ReactNode }) => (
-    <ol className="list-decimal list-inside space-y-1.5 md:space-y-2 text-[#A38FFF] text-[13px] md:text-[14px] leading-[20px] md:leading-[22px] my-3 md:my-4">{children}</ol>
+    <ol className="list-decimal list-outside pl-5 space-y-1.5 md:space-y-2 text-[#A38FFF] text-[13px] md:text-[14px] leading-[20px] md:leading-[22px] my-3 md:my-4">{children}</ol>
   ),
   li: ({ children }: { children: React.ReactNode }) => (
-    <li className="leading-[20px] md:leading-[22px]">{children}</li>
+    <li className="leading-[20px] md:leading-[22px] [&>p]:m-0 [&>p]:inline">{children}</li>
   ),
   strong: ({ children }: { children: React.ReactNode }) => (
     <strong className="text-[#FCD34D] font-semibold">{children}</strong>
@@ -83,6 +98,32 @@ const markdownComponents = {
     <code className="bg-[rgba(189,161,255,0.15)] px-2 py-1 rounded text-[#E8D6FF] text-[13px]">
       {children}
     </code>
+  ),
+  table: ({ children }: { children: React.ReactNode }) => (
+    <div className="w-full overflow-x-auto my-4">
+      <table className="w-full border-collapse text-left text-[#A38FFF] text-[13px] md:text-[14px] leading-[20px] md:leading-[22px]">
+        {children}
+      </table>
+    </div>
+  ),
+  thead: ({ children }: { children: React.ReactNode }) => (
+    <thead className="bg-white/5">{children}</thead>
+  ),
+  tbody: ({ children }: { children: React.ReactNode }) => (
+    <tbody className="divide-y divide-white/10">{children}</tbody>
+  ),
+  tr: ({ children }: { children: React.ReactNode }) => (
+    <tr className="align-top">{children}</tr>
+  ),
+  th: ({ children }: { children: React.ReactNode }) => (
+    <th className="px-3 py-2 text-[#FCD34D] font-semibold border-b border-white/10">
+      {children}
+    </th>
+  ),
+  td: ({ children }: { children: React.ReactNode }) => (
+    <td className="px-3 py-2 align-top break-words whitespace-pre-line">
+      {children}
+    </td>
   ),
   hr: () => (
     <hr className="my-6 border-[rgba(189,161,255,0.2)]" />
@@ -137,7 +178,7 @@ export const ReadingResultPage: React.FC<ReadingResultPageProps> = ({
           ? `免费AI塔罗占卜结果：${cards.map(c => c.nameCn).join('、')}。专业解读爱情事业财运，洞察过去现在未来。`
           : `Free AI tarot reading: ${cards.map(c => c.name).join(', ')}. Professional insights on love, career, fortune. Past, present, future revealed.`}
         url={typeof window !== 'undefined' ? window.location.pathname + window.location.search : (isZh ? '/zh/' : '/')}
-        lang={isZh ? 'zh-CN' : 'en'}
+        lang={isZh ? 'zh-Hans' : 'en'}
         schemaType="Article"
         type="article"
       />
@@ -332,15 +373,17 @@ export const ReadingResultPage: React.FC<ReadingResultPageProps> = ({
                   console.log('[ReadingResultPage] After cleaning, first 200 chars:', cleanedReading.substring(0, 200));
                 }
 
-                console.log('[ReadingResultPage] Rendering markdown, length:', cleanedReading.length);
+                const normalizedReading = cleanedReading.replace(/<br\s*\/?>/gi, '<br />');
+                console.log('[ReadingResultPage] Rendering markdown, length:', normalizedReading.length);
 
                 return (
                   <ReactMarkdown
                     remarkPlugins={[remarkGfm]}
+                    rehypePlugins={[rehypeRaw, [rehypeSanitize, markdownSchema]]}
                     components={markdownComponents}
                     linkTarget="_blank"
                   >
-                    {cleanedReading}
+                    {normalizedReading}
                   </ReactMarkdown>
                 );
               })()}

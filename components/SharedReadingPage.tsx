@@ -148,7 +148,7 @@ export const SharedReadingPage: React.FC<SharedReadingPageProps> = ({
         url={typeof window !== 'undefined'
           ? window.location.pathname + window.location.search
           : `${isZh ? '/zh' : ''}/?shareId=${shareId}`}
-        lang={isZh ? 'zh-CN' : 'en'}
+        lang={isZh ? 'zh-Hans' : 'en'}
         schemaType="Article"
         type="article"
       />

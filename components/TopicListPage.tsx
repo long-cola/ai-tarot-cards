@@ -48,7 +48,7 @@ export const TopicListPage: React.FC<TopicListPageProps> = ({
         url={typeof window !== 'undefined'
           ? window.location.pathname + window.location.search
           : (isZh ? '/zh/topics' : '/topics')}
-        lang={isZh ? 'zh-CN' : 'en'}
+        lang={isZh ? 'zh-Hans' : 'en'}
         schemaType="WebSite"
       />
       <div className="min-h-screen pt-20 md:pt-24 pb-8 md:pb-12 px-4 md:px-6 relative overflow-hidden" style={{ backgroundColor: 'transparent' }}>

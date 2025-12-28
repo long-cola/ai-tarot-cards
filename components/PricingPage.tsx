@@ -115,7 +115,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({
         title={`${content.title[isZh ? 'zh' : 'en']} | ${isZh ? '神秘塔罗在线' : 'Mystic Tarot'}`}
         description={content.subtitle[isZh ? 'zh' : 'en']}
         url={isZh ? '/zh/pricing' : '/pricing'}
-        lang={isZh ? 'zh-CN' : 'en'}
+        lang={isZh ? 'zh-Hans' : 'en'}
         schemaType="WebSite"
       />
 

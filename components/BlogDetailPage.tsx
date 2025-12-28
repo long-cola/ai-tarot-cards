@@ -250,7 +250,7 @@ export const BlogDetailPage: React.FC<BlogDetailPageProps> = ({
         title={`${article.title[isZh ? 'zh' : 'en']} | ${isZh ? '神秘塔罗在线' : 'Mystic Tarot'}`}
         description={article.description[isZh ? 'zh' : 'en']}
         url={isZh ? `/zh/blog/${blogId}` : `/blog/${blogId}`}
-        lang={isZh ? 'zh-CN' : 'en'}
+        lang={isZh ? 'zh-Hans' : 'en'}
         schemaType="Article"
       />
 

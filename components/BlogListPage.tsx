@@ -77,7 +77,7 @@ export const BlogListPage: React.FC<BlogListPageProps> = ({
           ? '探索古老智慧与现代科技的交汇点。从深入的塔罗牌含义到AI占卜的科学，了解如何以精准、同理心和每日灵性指导引导您的命运。'
           : 'Explore the intersection of ancient wisdom and modern technology. From in-depth tarot card meanings to the science of AI divination, discover how to navigate your destiny with precision, empathy, and daily spiritual guidance.'}
         url={isZh ? '/zh/blog' : '/blog'}
-        lang={isZh ? 'zh-CN' : 'en'}
+        lang={isZh ? 'zh-Hans' : 'en'}
         schemaType="WebSite"
       />
       <FAQSchema language={language} />

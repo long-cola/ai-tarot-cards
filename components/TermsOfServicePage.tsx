@@ -19,7 +19,7 @@ export const TermsOfServicePage: React.FC<TermsOfServicePageProps> = ({ language
         url={typeof window !== 'undefined'
           ? window.location.pathname + window.location.search
           : (isZh ? '/zh/terms' : '/terms')}
-        lang={isZh ? 'zh-CN' : 'en'}
+        lang={isZh ? 'zh-Hans' : 'en'}
         schemaType="WebSite"
       />
 
