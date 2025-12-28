@@ -18,6 +18,7 @@ import { TermsOfServicePage } from './components/TermsOfServicePage';
 import { PricingPage } from './components/PricingPage';
 import { Footer } from './components/Footer';
 import { CookieConsent as CookieConsentBanner } from './components/CookieConsent';
+import { Toast } from './components/Toast';
 import { QuickQuestionCard } from './components/ui';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -531,6 +532,8 @@ const App: React.FC = () => {
   const [cookieConsent, setCookieConsent] = useState<CookieConsentStatus>(() => getCookieConsent());
   const [showCookieSettings, setShowCookieSettings] = useState(false);
   const [sharedReadingId, setSharedReadingId] = useState<string | null>(null);
+  const [toastMessage, setToastMessage] = useState('');
+  const [showToast, setShowToast] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const readingRef = useRef<HTMLDivElement>(null);
 
@@ -1491,16 +1494,19 @@ const App: React.FC = () => {
       if (res.quota) setTopicQuota(res.quota);
       setTopicSaveMessage(t.topicSaved);
 
+      // Show success toast
+      setToastMessage(
+        language === 'zh'
+          ? '保存成功，您可以继续为这个命题提供事件输入并获得灵感'
+          : 'Saved successfully! You can continue adding events to this topic for more insights'
+      );
+      setShowToast(true);
+
       // Automatically navigate to the created topic detail page
       await loadTopicDetail(res.topic.id);
 
-      // Ensure scroll to top after page loads
-      setTimeout(() => {
-        window.scrollTo({
-          top: 0,
-          behavior: 'smooth'
-        });
-      }, 200);
+      // Scroll to top immediately after navigation
+      scrollToTop('auto');
     } catch (err: any) {
       console.error("topic save failed", err);
       const status = err?.status;
@@ -3070,7 +3076,28 @@ Card drawn: ${currentCardStr}`;
         .animate-bounce-slow {
           animation: bounceSlow 1.2s ease-in-out infinite;
         }
+        @keyframes slideDown {
+          from {
+            opacity: 0;
+            transform: translate(-50%, -20px);
+          }
+          to {
+            opacity: 1;
+            transform: translate(-50%, 0);
+          }
+        }
+        .animate-slide-down {
+          animation: slideDown 0.3s ease-out forwards;
+        }
       `}</style>
+
+      {/* Toast Notification */}
+      <Toast
+        message={toastMessage}
+        isVisible={showToast}
+        onClose={() => setShowToast(false)}
+        duration={3000}
+      />
     </div>
   );
 };
