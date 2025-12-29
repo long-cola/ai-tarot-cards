@@ -55,16 +55,18 @@ export const Navbar: React.FC<NavbarProps> = ({
   }, [isAuthenticated, user, plan, topicQuota]);
 
   useEffect(() => {
-    const scrollContainer = getScrollContainer();
-    const target = scrollContainer || window;
-
     const handleScroll = () => {
       setIsScrolled(getScrollTop() > 10);
     };
 
-    target.addEventListener('scroll', handleScroll as EventListener);
+    const scrollContainer = getScrollContainer();
+    scrollContainer?.addEventListener('scroll', handleScroll as EventListener);
+    window.addEventListener('scroll', handleScroll as EventListener);
     handleScroll();
-    return () => target.removeEventListener('scroll', handleScroll as EventListener);
+    return () => {
+      scrollContainer?.removeEventListener('scroll', handleScroll as EventListener);
+      window.removeEventListener('scroll', handleScroll as EventListener);
+    };
   }, []);
 
   // Close mobile menu when clicking outside

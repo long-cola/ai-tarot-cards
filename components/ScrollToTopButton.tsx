@@ -24,17 +24,17 @@ export const ScrollToTopButton: React.FC<ScrollToTopButtonProps> = ({
 
   useEffect(() => {
     const scrollContainer = getScrollContainer();
-    const target = scrollContainer || window;
-
     const handleScroll = () => {
       setIsVisible(getScrollTop() > showAfter);
     };
 
-    target.addEventListener('scroll', handleScroll as EventListener);
+    scrollContainer?.addEventListener('scroll', handleScroll as EventListener);
+    window.addEventListener('scroll', handleScroll as EventListener);
     handleScroll(); // Check initial scroll position
 
     return () => {
-      target.removeEventListener('scroll', handleScroll as EventListener);
+      scrollContainer?.removeEventListener('scroll', handleScroll as EventListener);
+      window.removeEventListener('scroll', handleScroll as EventListener);
     };
   }, [showAfter]);
 

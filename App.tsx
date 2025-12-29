@@ -1595,6 +1595,7 @@ const App: React.FC = () => {
     setPendingTopicTitle('');
     // Clean up any pending reading from localStorage
     localStorage.removeItem('pendingReading');
+    scrollToTop('auto');
   };
 
   const goToDailyReading = () => {
@@ -2314,7 +2315,7 @@ Reading Summary: ${readingSummary || "None"}`;
                </div>
             </div>
             
-            <div className="grid grid-cols-3 gap-3 sm:gap-4 w-full max-w-lg mx-auto mb-6 z-20 px-2">
+            <div className="grid grid-cols-3 gap-3 sm:gap-4 w-full max-w-lg mx-auto mb-3 md:mb-4 z-20 px-2">
               {[0, 1, 2].map((slot) => (
                 <div key={slot} className="flex flex-col">
                   <div className="aspect-[2/3.5] border border-purple-500/20 rounded-lg flex items-center justify-center bg-slate-900/40 backdrop-blur-sm relative transition-all duration-500 shadow-inner">
@@ -2341,7 +2342,7 @@ Reading Summary: ${readingSummary || "None"}`;
             <div className={`relative flex-1 w-full min-h-[280px] flex justify-center items-end perspective-1000 overflow-hidden ${isInteracting ? 'pointer-events-none grayscale-[0.5]' : ''} transition-all duration-500`}>
                <div className="absolute inset-x-0 bottom-0 h-3/4 bg-gradient-to-t from-slate-950 via-purple-950/30 to-transparent pointer-events-none"></div>
 
-               <div className="relative w-full max-w-md h-80 mb-6 md:mb-8">
+               <div className="relative w-full max-w-md h-80 mb-3 md:mb-4">
                  {deck.map((card, index) => {
                     const total = deck.length;
                     const center = (total - 1) / 2;
