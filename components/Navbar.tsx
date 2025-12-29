@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from './ui';
+import { getScrollContainer, getScrollTop } from '../utils/scroll';
 
 interface NavbarProps {
   onLoginClick?: () => void;
@@ -54,12 +55,16 @@ export const Navbar: React.FC<NavbarProps> = ({
   }, [isAuthenticated, user, plan, topicQuota]);
 
   useEffect(() => {
+    const scrollContainer = getScrollContainer();
+    const target = scrollContainer || window;
+
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10);
+      setIsScrolled(getScrollTop() > 10);
     };
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    target.addEventListener('scroll', handleScroll as EventListener);
+    handleScroll();
+    return () => target.removeEventListener('scroll', handleScroll as EventListener);
   }, []);
 
   // Close mobile menu when clicking outside

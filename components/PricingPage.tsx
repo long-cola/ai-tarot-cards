@@ -1,5 +1,6 @@
 import React from 'react';
 import SEOHead from './SEOHead';
+import { scrollToTop } from '../utils/scroll';
 
 interface PricingPageProps {
   language: 'zh' | 'en';
@@ -306,7 +307,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({
               {/* Button */}
               <button
                 onClick={() => {
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                  scrollToTop('smooth');
                   setTimeout(() => onStartReading(), 300);
                 }}
                 style={{
@@ -471,7 +472,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({
               {/* Button */}
               <button
                 onClick={() => {
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                  scrollToTop('smooth');
                   setTimeout(() => onUpgrade(), 300);
                 }}
                 style={{

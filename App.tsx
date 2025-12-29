@@ -33,6 +33,7 @@ import {
   disableGoogleAnalytics,
 } from './services/cookieConsent';
 import { toPng } from 'html-to-image';
+import { scrollToTop } from './utils/scroll';
 
 // Header with Title and Language Switch
 const Header = ({ 
@@ -561,7 +562,7 @@ const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'auto' });
+    scrollToTop('auto');
   }, [viewKey]);
 
   // Parse URL for initial page routing
@@ -1554,14 +1555,6 @@ const App: React.FC = () => {
     }
   };
 
-  const scrollToTop = (behavior: ScrollBehavior = 'auto') => {
-    if (typeof window === 'undefined') return;
-    window.scrollTo({
-      top: 0,
-      behavior,
-    });
-  };
-
   const navigateToPath = (path: string) => {
     if (typeof window === 'undefined') return;
     window.history.pushState({}, '', path);
@@ -1711,10 +1704,7 @@ const App: React.FC = () => {
 
       // Scroll to top to show the event input form
       setTimeout(() => {
-        window.scrollTo({
-          top: 0,
-          behavior: 'smooth'
-        });
+        scrollToTop('smooth');
       }, 100);
     } catch (err) {
       console.error("load topic detail failed", err);

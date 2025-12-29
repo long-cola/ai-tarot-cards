@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { getScrollContainer, getScrollTop, scrollToTop } from '../utils/scroll';
 
 interface ScrollToTopButtonProps {
   /**
@@ -22,24 +23,23 @@ export const ScrollToTopButton: React.FC<ScrollToTopButtonProps> = ({
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
+    const scrollContainer = getScrollContainer();
+    const target = scrollContainer || window;
+
     const handleScroll = () => {
-      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-      setIsVisible(scrollTop > showAfter);
+      setIsVisible(getScrollTop() > showAfter);
     };
 
-    window.addEventListener('scroll', handleScroll);
+    target.addEventListener('scroll', handleScroll as EventListener);
     handleScroll(); // Check initial scroll position
 
     return () => {
-      window.removeEventListener('scroll', handleScroll);
+      target.removeEventListener('scroll', handleScroll as EventListener);
     };
   }, [showAfter]);
 
-  const scrollToTop = () => {
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth'
-    });
+  const handleScrollToTop = () => {
+    scrollToTop('smooth');
   };
 
   if (!isVisible || typeof document === 'undefined') {
@@ -48,7 +48,7 @@ export const ScrollToTopButton: React.FC<ScrollToTopButtonProps> = ({
 
   return createPortal(
     <button
-      onClick={scrollToTop}
+      onClick={handleScrollToTop}
       className="fixed transition-all duration-300 hover:bg-white/25"
       style={{
         display: 'flex',

@@ -2,6 +2,7 @@ import React from 'react';
 import { BlogListItem } from './BlogListItem';
 import SEOHead from './SEOHead';
 import { FAQSchema } from './FAQSchema';
+import { scrollToTop } from '../utils/scroll';
 
 interface BlogListPageProps {
   language: 'zh' | 'en';
@@ -258,7 +259,7 @@ export const BlogListPage: React.FC<BlogListPageProps> = ({
 
               <button
                 onClick={() => {
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                  scrollToTop('smooth');
                   setTimeout(() => onStartReading(), 300);
                 }}
                 style={{
@@ -344,7 +345,7 @@ export const BlogListPage: React.FC<BlogListPageProps> = ({
 
               <button
                 onClick={() => {
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                  scrollToTop('smooth');
                   setTimeout(() => onStartBigTopic(), 300);
                 }}
                 style={{

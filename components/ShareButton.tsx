@@ -1,10 +1,16 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import { createShare, copyShareToClipboard, CreateShareParams } from '../services/shareService';
 import { trackShare } from '../services/gaTracking';
 import { Language } from '../types';
 import * as htmlToImage from 'html-to-image';
 import QRCode from 'qrcode';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
+import rehypeSanitize from 'rehype-sanitize';
+import { markdownComponents, markdownSchema, normalizeMarkdown } from './markdownConfig';
 
 interface ShareButtonProps {
   shareParams: CreateShareParams;
@@ -13,6 +19,79 @@ interface ShareButtonProps {
   variant?: 'primary' | 'secondary';
   className?: string;
 }
+
+interface ShareImageContentProps {
+  question: string;
+  reading: string;
+  qrCodeDataUrl: string;
+  isZh: boolean;
+}
+
+const ShareImageContent: React.FC<ShareImageContentProps> = ({
+  question,
+  reading,
+  qrCodeDataUrl,
+  isZh,
+}) => (
+  <div
+    style={{
+      width: '600px',
+      background: '#140F2A',
+      padding: '40px',
+      color: '#E8E3FF',
+      fontFamily: "'Noto Serif SC', serif",
+      boxSizing: 'border-box',
+    }}
+  >
+    <h2
+      style={{
+        fontSize: '24px',
+        marginBottom: '20px',
+        fontWeight: 700,
+        lineHeight: '1.4',
+      }}
+    >
+      {question}
+    </h2>
+    <div style={{ margin: '30px 0' }}>
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
+        rehypePlugins={[rehypeRaw, [rehypeSanitize, markdownSchema]]}
+        components={markdownComponents}
+        linkTarget="_blank"
+      >
+        {normalizeMarkdown(reading)}
+      </ReactMarkdown>
+    </div>
+    <div
+      style={{
+        marginTop: '40px',
+        paddingTop: '30px',
+        borderTop: '1px solid #443E71',
+        textAlign: 'center',
+      }}
+    >
+      <img
+        src={qrCodeDataUrl}
+        alt="QR Code"
+        style={{
+          width: '120px',
+          height: '120px',
+          margin: '0 auto',
+        }}
+      />
+      <p
+        style={{
+          marginTop: '10px',
+          fontSize: '14px',
+          color: '#8F88AB',
+        }}
+      >
+        {isZh ? '扫码体验更多塔罗解读' : 'Scan to experience more Tarot readings'}
+      </p>
+    </div>
+  </div>
+);
 
 export const ShareButton: React.FC<ShareButtonProps> = ({
   shareParams,
@@ -24,9 +103,6 @@ export const ShareButton: React.FC<ShareButtonProps> = ({
   const [isSharing, setIsSharing] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
-  const [showImagePreview, setShowImagePreview] = useState(false);
-  const [previewImage, setPreviewImage] = useState<string | null>(null);
-  const imageRef = useRef<HTMLDivElement>(null);
   const isZh = language === 'zh';
 
   // 打开分享选项弹窗
@@ -72,6 +148,9 @@ export const ShareButton: React.FC<ShareButtonProps> = ({
     setShowShareModal(false);
     setIsSharing(true);
 
+    let container: HTMLDivElement | null = null;
+    let root: ReturnType<typeof createRoot> | null = null;
+
     try {
       // Generate QR code
       const qrCodeDataUrl = await QRCode.toDataURL('https://ai-tarotcard.com', {
@@ -84,18 +163,33 @@ export const ShareButton: React.FC<ShareButtonProps> = ({
       });
 
       // Create temporary container for image
-      const container = document.createElement('div');
+      container = document.createElement('div');
       container.style.position = 'absolute';
       container.style.left = '-9999px';
       container.style.top = '0';
+      container.style.pointerEvents = 'none';
       document.body.appendChild(container);
 
-      // Create image content
-      const imageElement = createImageElement(qrCodeDataUrl);
-      container.appendChild(imageElement);
+      // Render image content with the same markdown styling as the reading page
+      root = createRoot(container);
+      root.render(
+        <ShareImageContent
+          question={shareParams.question || question}
+          reading={shareParams.reading || ''}
+          qrCodeDataUrl={qrCodeDataUrl}
+          isZh={isZh}
+        />
+      );
+
+      await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
 
       // Wait for fonts to load
       await document.fonts.ready;
+
+      const imageElement = container.firstElementChild as HTMLElement | null;
+      if (!imageElement) {
+        throw new Error('share_image_render_failed');
+      }
 
       // Convert to image
       const dataUrl = await htmlToImage.toPng(imageElement, {
@@ -123,65 +217,14 @@ export const ShareButton: React.FC<ShareButtonProps> = ({
       console.error('[ShareButton] Failed to generate image:', error);
       alert(isZh ? '生成图片失败,请稍后重试' : 'Failed to generate image, please try again');
     } finally {
+      if (root) {
+        root.unmount();
+      }
+      if (container && container.parentNode) {
+        container.parentNode.removeChild(container);
+      }
       setIsSharing(false);
     }
-  };
-
-  // 创建图片元素
-  const createImageElement = (qrCodeDataUrl: string): HTMLDivElement => {
-    const { question: q, cards, reading } = shareParams;
-    const div = document.createElement('div');
-    div.style.width = '600px';
-    div.style.background = '#140F2A';
-    div.style.padding = '40px';
-    div.style.color = '#E8E3FF';
-    div.style.fontFamily = "'Noto Serif SC', serif";
-    div.style.boxSizing = 'border-box';
-
-    // 创建问题标题
-    const title = document.createElement('h2');
-    title.style.fontSize = '24px';
-    title.style.marginBottom = '20px';
-    title.style.fontWeight = '700';
-    title.style.lineHeight = '1.4';
-    title.textContent = q || question;
-    div.appendChild(title);
-
-    // 创建解读内容
-    const readingContent = document.createElement('div');
-    readingContent.style.margin = '30px 0';
-    readingContent.style.fontSize = '16px';
-    readingContent.style.lineHeight = '1.8';
-    readingContent.style.whiteSpace = 'pre-wrap';
-    readingContent.textContent = reading || '';
-    div.appendChild(readingContent);
-
-    // 创建底部分隔线和二维码区域
-    const footer = document.createElement('div');
-    footer.style.marginTop = '40px';
-    footer.style.paddingTop = '30px';
-    footer.style.borderTop = '1px solid #443E71';
-    footer.style.textAlign = 'center';
-
-    // 二维码
-    const qrImg = document.createElement('img');
-    qrImg.src = qrCodeDataUrl;
-    qrImg.alt = 'QR Code';
-    qrImg.style.width = '120px';
-    qrImg.style.height = '120px';
-    footer.appendChild(qrImg);
-
-    // 提示文字
-    const hint = document.createElement('p');
-    hint.style.marginTop = '10px';
-    hint.style.fontSize = '14px';
-    hint.style.color = '#8F88AB';
-    hint.textContent = isZh ? '扫码体验更多塔罗解读' : 'Scan to experience more Tarot readings';
-    footer.appendChild(hint);
-
-    div.appendChild(footer);
-
-    return div;
   };
 
   // 复制到剪贴板的辅助函数

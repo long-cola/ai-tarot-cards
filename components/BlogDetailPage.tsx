@@ -1,5 +1,6 @@
 import React from 'react';
 import SEOHead from './SEOHead';
+import { scrollToTop } from '../utils/scroll';
 
 interface BlogDetailPageProps {
   language: 'zh' | 'en';
@@ -507,7 +508,7 @@ export const BlogDetailPage: React.FC<BlogDetailPageProps> = ({
 
               <button
                 onClick={() => {
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                  scrollToTop('smooth');
                   setTimeout(() => onStartReading(), 300);
                 }}
                 style={{
@@ -593,7 +594,7 @@ export const BlogDetailPage: React.FC<BlogDetailPageProps> = ({
 
               <button
                 onClick={() => {
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                  scrollToTop('smooth');
                   setTimeout(() => onStartBigTopic(), 300);
                 }}
                 style={{
