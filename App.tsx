@@ -21,6 +21,7 @@ import { CookieConsent as CookieConsentBanner } from './components/CookieConsent
 import { Toast } from './components/Toast';
 import { QuickQuestionCard } from './components/ui';
 import { markdownComponents } from './components/markdownConfig';
+import { GestureDrawing } from './components/gesture';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { API_BASE_URL, apiClient } from './services/apiClient';
@@ -442,6 +443,7 @@ const App: React.FC = () => {
   const [reading, setReading] = useState(initialPending?.reading || '');
   const [isReadingLoading, setIsReadingLoading] = useState(false);
   const [isInteracting, setIsInteracting] = useState(false);
+  const [isGestureMode, setIsGestureMode] = useState(false);
   const [language, setLanguage] = useState<Language>(() => {
     if (typeof window !== 'undefined') {
       return window.location.pathname.startsWith('/zh') ? 'zh' : 'en';
@@ -2042,6 +2044,8 @@ Reading Summary: ${readingSummary || "None"}`;
     >
       <StarryBackground />
 
+      {/* Hide navbar when in gesture mode */}
+      {!(isGestureMode && phase === AppPhase.DRAWING) && (
       <Navbar
         onLoginClick={loginWithGoogle}
         onLogoutClick={handleLogout}
@@ -2089,6 +2093,7 @@ Reading Summary: ${readingSummary || "None"}`;
         topicQuota={topicQuota}
         onUpgradeClick={() => setShowPaywall(true)}
       />
+      )}
 
       {/* Expiry banner */}
       {topicQuota?.plan === 'member' && topicQuota.expires_at && (() => {
@@ -2303,18 +2308,47 @@ Reading Summary: ${readingSummary || "None"}`;
           </div>
         )}
 
-        {/* Phase: DRAWING */}
-        {phase === AppPhase.DRAWING && !showBigTopicIntroPage && !showTopicListPage && !showTopicDetailPage && !showSharedReadingPage && !showPrivacyPage && !showTermsPage && !showBlogPage && !showPricingPage && (
+        {/* Phase: DRAWING - Gesture Mode (full screen) */}
+        {phase === AppPhase.DRAWING && isGestureMode && !showBigTopicIntroPage && !showTopicListPage && !showTopicDetailPage && !showSharedReadingPage && !showPrivacyPage && !showTermsPage && !showBlogPage && !showPricingPage && (
+          <GestureDrawing
+            deck={deck}
+            drawnCards={drawnCards}
+            onCardDrawn={handleCardDraw}
+            language={language}
+            isInteracting={isInteracting}
+            onExitGestureMode={() => setIsGestureMode(false)}
+          />
+        )}
+
+        {/* Phase: DRAWING - Traditional Mode */}
+        {phase === AppPhase.DRAWING && !isGestureMode && !showBigTopicIntroPage && !showTopicListPage && !showTopicDetailPage && !showSharedReadingPage && !showPrivacyPage && !showTermsPage && !showBlogPage && !showPricingPage && (
           <div className="w-full h-full flex flex-col animate-fade-in relative pt-20 md:pt-24">
             <div className="text-center z-20 mb-6 md:mb-8">
-               <h2 className="text-xl text-purple-100 mb-1 tracking-widest font-mystic">{t.drawTitle}</h2>
+               <div className="flex items-center justify-center gap-3 mb-1">
+                 <h2 className="text-xl text-purple-100 tracking-widest font-mystic">{t.drawTitle}</h2>
+                 {/* Gesture mode toggle button */}
+                 <button
+                   onClick={() => setIsGestureMode(true)}
+                   disabled={drawnCards.length > 0}
+                   className={`
+                     px-3 py-1 text-xs rounded-full border transition-all whitespace-nowrap
+                     ${drawnCards.length > 0
+                       ? 'opacity-30 cursor-not-allowed border-slate-700 text-slate-600'
+                       : 'border-purple-400 text-purple-300 hover:bg-purple-500/20 hover:border-purple-300'
+                     }
+                   `}
+                   title={language === 'zh' ? '切换抽牌模式' : 'Toggle draw mode'}
+                 >
+                   {language === 'zh' ? '🖐️ 手势' : '🖐️ Gesture'}
+                 </button>
+               </div>
                <div className="flex justify-center gap-1">
                  {[0, 1, 2].map(i => (
                    <div key={i} className={`w-2 h-2 rounded-full transition-colors duration-300 ${drawnCards.length > i ? 'bg-amber-500' : 'bg-slate-700'}`}></div>
                  ))}
                </div>
             </div>
-            
+
             <div className="grid grid-cols-3 gap-3 sm:gap-4 w-full max-w-lg mx-auto mb-3 md:mb-4 z-20 px-2">
               {[0, 1, 2].map((slot) => (
                 <div key={slot} className="flex flex-col">
@@ -2339,22 +2373,23 @@ Reading Summary: ${readingSummary || "None"}`;
               ))}
             </div>
 
+            {/* Traditional card fan */}
             <div className={`relative flex-1 w-full min-h-[280px] flex justify-center items-end perspective-1000 overflow-hidden ${isInteracting ? 'pointer-events-none grayscale-[0.5]' : ''} transition-all duration-500`}>
-               <div className="absolute inset-x-0 bottom-0 h-3/4 bg-gradient-to-t from-slate-950 via-purple-950/30 to-transparent pointer-events-none"></div>
+              <div className="absolute inset-x-0 bottom-0 h-3/4 bg-gradient-to-t from-slate-950 via-purple-950/30 to-transparent pointer-events-none"></div>
 
-               <div className="relative w-full max-w-md h-80 mb-3 md:mb-4">
-                 {deck.map((card, index) => {
+              <div className="relative w-full max-w-md h-80 mb-3 md:mb-4">
+                {deck.map((card, index) => {
                     const total = deck.length;
                     const center = (total - 1) / 2;
                     const offset = index - center;
-                    
-                    const degreePerCard = 4; 
+
+                    const degreePerCard = 4;
                     const rotation = offset * degreePerCard;
-                    const translateY = Math.abs(offset) * 2 + (Math.abs(offset) > 5 ? Math.abs(offset) : 0); 
+                    const translateY = Math.abs(offset) * 2 + (Math.abs(offset) > 5 ? Math.abs(offset) : 0);
                     const translateX = offset * 12;
 
                     return (
-                      <div 
+                      <div
                         key={card.id}
                         onClick={() => handleCardDraw(index)}
                         className="absolute bottom-0 left-1/2 cursor-pointer transition-all duration-300 group touch-manipulation"
@@ -2362,22 +2397,22 @@ Reading Summary: ${readingSummary || "None"}`;
                           width: '80px',
                           height: '128px',
                           marginLeft: '-40px',
-                          transformOrigin: '50% 120%', 
+                          transformOrigin: '50% 120%',
                           transform: `translateX(${translateX}px) rotate(${rotation}deg) translateY(${translateY}px)`,
                           zIndex: index + 10,
                         }}
                       >
                         <div className="w-full h-full rounded-md bg-slate-800 border border-purple-500/40 shadow-xl group-hover:-translate-y-4 transition-transform relative overflow-hidden">
-                           <div className="absolute inset-0 bg-gradient-to-br from-purple-700/20 to-black"></div>
-                           <div className="absolute inset-1 border border-white/5 rounded-sm flex items-center justify-center">
+                          <div className="absolute inset-0 bg-gradient-to-br from-purple-700/20 to-black"></div>
+                          <div className="absolute inset-1 border border-white/5 rounded-sm flex items-center justify-center">
                               <span className="text-purple-300/20 text-xl font-mystic">☾</span>
-                           </div>
+                          </div>
                         </div>
                       </div>
                     );
-                 })}
-               </div>
-               <p className="absolute bottom-4 text-xs text-slate-500 tracking-widest font-cinzel opacity-60">SCROLL OR TAP TO DRAW</p>
+                })}
+              </div>
+              <p className="absolute bottom-4 text-xs text-slate-500 tracking-widest font-cinzel opacity-60">SCROLL OR TAP TO DRAW</p>
             </div>
           </div>
         )}
@@ -2402,11 +2437,13 @@ Reading Summary: ${readingSummary || "None"}`;
 
       </main>
 
-      {/* Footer */}
-      <Footer
-        language={language}
-        onOpenCookieSettings={() => setShowCookieSettings(true)}
-      />
+      {/* Footer - hide when in gesture mode */}
+      {!(isGestureMode && phase === AppPhase.DRAWING) && (
+        <Footer
+          language={language}
+          onOpenCookieSettings={() => setShowCookieSettings(true)}
+        />
+      )}
 
       <CookieConsentBanner
         language={language}
