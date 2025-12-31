@@ -49,7 +49,7 @@ async function handleCreateShare(req: any, res: any, pool: any) {
     eventId
   } = req.body || {};
 
-  if (!shareType || !['quick', 'topic_event', 'topic_baseline'].includes(shareType)) {
+  if (!shareType || !['quick', 'topic_event', 'topic_baseline', 'topic_full'].includes(shareType)) {
     return res.status(400).json({ ok: false, message: 'invalid_share_type' });
   }
 
@@ -87,6 +87,24 @@ async function handleCreateShare(req: any, res: any, pool: any) {
       if (!topicRes.rows.length) {
         return res.status(404).json({ ok: false, message: 'topic_not_found' });
       }
+    }
+  } else if (shareType === 'topic_full') {
+    if (!topicId) {
+      return res.status(400).json({ ok: false, message: 'missing_topic_id' });
+    }
+
+    // topic_full requires authentication
+    if (!user) {
+      return res.status(401).json({ ok: false, message: 'auth_required' });
+    }
+
+    // Verify topic exists and belongs to user
+    const topicRes = await pool.query(
+      'SELECT * FROM topics WHERE id=$1 AND user_id=$2 LIMIT 1',
+      [topicId, user.id]
+    );
+    if (!topicRes.rows.length) {
+      return res.status(404).json({ ok: false, message: 'topic_not_found' });
     }
   }
 
@@ -195,6 +213,46 @@ async function handleGetSharedReading(req: any, res: any, pool: any, shareId: st
     readingData.language = topic.language || 'zh';
     readingData.topicTitle = topic.title;
     readingData.createdAt = topic.created_at;
+  } else if (share.share_type === 'topic_full') {
+    // Topic full - fetch topic + all events
+    const topicRes = await pool.query(
+      `SELECT * FROM topics WHERE id=$1 LIMIT 1`,
+      [share.topic_id]
+    );
+
+    if (!topicRes.rows.length) {
+      return res.status(404).json({ ok: false, message: 'topic_not_found' });
+    }
+
+    const topic = topicRes.rows[0];
+
+    // Fetch all events for this topic, ordered by created_at
+    const eventsRes = await pool.query(
+      `SELECT id, name, cards, reading, created_at
+       FROM topic_events
+       WHERE topic_id=$1
+       ORDER BY created_at ASC`,
+      [share.topic_id]
+    );
+
+    readingData.topicTitle = topic.title;
+    readingData.language = topic.language || 'zh';
+    readingData.createdAt = topic.created_at;
+
+    // Baseline data
+    readingData.baseline = {
+      cards: topic.baseline_cards,
+      reading: topic.baseline_reading,
+    };
+
+    // Events list
+    readingData.events = eventsRes.rows.map((event: any) => ({
+      id: event.id,
+      name: event.name,
+      cards: event.cards,
+      reading: event.reading,
+      createdAt: event.created_at,
+    }));
   }
 
   console.log('[share] Fetched share:', shareId, 'type:', share.share_type, 'views:', readingData.viewCount);

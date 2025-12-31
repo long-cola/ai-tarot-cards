@@ -1,8 +1,10 @@
 import { apiClient } from './apiClient';
 import { DrawnCard, Language } from '../types';
 
+export type ShareType = 'quick' | 'topic_event' | 'topic_baseline' | 'topic_full';
+
 export interface CreateShareParams {
-  shareType: 'quick' | 'topic_event' | 'topic_baseline';
+  shareType: ShareType;
   question?: string;
   cards?: DrawnCard[];
   reading?: string;
@@ -11,6 +13,7 @@ export interface CreateShareParams {
   eventId?: string;
 }
 
+// Base share data for quick/topic_event/topic_baseline
 export interface ShareData {
   shareType: 'quick' | 'topic_event' | 'topic_baseline';
   question: string;
@@ -21,6 +24,29 @@ export interface ShareData {
   viewCount: number;
   createdAt: string;
 }
+
+// Topic full share data with timeline
+export interface TopicFullShareData {
+  shareType: 'topic_full';
+  topicTitle: string;
+  language: Language;
+  viewCount: number;
+  createdAt: string;
+  baseline: {
+    cards: DrawnCard[];
+    reading: string;
+  };
+  events: Array<{
+    id: string;
+    name: string;
+    cards: DrawnCard[];
+    reading: string;
+    createdAt: string;
+  }>;
+}
+
+// Union type for all share data
+export type AnyShareData = ShareData | TopicFullShareData;
 
 /**
  * Create a shareable link
@@ -46,7 +72,7 @@ export async function createShare(params: CreateShareParams): Promise<{ shareId:
 /**
  * Get shared reading data (public, no auth required)
  */
-export async function getSharedReading(shareId: string): Promise<ShareData> {
+export async function getSharedReading(shareId: string): Promise<AnyShareData> {
   const response = await apiClient.get(`/api/share/${shareId}`);
 
   if (!response.ok) {

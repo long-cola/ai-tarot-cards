@@ -487,6 +487,18 @@ export const TopicDetailPage: React.FC<TopicDetailPageProps> = ({
               <h1 className="text-[24px] md:text-[32px] font-bold leading-[29px] md:leading-[38px] text-center" style={{ color: '#E2DBFF' }}>
                 "{topic.title}"
               </h1>
+              {/* Share full topic button */}
+              <ShareButton
+                shareParams={{
+                  shareType: 'topic_full',
+                  topicId: topic.id,
+                  language,
+                }}
+                question={topic.title}
+                language={language}
+                variant="secondary"
+                className="mt-2"
+              />
             </div>
 
             {/* Event Input at Top */}
