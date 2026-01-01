@@ -175,14 +175,13 @@ export const GestureDrawing: React.FC<GestureDrawingProps> = ({
     const offset = index - smoothIndex;
     const absOffset = Math.abs(offset);
 
-    const xPos = offset * 160;
-    const zPos = -absOffset * 80;
-    const scale = Math.max(0.65, 1 - absOffset * 0.12);
-    const rotateY = offset * -6;
-    const opacity = Math.max(0.35, 1 - absOffset * 0.2);
+    const xPos = offset * 135;
+    const yPos = absOffset * 6;
+    const scale = Math.max(0.5, 1 - absOffset * 0.1);
+    const opacity = Math.max(0.25, 1 - absOffset * 0.15);
 
     return {
-      transform: `translateX(${xPos}px) translateZ(${zPos}px) scale(${scale}) rotateY(${rotateY}deg)`,
+      transform: `translateX(${xPos}px) translateY(${yPos}px) scale(${scale})`,
       opacity,
       zIndex: Math.round(100 - absOffset * 10),
     };
@@ -222,124 +221,105 @@ export const GestureDrawing: React.FC<GestureDrawingProps> = ({
   const isCentered = (index: number) => Math.abs(index - smoothIndex) < 0.5;
 
   return (
-    <div className="fixed inset-0 z-[9999] overflow-hidden bg-slate-950">
-
-      {/* Exit button */}
-      <button
-        onClick={onExitGestureMode}
-        className="absolute top-4 left-4 z-40 px-3 py-1.5 rounded-full bg-black/50 border border-slate-700/50 text-slate-400 text-xs hover:bg-slate-800/80 hover:text-slate-300 transition-all flex items-center gap-1.5"
-      >
-        <span>←</span>
-        <span>{language === 'zh' ? '返回' : 'Exit'}</span>
-      </button>
-
-      {/* Progress indicator */}
-      <div className="absolute top-8 left-1/2 -translate-x-1/2 z-30">
-        <div className="flex items-center gap-4 px-6 py-3 rounded-full bg-black/60 border border-slate-800/50 backdrop-blur-sm">
-          {[0, 1, 2].map(i => (
-            <div key={i} className="flex flex-col items-center gap-1">
-              <div
-                className={`w-2.5 h-2.5 rounded-full transition-all duration-500 ${
-                  drawnCards.length > i
-                    ? 'bg-amber-400 shadow-[0_0_12px_rgba(251,191,36,0.6)]'
-                    : 'bg-slate-700'
-                }`}
-              />
-              <span className="text-[9px] text-slate-600 uppercase tracking-wider">
-                {language === 'zh' ? ['过去', '现在', '未来'][i] : ['Past', 'Now', 'Future'][i]}
-              </span>
-            </div>
-          ))}
-        </div>
+    <div className="fixed inset-0 z-[9999] overflow-hidden bg-[#140F2A]">
+      <div className="absolute inset-0 pointer-events-none">
+        <div
+          className="absolute inset-0 opacity-30 bg-cover bg-center"
+          style={{ backgroundImage: 'url(/img/bg.png)' }}
+        />
+        <div className="absolute -top-32 left-1/2 h-[520px] w-[1400px] -translate-x-1/2 rounded-full bg-[#140F2A] blur-[180px] opacity-90" />
+        <div className="absolute -bottom-40 left-1/2 h-[520px] w-[1600px] -translate-x-1/2 rounded-full bg-[#140F2A] blur-[180px] opacity-90" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#140F2A]/50 to-[#140F2A]" />
       </div>
 
-      {/* Drawn cards preview */}
-      {drawnCards.length > 0 && (
-        <div className="absolute top-28 left-1/2 -translate-x-1/2 flex gap-3 z-20">
-          {drawnCards.map((card, i) => (
-            <div key={i} className="w-10 h-14 rounded overflow-hidden border border-amber-500/40 opacity-70">
-              <img
-                src={card.imageUrl}
-                alt={card.name}
-                className={`w-full h-full object-cover ${card.isReversed ? 'rotate-180' : ''}`}
-              />
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Hand cursor */}
-      {isReady && handPosition && !isPinching && (
-        <div
-          className="absolute w-10 h-10 pointer-events-none z-40"
-          style={{
-            left: `${Math.max(5, Math.min(95, ((-handPosition.x + 1) / 2) * 100))}%`,
-            top: `${Math.max(10, Math.min(90, ((-handPosition.y + 1) / 2) * 100))}%`,
-            transform: 'translate(-50%, -50%)',
-          }}
+      <div className="relative z-10 w-full h-full flex flex-col items-center px-4 pt-14 pb-12">
+        <button
+          onClick={onExitGestureMode}
+          className="absolute left-4 top-4 z-20 px-4 py-1 text-xs rounded-full border border-purple-300/20 text-[#BDA1FF] hover:bg-purple-500/10 transition-all"
         >
-          <div className="w-full h-full rounded-full border border-cyan-400/60 bg-cyan-400/10 shadow-[0_0_20px_rgba(34,211,238,0.3)]" />
-          <div className="absolute inset-2 rounded-full border border-cyan-400/40" />
+          {language === 'zh' ? '退出' : 'Exit'}
+        </button>
+
+        <h2 className="text-[#E8E3FF] text-xl md:text-2xl lg:text-3xl font-mystic tracking-wide text-center">
+          {language === 'zh' ? '挥手移动卡牌，捏合选择。' : 'Wave to move the cards, pinch to select.'}
+        </h2>
+
+        <div className="mt-5 flex items-center gap-4 md:gap-6">
+          {[0, 1, 2].map((i) => {
+            const label = language === 'zh'
+              ? ['过去', '现在', '未来'][i]
+              : ['Past', 'Present', 'Future'][i];
+            const isActive = drawnCards.length === i;
+            const isDone = drawnCards.length > i;
+
+            return (
+              <div
+                key={label}
+                className={`px-6 py-1 rounded-full border text-xs md:text-sm font-mystic tracking-wide ${
+                  i === 0 ? 'bg-[#3E2080]/20' : 'bg-[#070212]/20'
+                } ${
+                  isActive ? 'border-amber-400/60 text-[#E8E3FF]' : 'border-[#564790] text-[#9B82C6]'
+                } ${
+                  isDone ? 'opacity-60' : 'opacity-100'
+                }`}
+              >
+                {label}
+              </div>
+            );
+          })}
         </div>
-      )}
 
-      {/* Card carousel */}
-      {!isPinching && (
-        <div className="absolute inset-0 flex items-center justify-center" style={{ perspective: '1000px' }}>
-          <div className="relative flex items-center justify-center" style={{ transformStyle: 'preserve-3d' }}>
-            {deck.map((card, index) => {
-              const transform = getCardTransform(index);
-              const centered = isCentered(index);
+        {!isPinching && (
+          <div className="mt-10 flex-1 w-full flex items-center justify-center" style={{ perspective: '1000px' }}>
+            <div className="relative flex items-center justify-center" style={{ transformStyle: 'preserve-3d' }}>
+              {deck.map((card, index) => {
+                const transform = getCardTransform(index);
+                const centered = isCentered(index);
 
-              return (
-                <div
-                  key={card.id}
-                  className="absolute"
-                  style={{
-                    ...transform,
-                    width: '130px',
-                    height: '195px',
-                    transition: 'transform 0.1s ease-out, opacity 0.15s',
-                  }}
-                >
-                  {centered && (
-                    <div className="absolute -inset-3 bg-amber-500/20 rounded-2xl blur-xl animate-pulse" />
-                  )}
+                return (
+                  <div
+                    key={card.id}
+                    className="absolute"
+                    style={{
+                      ...transform,
+                      width: '150px',
+                      height: '230px',
+                      transition: 'transform 0.1s ease-out, opacity 0.15s',
+                    }}
+                  >
+                    {centered && (
+                      <div className="absolute -inset-4 bg-amber-500/20 rounded-2xl blur-xl" />
+                    )}
 
-                  <div className={`relative w-full h-full rounded-xl overflow-hidden border-2 transition-all duration-200 ${
-                    centered
-                      ? 'border-amber-400 shadow-[0_0_40px_rgba(251,191,36,0.4)]'
-                      : 'border-slate-700/50 shadow-[0_0_15px_rgba(0,0,0,0.5)]'
-                  }`}>
-                    <div className={`w-full h-full bg-gradient-to-br from-slate-800 via-slate-900 to-slate-800 flex items-center justify-center relative ${
-                      centered ? 'from-purple-900/70 via-slate-900 to-purple-900/70' : ''
+                    <div className={`relative w-full h-full rounded-xl overflow-hidden border transition-all duration-200 ${
+                      centered
+                        ? 'border-amber-400 shadow-[0_0_40px_rgba(251,191,36,0.4)]'
+                        : 'border-slate-700/50 shadow-[0_0_18px_rgba(0,0,0,0.5)]'
                     }`}>
-                      <div className="absolute inset-0 opacity-20" style={{
-                        backgroundImage: `radial-gradient(circle at 50% 50%, transparent 0%, transparent 40%, rgba(139,92,246,0.1) 40%, rgba(139,92,246,0.1) 41%, transparent 41%)`,
-                        backgroundSize: '16px 16px',
-                      }} />
-                      <div className="absolute inset-2 border border-slate-700/40 rounded-lg" />
-                      <span className={`text-4xl font-mystic transition-all duration-300 ${
-                        centered ? 'text-amber-400 scale-110' : 'text-slate-600'
-                      }`}>
-                        ☾
-                      </span>
-                      {centered && (
-                        <>
-                          <div className="absolute top-2 left-2 w-2.5 h-2.5 border-l-2 border-t-2 border-amber-400/60" />
-                          <div className="absolute top-2 right-2 w-2.5 h-2.5 border-r-2 border-t-2 border-amber-400/60" />
-                          <div className="absolute bottom-2 left-2 w-2.5 h-2.5 border-l-2 border-b-2 border-amber-400/60" />
-                          <div className="absolute bottom-2 right-2 w-2.5 h-2.5 border-r-2 border-b-2 border-amber-400/60" />
-                        </>
-                      )}
+                      <div
+                        className="absolute inset-0"
+                        style={{
+                          backgroundImage: 'url(/img/card_bg.png)',
+                          backgroundSize: 'cover',
+                          backgroundPosition: 'center',
+                        }}
+                      />
+                      <div className="absolute inset-0 bg-slate-900/25" />
                     </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
-        </div>
-      )}
+        )}
+
+        <button
+          onClick={onExitGestureMode}
+          className="mt-8 px-5 py-1 text-xs rounded-full border border-purple-300/20 text-[#BDA1FF] hover:bg-purple-500/10 transition-all"
+        >
+          {language === 'zh' ? '返回普通抽牌' : 'Back Normal Pick Card'}
+        </button>
+      </div>
 
       {/* Preview overlay (when pinching) - card and info in column layout */}
       {isPinching && previewCard && (
@@ -362,9 +342,14 @@ export const GestureDrawing: React.FC<GestureDrawingProps> = ({
                   className="absolute inset-0 rounded-xl border-2 border-amber-500 shadow-[0_0_60px_rgba(251,191,36,0.5)] overflow-hidden"
                   style={{ backfaceVisibility: 'hidden' }}
                 >
-                  <div className="w-full h-full bg-gradient-to-br from-purple-900 via-slate-900 to-purple-900 flex items-center justify-center">
-                    <span className="text-6xl font-mystic text-amber-400">☾</span>
-                  </div>
+                  <div
+                    className="w-full h-full"
+                    style={{
+                      backgroundImage: 'url(/img/card_bg.png)',
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center',
+                    }}
+                  />
                 </div>
 
                 {/* Front */}
@@ -405,55 +390,15 @@ export const GestureDrawing: React.FC<GestureDrawingProps> = ({
         </div>
       )}
 
-      {/* Instructions */}
-      {!isPinching && (
-        <div className="absolute bottom-16 left-1/2 -translate-x-1/2 z-30 text-center">
-          {isLoading ? (
-            <div className="flex items-center gap-2 text-slate-500">
-              <div className="w-3 h-3 border border-cyan-400 border-t-transparent rounded-full animate-spin" />
-              <span className="text-xs font-mono uppercase tracking-wider">
-                {language === 'zh' ? '初始化...' : 'Initializing...'}
-              </span>
-            </div>
-          ) : isReady ? (
-            <div className="space-y-2">
-              <p className="text-slate-400 text-sm font-mono">
-                <span className="text-cyan-400">←</span>
-                {language === 'zh' ? ' 滑动选牌 ' : ' Swipe '}
-                <span className="text-cyan-400">→</span>
-              </p>
-              <p className="text-slate-600 text-xs">
-                {language === 'zh' ? '🤏 捏合预览 · 🖐️ 松手确认' : '🤏 Pinch to preview · 🖐️ Release to confirm'}
-              </p>
-            </div>
-          ) : (
-            <p className="text-slate-600 text-xs font-mono">{language === 'zh' ? '等待摄像头...' : 'Awaiting camera...'}</p>
-          )}
-        </div>
-      )}
-
-      {/* Camera preview */}
-      <div className="absolute bottom-4 right-4 z-30">
-        <div className="w-24 h-16 rounded overflow-hidden border border-slate-800 bg-black/80 opacity-40 hover:opacity-100 transition-opacity">
-          <video
-            ref={videoRef}
-            autoPlay
-            playsInline
-            muted
-            className="w-full h-full object-cover scale-x-[-1]"
-          />
-          {isReady && (
-            <div className="absolute top-1 right-1 w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse" />
-          )}
-        </div>
+      <div className="absolute w-1 h-1 opacity-0 pointer-events-none">
+        <video
+          ref={videoRef}
+          autoPlay
+          playsInline
+          muted
+          className="w-full h-full object-cover scale-x-[-1]"
+        />
       </div>
-
-      {/* Gesture debug */}
-      {isReady && (
-        <div className="absolute bottom-4 left-4 z-30 text-slate-700 text-[10px] font-mono">
-          {gesture || 'idle'} {isPinching ? '(pinching)' : ''}
-        </div>
-      )}
     </div>
   );
 };
