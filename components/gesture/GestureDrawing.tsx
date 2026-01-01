@@ -175,10 +175,12 @@ export const GestureDrawing: React.FC<GestureDrawingProps> = ({
     const offset = index - smoothIndex;
     const absOffset = Math.abs(offset);
 
-    const xPos = offset * 135;
-    const yPos = absOffset * 6;
-    const scale = Math.max(0.5, 1 - absOffset * 0.1);
-    const opacity = Math.max(0.25, 1 - absOffset * 0.15);
+    const xPos = offset * 190;
+    const yPos = absOffset * 8;
+    const baseScale = Math.max(0.45, 1 - absOffset * 0.1);
+    const focus = Math.max(0, 1 - absOffset);
+    const scale = baseScale * (1 + focus * 0.6);
+    const opacity = Math.max(0.2, 1 - absOffset * 0.18);
 
     return {
       transform: `translateX(${xPos}px) translateY(${yPos}px) scale(${scale})`,
@@ -282,8 +284,8 @@ export const GestureDrawing: React.FC<GestureDrawingProps> = ({
                     className="absolute"
                     style={{
                       ...transform,
-                      width: '150px',
-                      height: '230px',
+                      width: '180px',
+                      height: '270px',
                       transition: 'transform 0.1s ease-out, opacity 0.15s',
                     }}
                   >
@@ -291,10 +293,10 @@ export const GestureDrawing: React.FC<GestureDrawingProps> = ({
                       <div className="absolute -inset-4 bg-amber-500/20 rounded-2xl blur-xl" />
                     )}
 
-                    <div className={`relative w-full h-full rounded-xl overflow-hidden border transition-all duration-200 ${
+                    <div className={`relative w-full h-full rounded-xl overflow-hidden transition-all duration-200 ${
                       centered
-                        ? 'border-amber-400 shadow-[0_0_40px_rgba(251,191,36,0.4)]'
-                        : 'border-slate-700/50 shadow-[0_0_18px_rgba(0,0,0,0.5)]'
+                        ? 'border-2 border-amber-400 shadow-[0_0_50px_rgba(251,191,36,0.45)]'
+                        : 'border border-slate-700/50 shadow-[0_0_18px_rgba(0,0,0,0.5)]'
                     }`}>
                       <div
                         className="absolute inset-0"
