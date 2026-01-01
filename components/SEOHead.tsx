@@ -104,7 +104,7 @@ const SEOHead: React.FC<SEOProps> = ({
         provider: {
           '@type': 'Organization',
           name: '神秘塔罗 AI',
-          url: siteUrl
+          url: SITE_ROOT
         },
         areaServed: {
           '@type': 'Place',
