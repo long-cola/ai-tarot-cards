@@ -2214,7 +2214,7 @@ Reading Summary: ${readingSummary || "None"}`;
         )}
 
         {/* Big Topic Intro Page */}
-        {showBigTopicIntroPage && !showTopicListPage && !showTopicDetailPage && !showSharedReadingPage && !showPrivacyPage && !showTermsPage && !showBlogPage && !showPricingPage && (
+        {showBigTopicIntroPage && !showTopicListPage && !showTopicDetailPage && !showSharedReadingPage && !showPrivacyPage && !showTermsPage && !showBlogPage && !showPricingPage && !showLandingPage && (
           <BigTopicIntroPage
             language={language}
             onStartNewTopic={(title) => {
@@ -2248,7 +2248,7 @@ Reading Summary: ${readingSummary || "None"}`;
         )}
 
         {/* Topic List Page */}
-        {showTopicListPage && !showTopicDetailPage && !showSharedReadingPage && !showPrivacyPage && !showTermsPage && !showBlogPage && !showPricingPage && (
+        {showTopicListPage && !showTopicDetailPage && !showSharedReadingPage && !showPrivacyPage && !showTermsPage && !showBlogPage && !showPricingPage && !showLandingPage && (
           <div className="px-4 py-4 w-full">
             <TopicListPage
               topics={topicList}
@@ -2267,7 +2267,7 @@ Reading Summary: ${readingSummary || "None"}`;
         )}
 
         {/* Topic Detail Page */}
-        {showTopicDetailPage && selectedTopic && !showSharedReadingPage && !showPrivacyPage && !showTermsPage && !showBlogPage && (
+        {showTopicDetailPage && selectedTopic && !showSharedReadingPage && !showPrivacyPage && !showTermsPage && !showBlogPage && !showLandingPage && (
           <div className="px-4 py-4 w-full">
             <TopicDetailPage
               topic={selectedTopic}
@@ -2293,7 +2293,7 @@ Reading Summary: ${readingSummary || "None"}`;
         )}
 
         {/* Phase: INPUT */}
-        {phase === AppPhase.INPUT && !showBigTopicIntroPage && !showTopicListPage && !showTopicDetailPage && !showSharedReadingPage && !showPrivacyPage && !showTermsPage && !showBlogPage && !showPricingPage && (
+        {phase === AppPhase.INPUT && !showBigTopicIntroPage && !showTopicListPage && !showTopicDetailPage && !showSharedReadingPage && !showPrivacyPage && !showTermsPage && !showBlogPage && !showPricingPage && !showLandingPage && (
           <HomePage
             language={language}
             question={question}
@@ -2313,7 +2313,7 @@ Reading Summary: ${readingSummary || "None"}`;
         )}
 
         {/* Phase: SHUFFLING */}
-        {phase === AppPhase.SHUFFLING && !showBigTopicIntroPage && !showTopicListPage && !showTopicDetailPage && !showSharedReadingPage && !showPrivacyPage && !showTermsPage && !showBlogPage && !showPricingPage && (
+        {phase === AppPhase.SHUFFLING && !showBigTopicIntroPage && !showTopicListPage && !showTopicDetailPage && !showSharedReadingPage && !showPrivacyPage && !showTermsPage && !showBlogPage && !showPricingPage && !showLandingPage && (
           <div className="flex flex-col items-center justify-center flex-1 animate-fade-in w-full">
              <div className="relative w-40 h-64">
                 {[0, 1, 2, 3, 4, 5].map((i) => (
@@ -2340,7 +2340,7 @@ Reading Summary: ${readingSummary || "None"}`;
         )}
 
         {/* Phase: DRAWING - Gesture Mode (full screen) */}
-        {phase === AppPhase.DRAWING && isGestureMode && !showBigTopicIntroPage && !showTopicListPage && !showTopicDetailPage && !showSharedReadingPage && !showPrivacyPage && !showTermsPage && !showBlogPage && !showPricingPage && (
+        {phase === AppPhase.DRAWING && isGestureMode && !showBigTopicIntroPage && !showTopicListPage && !showTopicDetailPage && !showSharedReadingPage && !showPrivacyPage && !showTermsPage && !showBlogPage && !showPricingPage && !showLandingPage && (
           <GestureDrawing
             deck={deck}
             drawnCards={drawnCards}
@@ -2352,7 +2352,7 @@ Reading Summary: ${readingSummary || "None"}`;
         )}
 
         {/* Phase: DRAWING - Traditional Mode */}
-        {phase === AppPhase.DRAWING && !isGestureMode && !showBigTopicIntroPage && !showTopicListPage && !showTopicDetailPage && !showSharedReadingPage && !showPrivacyPage && !showTermsPage && !showBlogPage && !showPricingPage && (
+        {phase === AppPhase.DRAWING && !isGestureMode && !showBigTopicIntroPage && !showTopicListPage && !showTopicDetailPage && !showSharedReadingPage && !showPrivacyPage && !showTermsPage && !showBlogPage && !showPricingPage && !showLandingPage && (
           <div className="w-full h-full flex flex-col animate-fade-in relative pt-20 md:pt-24">
             <div className="text-center z-20 mb-6 md:mb-8">
                <div className="flex items-center justify-center gap-3 mb-1">
@@ -2449,7 +2449,7 @@ Reading Summary: ${readingSummary || "None"}`;
         )}
 
         {/* Phase: REVEAL & ANALYSIS */}
-        {(phase === AppPhase.REVEAL || phase === AppPhase.ANALYSIS) && !showBigTopicIntroPage && !showTopicListPage && !showTopicDetailPage && !showSharedReadingPage && !showPrivacyPage && !showTermsPage && !showBlogPage && !showPricingPage && (
+        {(phase === AppPhase.REVEAL || phase === AppPhase.ANALYSIS) && !showBigTopicIntroPage && !showTopicListPage && !showTopicDetailPage && !showSharedReadingPage && !showPrivacyPage && !showTermsPage && !showBlogPage && !showPricingPage && !showLandingPage && (
           <ReadingResultPage
             question={question}
             cards={drawnCards}
