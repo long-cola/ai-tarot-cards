@@ -1574,8 +1574,14 @@ const App: React.FC = () => {
     }
   };
 
+  const clearLandingPageState = () => {
+    setShowLandingPage(false);
+    setCurrentLandingSlug(null);
+  };
+
   const navigateToPath = (path: string) => {
     if (typeof window === 'undefined') return;
+    clearLandingPageState();
     window.history.pushState({}, '', path);
     scrollToTop('auto');
   };
@@ -1611,6 +1617,8 @@ const App: React.FC = () => {
     setShowTopicListPage(false);
     setShowTopicDetailPage(false);
     setShowPricingPage(false);
+    setShowLandingPage(false);
+    setCurrentLandingSlug(null);
     setPendingTopicTitle('');
     // Clean up any pending reading from localStorage
     localStorage.removeItem('pendingReading');
