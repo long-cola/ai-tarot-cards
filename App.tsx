@@ -16,6 +16,7 @@ import { SharedReadingPage } from './components/SharedReadingPage';
 import { PrivacyPolicyPage } from './components/PrivacyPolicyPage';
 import { TermsOfServicePage } from './components/TermsOfServicePage';
 import { PricingPage } from './components/PricingPage';
+import { LandingPageTemplate, isLandingPageSlug } from './components/landing';
 import { Footer } from './components/Footer';
 import { CookieConsent as CookieConsentBanner } from './components/CookieConsent';
 import { Toast } from './components/Toast';
@@ -504,6 +505,8 @@ const App: React.FC = () => {
   const [showBlogPage, setShowBlogPage] = useState(false);
   const [selectedBlogId, setSelectedBlogId] = useState<string | null>(null);
   const [showPricingPage, setShowPricingPage] = useState(false);
+  const [showLandingPage, setShowLandingPage] = useState(false);
+  const [currentLandingSlug, setCurrentLandingSlug] = useState<string | null>(null);
   const [pendingTopicTitle, setPendingTopicTitle] = useState<string>('');
   const [cookieConsent, setCookieConsent] = useState<CookieConsentStatus>(() => getCookieConsent());
   const [showCookieSettings, setShowCookieSettings] = useState(false);
@@ -579,6 +582,15 @@ const App: React.FC = () => {
     // Remove language prefix if present
     const routeParts = pathParts.filter(p => p !== 'zh' && p !== 'en');
     const route = routeParts[0];
+
+    // Check for landing pages first
+    if (route && isLandingPageSlug(route)) {
+      console.log('[Router] Loading landing page:', route);
+      setCurrentLandingSlug(route);
+      setShowLandingPage(true);
+      setShareDataLoaded(true);
+      return;
+    }
 
     // Check for page routes
     if (route === 'pricing') {
@@ -697,10 +709,15 @@ const App: React.FC = () => {
       setShowTopicDetailPage(false);
       setShowPrivacyPage(false);
       setShowTermsPage(false);
+      setShowLandingPage(false);
+      setCurrentLandingSlug(null);
       setSelectedBlogId(null);
 
       // Set the correct page based on route
-      if (route === 'pricing') {
+      if (route && isLandingPageSlug(route)) {
+        setCurrentLandingSlug(route);
+        setShowLandingPage(true);
+      } else if (route === 'pricing') {
         setShowPricingPage(true);
       } else if (route === 'blog') {
         setShowBlogPage(true);
@@ -2138,8 +2155,22 @@ Reading Summary: ${readingSummary || "None"}`;
           </div>
         )}
 
+        {/* Landing Pages */}
+        {showLandingPage && currentLandingSlug && (
+          <LandingPageTemplate
+            slug={currentLandingSlug}
+            language={language}
+            onStartReading={(prefillQuestion) => {
+              setShowLandingPage(false);
+              setCurrentLandingSlug(null);
+              setQuestion(prefillQuestion);
+              handleStart();
+            }}
+          />
+        )}
+
         {/* Pricing Page */}
-        {showPricingPage && !showTopicListPage && !showTopicDetailPage && !showSharedReadingPage && !showPrivacyPage && !showTermsPage && !showBlogPage && (
+        {showPricingPage && !showTopicListPage && !showTopicDetailPage && !showSharedReadingPage && !showPrivacyPage && !showTermsPage && !showBlogPage && !showLandingPage && (
           <PricingPage
             language={language}
             onStartReading={() => {

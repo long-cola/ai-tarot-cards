@@ -1,0 +1,264 @@
+import React from 'react';
+import { Helmet } from 'react-helmet-async';
+import { Language } from '../../types';
+import { getLandingPageData, LandingPageContent } from './LandingPageData';
+import SEOHead from '../SEOHead';
+
+interface LandingPageTemplateProps {
+  slug: string;
+  language: Language;
+  onStartReading: (prefillQuestion: string) => void;
+}
+
+export const LandingPageTemplate: React.FC<LandingPageTemplateProps> = ({
+  slug,
+  language,
+  onStartReading,
+}) => {
+  const pageData = getLandingPageData(slug, language);
+
+  if (!pageData) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-white/60">Page not found</p>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <SEOHead
+        title={pageData.seo.title}
+        description={pageData.seo.description}
+        url={pageData.seo.canonicalUrl}
+        lang={language === 'zh' ? 'zh-Hans' : 'en'}
+        schemaType="Service"
+      />
+      <FAQSchemaBlock faqs={pageData.faqs} />
+
+      <div className="min-h-screen relative overflow-x-hidden">
+        {/* Background Pattern */}
+        <div
+          className="fixed inset-0 opacity-30 pointer-events-none"
+          style={{
+            backgroundImage: 'url(/img/bg.png)',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+            width: '100vw',
+            height: '100vh',
+          }}
+        />
+
+        {/* Content */}
+        <div className="relative z-10 flex flex-col items-center pb-20">
+          <HeroSection
+            data={pageData.hero}
+            onCTAClick={() => onStartReading(pageData.hero.prefillQuestion)}
+          />
+          <ProblemSection data={pageData.problem} />
+          <AIExplanationSection data={pageData.aiExplanation} />
+          <TarotEntrySection
+            data={pageData.tarotEntry}
+            onStartReading={() => onStartReading(pageData.hero.prefillQuestion)}
+          />
+          <FAQDisplaySection data={pageData.faqs} language={language} />
+          <CTAFooter language={language} onStartReading={() => onStartReading(pageData.hero.prefillQuestion)} />
+        </div>
+      </div>
+    </>
+  );
+};
+
+// Hero Section Component
+const HeroSection: React.FC<{
+  data: LandingPageContent['hero'];
+  onCTAClick: () => void;
+}> = ({ data, onCTAClick }) => (
+  <div className="w-full flex flex-col items-center gap-8 pt-32 md:pt-40 pb-16 px-8 md:px-16">
+    <div className="flex flex-col items-center gap-6 text-center max-w-3xl">
+      <h1
+        style={{
+          fontFamily: "'Noto Serif SC', serif",
+          fontWeight: 700,
+          fontSize: 'clamp(32px, 6vw, 48px)',
+          lineHeight: 1.2,
+        }}
+        className="text-white/90"
+      >
+        {data.title}
+      </h1>
+      <p className="text-white/70 text-lg md:text-xl leading-relaxed max-w-2xl">
+        {data.subtitle}
+      </p>
+      <button
+        onClick={onCTAClick}
+        className="mt-4 px-8 py-4 bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-500 hover:to-purple-700 text-white font-semibold rounded-xl shadow-lg shadow-purple-900/50 transition-all duration-300 hover:scale-105 text-lg"
+      >
+        {data.ctaText}
+      </button>
+    </div>
+  </div>
+);
+
+// Problem Section Component
+const ProblemSection: React.FC<{
+  data: LandingPageContent['problem'];
+}> = ({ data }) => (
+  <section className="w-full max-w-4xl px-8 md:px-16 py-16">
+    <h2
+      style={{ fontFamily: "'Noto Serif SC', serif" }}
+      className="text-2xl md:text-3xl font-bold text-white/90 mb-8 text-center"
+    >
+      {data.title}
+    </h2>
+    <div className="space-y-6">
+      {data.paragraphs.map((paragraph, index) => (
+        <p key={index} className="text-white/70 text-lg leading-relaxed">
+          {paragraph}
+        </p>
+      ))}
+    </div>
+  </section>
+);
+
+// AI Explanation Section Component
+const AIExplanationSection: React.FC<{
+  data: LandingPageContent['aiExplanation'];
+}> = ({ data }) => (
+  <section className="w-full max-w-4xl px-8 md:px-16 py-16 bg-white/5 rounded-2xl mx-4 md:mx-8">
+    <h2
+      style={{ fontFamily: "'Noto Serif SC', serif" }}
+      className="text-2xl md:text-3xl font-bold text-white/90 mb-6 text-center"
+    >
+      {data.title}
+    </h2>
+    <p className="text-white/70 text-lg leading-relaxed mb-6 text-center">
+      {data.content}
+    </p>
+    <ul className="space-y-3 max-w-xl mx-auto">
+      {data.points.map((point, index) => (
+        <li key={index} className="flex items-start gap-3 text-white/70">
+          <span className="text-purple-400 mt-1">&#10003;</span>
+          <span>{point}</span>
+        </li>
+      ))}
+    </ul>
+  </section>
+);
+
+// Tarot Entry Section Component
+const TarotEntrySection: React.FC<{
+  data: LandingPageContent['tarotEntry'];
+  onStartReading: () => void;
+}> = ({ data, onStartReading }) => (
+  <section className="w-full max-w-4xl px-8 md:px-16 py-20">
+    <h2
+      style={{ fontFamily: "'Noto Serif SC', serif" }}
+      className="text-2xl md:text-3xl font-bold text-white/90 mb-10 text-center"
+    >
+      {data.title}
+    </h2>
+
+    {/* Card Preview */}
+    <div className="flex justify-center gap-4 md:gap-6 mb-10">
+      {[0, 1, 2].map((i) => (
+        <div
+          key={i}
+          onClick={onStartReading}
+          className="w-20 h-32 md:w-28 md:h-44 rounded-xl bg-gradient-to-b from-slate-800 to-slate-900 border-2 border-purple-900/60 shadow-2xl transform hover:scale-105 hover:-translate-y-2 transition-all duration-300 cursor-pointer flex items-center justify-center group"
+          style={{
+            transform: `rotate(${(i - 1) * 8}deg)`,
+          }}
+        >
+          <span className="text-purple-400/50 text-4xl group-hover:text-purple-400/80 transition-colors">
+            &#9789;
+          </span>
+        </div>
+      ))}
+    </div>
+
+    <div className="text-center">
+      <button
+        onClick={onStartReading}
+        className="px-10 py-5 bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-500 hover:to-purple-700 text-white font-bold rounded-xl shadow-lg shadow-purple-900/50 transition-all duration-300 hover:scale-105 text-xl"
+      >
+        {data.ctaText}
+      </button>
+    </div>
+  </section>
+);
+
+// FAQ Display Section Component
+const FAQDisplaySection: React.FC<{
+  data: LandingPageContent['faqs'];
+  language: Language;
+}> = ({ data, language }) => (
+  <section className="w-full max-w-4xl px-8 md:px-16 py-16">
+    <h2
+      style={{ fontFamily: "'Noto Serif SC', serif" }}
+      className="text-2xl md:text-3xl font-bold text-white/90 mb-10 text-center"
+    >
+      {language === 'zh' ? '常见问题' : 'Frequently Asked Questions'}
+    </h2>
+    <div className="space-y-6">
+      {data.map((faq, index) => (
+        <div
+          key={index}
+          className="bg-white/5 rounded-xl p-6 border border-white/10"
+        >
+          <h3 className="text-lg font-semibold text-white/90 mb-3">
+            {faq.question}
+          </h3>
+          <p className="text-white/70 leading-relaxed">{faq.answer}</p>
+        </div>
+      ))}
+    </div>
+  </section>
+);
+
+// CTA Footer Component
+const CTAFooter: React.FC<{
+  language: Language;
+  onStartReading: () => void;
+}> = ({ language, onStartReading }) => (
+  <section className="w-full max-w-4xl px-8 md:px-16 py-16 text-center">
+    <p className="text-white/60 mb-6">
+      {language === 'zh'
+        ? '准备好探索你的答案了吗？'
+        : 'Ready to explore your answer?'}
+    </p>
+    <button
+      onClick={onStartReading}
+      className="px-8 py-4 bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-500 hover:to-purple-700 text-white font-semibold rounded-xl shadow-lg shadow-purple-900/50 transition-all duration-300 hover:scale-105"
+    >
+      {language === 'zh' ? '开始免费占卜' : 'Start Your Free Reading'}
+    </button>
+  </section>
+);
+
+// FAQ Schema Block for SEO
+const FAQSchemaBlock: React.FC<{
+  faqs: Array<{ question: string; answer: string }>;
+}> = ({ faqs }) => {
+  const faqSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqs.map((faq) => ({
+      '@type': 'Question',
+      name: faq.question,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: faq.answer,
+      },
+    })),
+  };
+
+  return (
+    <Helmet>
+      <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
+    </Helmet>
+  );
+};
+
+export default LandingPageTemplate;
