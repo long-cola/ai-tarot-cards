@@ -604,8 +604,15 @@ const App: React.FC = () => {
       return;
     }
 
-    // Handle /topics or /bigtopic (both map to topics list)
-    if (route === 'topics' || route === 'bigtopic') {
+    // Handle /bigtopic intro page
+    if (route === 'bigtopic') {
+      setShowBigTopicIntroPage(true);
+      setShareDataLoaded(true);
+      return;
+    }
+
+    // Handle /topics list or detail page
+    if (route === 'topics') {
       // Check if there's a topic ID in the path (e.g., /topics/:id)
       const topicId = routeParts[1];
 
@@ -721,7 +728,9 @@ const App: React.FC = () => {
         setShowPricingPage(true);
       } else if (route === 'blog') {
         setShowBlogPage(true);
-      } else if (route === 'topics' || route === 'bigtopic') {
+      } else if (route === 'bigtopic') {
+        setShowBigTopicIntroPage(true);
+      } else if (route === 'topics') {
         const topicId = routeParts[1];
 
         if (topicId) {
@@ -1581,9 +1590,13 @@ const App: React.FC = () => {
 
   const navigateToPath = (path: string) => {
     if (typeof window === 'undefined') return;
+    const currentPath = window.location.pathname + window.location.search + window.location.hash;
+    if (currentPath === path) {
+      scrollToTop('auto');
+      return;
+    }
     clearLandingPageState();
-    window.history.pushState({}, '', path);
-    scrollToTop('auto');
+    window.location.assign(path);
   };
 
   // Update browser URL for client-side routing
@@ -1664,7 +1677,7 @@ const App: React.FC = () => {
           next === 'zh'
             ? `/zh${normalizedPath === '/' ? '/' : normalizedPath}${search}${hash}`
             : `${normalizedPath}${search}${hash}`;
-        window.history.replaceState({}, '', nextPath);
+        window.location.assign(nextPath);
       }
       return next;
     });
@@ -1705,6 +1718,11 @@ const App: React.FC = () => {
   };
 
   const loadTopicDetail = async (id: string, updateUrl = true) => {
+    if (updateUrl) {
+      const langPrefix = language === 'zh' ? '/zh' : '';
+      navigateToPath(`${langPrefix}/topics/${id}`);
+      return;
+    }
     setTopicsLoading(true);
     setTopicError('');
     try {
@@ -1722,13 +1740,7 @@ const App: React.FC = () => {
       setShowTopicListPage(false);
       setShowTopicDetailPage(true);
 
-      // Update URL to reflect the current topic
-      if (updateUrl) {
-        const langPrefix = language === 'zh' ? '/zh' : '';
-        const newUrl = `${langPrefix}/topics/${id}`;
-        window.history.pushState({ topicId: id }, '', newUrl);
-        console.log('[loadTopicDetail] Updated URL to:', newUrl);
-      }
+      // URL already handled for updateUrl=true via full navigation
 
       // Scroll to top to show the event input form
       setTimeout(() => {
@@ -2290,7 +2302,7 @@ Reading Summary: ${readingSummary || "None"}`;
                 setTopicEvents([]);
                 // Update URL to topics list
                 const langPrefix = language === 'zh' ? '/zh' : '';
-                window.history.pushState({}, '', `${langPrefix}/topics`);
+                navigateToPath(`${langPrefix}/topics`);
               }}
               onEventAdded={(newEvent) => {
                 setTopicEvents(prev => [...prev, newEvent]);
