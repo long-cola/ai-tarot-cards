@@ -42,6 +42,21 @@ export const Navbar: React.FC<NavbarProps> = ({
   const isZh = language === 'zh';
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const tarotReadingLinks = isZh
+    ? [
+        { label: '他会联系我吗塔罗占卜', href: '/zh/will-he-contact-me-tarot' },
+        { label: '爱情塔罗占卜', href: '/zh/love-tarot-reading' },
+        { label: '我是否该辞职塔罗占卜', href: '/zh/should-i-leave-my-job-tarot' },
+        { label: '事业塔罗占卜', href: '/zh/career-tarot-reading' },
+        { label: '每日塔罗指引', href: '/zh/daily-tarot-guidance' },
+      ]
+    : [
+        { label: 'Will He Contact Me Tarot', href: '/will-he-contact-me-tarot' },
+        { label: 'Love Tarot Reading', href: '/love-tarot-reading' },
+        { label: 'Should I Leave My Job Tarot', href: '/should-i-leave-my-job-tarot' },
+        { label: 'Career Tarot Reading', href: '/career-tarot-reading' },
+        { label: 'Daily Tarot Guidance', href: '/daily-tarot-guidance' },
+      ];
 
   // Debug: Log quota info when it changes
   useEffect(() => {
@@ -140,6 +155,28 @@ export const Navbar: React.FC<NavbarProps> = ({
           >
             {isZh ? '遇事占卜' : 'Quick Reading'}
           </button>
+          <div className="relative group">
+            <span
+              className="text-white hover:text-white/80 transition-colors text-[16px] cursor-pointer"
+              style={{ fontWeight: 400, fontFamily: "'Noto Serif SC', serif" }}
+            >
+              {isZh ? '热门塔罗' : 'Tarot Readings'}
+            </span>
+            <div className="absolute left-1/2 -translate-x-1/2 mt-3 min-w-[220px] rounded-xl border border-white/10 bg-[#1C1833]/95 backdrop-blur-md px-4 py-3 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity">
+              <div className="flex flex-col gap-2">
+                {tarotReadingLinks.map((link) => (
+                  <a
+                    key={link.href}
+                    href={link.href}
+                    className="text-[14px] text-purple-200 hover:text-purple-100 transition-colors"
+                    style={{ fontFamily: "'Noto Serif SC', serif" }}
+                  >
+                    {link.label}
+                  </a>
+                ))}
+              </div>
+            </div>
+          </div>
           <button
             onClick={onTopicsClick}
             className="text-white hover:text-white/80 transition-colors text-[16px]"
@@ -420,6 +457,22 @@ export const Navbar: React.FC<NavbarProps> = ({
                 {isZh ? '遇事占卜' : 'Quick Reading'}
               </span>
             </button>
+            <div className="px-4 pt-2">
+              <div className="text-xs uppercase tracking-widest text-slate-400 mb-2">
+                {isZh ? '热门塔罗' : 'Tarot Readings'}
+              </div>
+              <div className="flex flex-col gap-2">
+                {tarotReadingLinks.map((link) => (
+                  <a
+                    key={link.href}
+                    href={link.href}
+                    className="text-sm text-purple-200 hover:text-purple-100 transition-colors"
+                  >
+                    {link.label}
+                  </a>
+                ))}
+              </div>
+            </div>
             <button
               onClick={() => {
                 onTopicsClick?.();

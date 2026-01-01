@@ -10,12 +10,74 @@ interface LandingPageTemplateProps {
   onStartReading: (prefillQuestion: string) => void;
 }
 
+const landingLinks = [
+  {
+    slug: 'will-he-contact-me-tarot',
+    label: {
+      en: 'Will He Contact Me Tarot',
+      zh: '他会联系我吗塔罗占卜',
+    },
+    href: {
+      en: '/will-he-contact-me-tarot',
+      zh: '/zh/will-he-contact-me-tarot',
+    },
+  },
+  {
+    slug: 'love-tarot-reading',
+    label: {
+      en: 'Love Tarot Reading',
+      zh: '爱情塔罗占卜',
+    },
+    href: {
+      en: '/love-tarot-reading',
+      zh: '/zh/love-tarot-reading',
+    },
+  },
+  {
+    slug: 'should-i-leave-my-job-tarot',
+    label: {
+      en: 'Should I Leave My Job Tarot',
+      zh: '我是否该辞职塔罗占卜',
+    },
+    href: {
+      en: '/should-i-leave-my-job-tarot',
+      zh: '/zh/should-i-leave-my-job-tarot',
+    },
+  },
+  {
+    slug: 'career-tarot-reading',
+    label: {
+      en: 'Career Tarot Reading',
+      zh: '事业塔罗占卜',
+    },
+    href: {
+      en: '/career-tarot-reading',
+      zh: '/zh/career-tarot-reading',
+    },
+  },
+  {
+    slug: 'daily-tarot-guidance',
+    label: {
+      en: 'Daily Tarot Guidance',
+      zh: '每日塔罗指引',
+    },
+    href: {
+      en: '/daily-tarot-guidance',
+      zh: '/zh/daily-tarot-guidance',
+    },
+  },
+];
+
 export const LandingPageTemplate: React.FC<LandingPageTemplateProps> = ({
   slug,
   language,
   onStartReading,
 }) => {
   const pageData = getLandingPageData(slug, language);
+  const isZh = language === 'zh';
+  const relatedLinks = landingLinks
+    .filter((link) => link.slug !== slug)
+    .slice(0, 4);
 
   if (!pageData) {
     return (
@@ -63,6 +125,13 @@ export const LandingPageTemplate: React.FC<LandingPageTemplateProps> = ({
             onStartReading={() => onStartReading(pageData.hero.prefillQuestion)}
           />
           <FAQDisplaySection data={pageData.faqs} language={language} />
+          <RelatedLinksSection
+            title={isZh ? '相关塔罗问题' : 'Related Tarot Questions'}
+            links={relatedLinks.map((link) => ({
+              label: link.label[isZh ? 'zh' : 'en'],
+              href: link.href[isZh ? 'zh' : 'en'],
+            }))}
+          />
           <CTAFooter language={language} onStartReading={() => onStartReading(pageData.hero.prefillQuestion)} />
         </div>
       </div>
@@ -212,6 +281,31 @@ const FAQDisplaySection: React.FC<{
           </h3>
           <p className="text-white/70 leading-relaxed">{faq.answer}</p>
         </div>
+      ))}
+    </div>
+  </section>
+);
+
+const RelatedLinksSection: React.FC<{
+  title: string;
+  links: Array<{ label: string; href: string }>;
+}> = ({ title, links }) => (
+  <section className="w-full max-w-4xl px-8 md:px-16 py-12">
+    <h2
+      style={{ fontFamily: "'Noto Serif SC', serif" }}
+      className="text-2xl md:text-3xl font-bold text-white/90 mb-6 text-center"
+    >
+      {title}
+    </h2>
+    <div className="flex flex-col items-center gap-3 text-[16px] md:text-[17px]">
+      {links.map((link) => (
+        <a
+          key={link.href}
+          href={link.href}
+          className="text-purple-200 hover:text-purple-100 transition-colors underline underline-offset-4"
+        >
+          {link.label}
+        </a>
       ))}
     </div>
   </section>

@@ -45,6 +45,21 @@ export const HomePage: React.FC<HomePageProps> = ({
         '✨ Should I accept this job offer?',
         '✨ Should I start a business project',
       ];
+  const popularReadings = isZh
+    ? [
+        { label: '他会联系我吗塔罗占卜', href: '/zh/will-he-contact-me-tarot' },
+        { label: '爱情塔罗占卜', href: '/zh/love-tarot-reading' },
+        { label: '我是否该辞职塔罗占卜', href: '/zh/should-i-leave-my-job-tarot' },
+        { label: '事业塔罗占卜', href: '/zh/career-tarot-reading' },
+        { label: '每日塔罗指引', href: '/zh/daily-tarot-guidance' },
+      ]
+    : [
+        { label: 'Will He Contact Me Tarot', href: '/will-he-contact-me-tarot' },
+        { label: 'Love Tarot Reading', href: '/love-tarot-reading' },
+        { label: 'Should I Leave My Job Tarot', href: '/should-i-leave-my-job-tarot' },
+        { label: 'Career Tarot Reading', href: '/career-tarot-reading' },
+        { label: 'Daily Tarot Guidance', href: '/daily-tarot-guidance' },
+      ];
 
   const handleSubmit = () => {
     if (localQuestion.trim()) {
@@ -170,6 +185,27 @@ export const HomePage: React.FC<HomePageProps> = ({
                     question={q}
                     onClick={() => onQuickQuestionClick(q.replace('✨ ', ''))}
                   />
+                ))}
+              </div>
+            </div>
+
+            {/* Popular Tarot Readings */}
+            <div className="w-full flex flex-col items-center gap-4 mt-2">
+              <h2
+                className="text-[18px] md:text-[20px] font-semibold text-center"
+                style={{ color: '#E8E3FF', fontFamily: "'Noto Serif SC', serif" }}
+              >
+                {isZh ? '热门塔罗占卜' : 'Popular Tarot Readings'}
+              </h2>
+              <div className="flex flex-wrap justify-center items-center gap-4 px-4 text-[14px] md:text-[15px]">
+                {popularReadings.map((item) => (
+                  <a
+                    key={item.href}
+                    href={item.href}
+                    className="text-[#BDA1FF] hover:text-[#E2DBFF] transition-colors underline underline-offset-4"
+                  >
+                    {item.label}
+                  </a>
                 ))}
               </div>
             </div>
