@@ -297,7 +297,14 @@ export const GestureDrawing: React.FC<GestureDrawingProps> = ({
 
           <h2
             className="text-[#E8E3FF] text-[32px] leading-[48px] font-mystic tracking-wide text-center"
-            style={{ position: 'absolute', top: '118px', left: '50%', width: '646px', transform: 'translateX(-50%)' }}
+            style={{
+              position: 'absolute',
+              top: '118px',
+              left: '50%',
+              width: '646px',
+              transform: 'translateX(-50%)',
+              whiteSpace: 'nowrap',
+            }}
           >
             {language === 'zh' ? '挥手移动卡牌，捏合选择。' : 'Wave to move the cards, pinch to select.'}
           </h2>

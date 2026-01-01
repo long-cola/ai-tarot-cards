@@ -2441,11 +2441,21 @@ Reading Summary: ${readingSummary || "None"}`;
                 {language === 'zh' ? '退出' : 'Exit'}
               </button>
 
-              <h2 className="text-[#E8E3FF] text-xl md:text-2xl lg:text-3xl font-mystic tracking-wide text-center">
-                {t.drawTitle}
-              </h2>
+              <div className="relative w-full max-w-4xl flex items-center justify-center">
+                <h2 className="text-[#E8E3FF] text-xl md:text-2xl lg:text-3xl font-mystic tracking-wide text-center">
+                  {t.drawTitle}
+                </h2>
+                {drawnCards.length === 0 && (
+                  <button
+                    onClick={() => setIsGestureMode(true)}
+                    className="absolute right-0 top-1/2 -translate-y-1/2 px-4 py-1 text-xs rounded-full border border-purple-300/20 text-[#BDA1FF] hover:bg-purple-500/10 transition-all"
+                  >
+                    {language === 'zh' ? '手势抽牌' : 'Gesture Mode'}
+                  </button>
+                )}
+              </div>
 
-              <div className="mt-8 md:mt-10 grid grid-cols-3 gap-4 md:gap-6 w-full max-w-2xl">
+              <div className="mt-8 md:mt-10 grid grid-cols-3 gap-6 md:gap-8 w-full max-w-4xl">
                 {[0, 1, 2].map((slot) => {
                   const label = language === 'zh'
                     ? ['过去', '现在', '未来'][slot]
@@ -2518,17 +2528,6 @@ Reading Summary: ${readingSummary || "None"}`;
                   })}
                 </div>
 
-                <button
-                  onClick={() => setIsGestureMode(true)}
-                  disabled={drawnCards.length > 0}
-                  className={`mt-6 px-5 py-1 text-xs rounded-full border transition-all ${
-                    drawnCards.length > 0
-                      ? 'opacity-30 cursor-not-allowed border-slate-700 text-slate-600'
-                      : 'border-purple-300/20 text-[#BDA1FF] hover:bg-purple-500/10'
-                  }`}
-                >
-                  {language === 'zh' ? '试试手势抽牌' : 'Try Gesture Pick Card'}
-                </button>
               </div>
             </div>
           </div>
