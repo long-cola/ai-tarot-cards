@@ -384,6 +384,10 @@ const QUESTION_SUGGESTIONS: Record<Language, string[]> = {
   ],
 };
 
+const SHUFFLE_ANGLES = [
+  10, 20, 30, 40, 50, 60, 70, 80, 90, 0, -10, -20, -30, -40, -50, -60, -70, -80, -90,
+];
+
 const formatCardLabel = (card: DrawnCard, language: Language) => {
   const isZh = language === 'zh';
   const name = isZh ? card.nameCn : card.name;
@@ -2335,27 +2339,62 @@ Reading Summary: ${readingSummary || "None"}`;
         {/* Phase: SHUFFLING */}
         {phase === AppPhase.SHUFFLING && !showBigTopicIntroPage && !showTopicListPage && !showTopicDetailPage && !showSharedReadingPage && !showPrivacyPage && !showTermsPage && !showBlogPage && !showPricingPage && !showLandingPage && (
           <div className="flex flex-col items-center justify-center flex-1 animate-fade-in w-full">
-             <div className="relative w-40 h-64">
-                {[0, 1, 2, 3, 4, 5].map((i) => (
-                  <div 
-                    key={i}
-                    className="absolute inset-0 rounded-xl bg-slate-800 border-2 border-purple-900/80 shadow-2xl"
+             <div className="relative w-[280px] h-[280px] md:w-[340px] md:h-[340px]">
+                {SHUFFLE_ANGLES.map((angle, index) => (
+                  <div
+                    key={`${angle}-${index}`}
+                    className="shuffle-card"
                     style={{
-                      transform: `translate(${Math.sin(Date.now() / 80 + i) * 20}px, ${Math.cos(Date.now() / 80 + i) * 10}px) rotate(${Math.sin(Date.now() / 150 + i) * 12}deg)`,
-                      transition: 'transform 0.05s linear',
-                      zIndex: i
+                      ['--angle' as any]: `${angle}deg`,
+                      ['--index' as any]: index,
+                      zIndex: index,
                     }}
                   >
-                     <div className="w-full h-full bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-purple-800/40 via-slate-900 to-black flex items-center justify-center rounded-lg overflow-hidden">
-                        <div className="absolute inset-0 border border-white/5 rounded-lg"></div>
-                        <span className="text-purple-500/20 text-5xl font-mystic">☾</span>
-                     </div>
+                    <div className="w-full h-full rounded-[16px] border border-[#3F2A5A] shadow-[0_16px_32px_rgba(20,2,36,0.8)] overflow-hidden">
+                      <div
+                        className="w-full h-full"
+                        style={{
+                          backgroundImage: 'url(/img/card_bg.png)',
+                          backgroundSize: 'cover',
+                          backgroundPosition: 'center',
+                        }}
+                      />
+                    </div>
                   </div>
                 ))}
              </div>
              <p className="mt-16 text-amber-200/90 tracking-[0.3em] text-lg animate-pulse font-mystic drop-shadow-[0_0_8px_rgba(251,191,36,0.5)]">
                {t.shuffling}
              </p>
+             <style>{`
+               @keyframes shuffleFan {
+                 0%, 15% {
+                   transform: translate(-50%, -50%) rotate(0deg) translateY(0);
+                 }
+                 45%, 70% {
+                   transform: translate(-50%, -50%) rotate(var(--angle)) translateY(-160px);
+                 }
+                 100% {
+                   transform: translate(-50%, -50%) rotate(0deg) translateY(0);
+                 }
+               }
+               .shuffle-card {
+                 position: absolute;
+                 left: 50%;
+                 top: 50%;
+                 width: 120px;
+                 height: 200px;
+                 transform-origin: center;
+                 animation: shuffleFan 3.6s ease-in-out infinite;
+                 animation-delay: calc(var(--index) * 0.06s);
+               }
+               @media (min-width: 768px) {
+                 .shuffle-card {
+                   width: 140px;
+                   height: 230px;
+                 }
+               }
+             `}</style>
           </div>
         )}
 
@@ -2403,13 +2442,21 @@ Reading Summary: ${readingSummary || "None"}`;
             <div className="grid grid-cols-3 gap-3 sm:gap-4 w-full max-w-lg mx-auto mb-3 md:mb-4 z-20 px-2">
               {[0, 1, 2].map((slot) => (
                 <div key={slot} className="flex flex-col">
-                  <div className="aspect-[2/3.5] border border-purple-500/20 rounded-lg flex items-center justify-center bg-slate-900/40 backdrop-blur-sm relative transition-all duration-500 shadow-inner">
+                  <div
+                    className="aspect-[2/3.5] border border-purple-500/20 rounded-lg flex items-center justify-center backdrop-blur-sm relative transition-all duration-500 shadow-inner overflow-hidden"
+                    style={{
+                      backgroundImage: 'url(/img/card_bg.png)',
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center',
+                    }}
+                  >
+                    <div className="absolute inset-0 bg-slate-900/45 z-0"></div>
                     {drawnCards[slot] ? (
-                       <div className="animate-fade-in w-full h-full p-1">
+                       <div className="relative z-10 animate-fade-in w-full h-full p-1">
                           <Card card={drawnCards[slot]} isRevealed={false} className="w-full h-full" language={language} />
                        </div>
                     ) : (
-                      <div className="text-center opacity-30">
+                      <div className="relative z-10 text-center opacity-30">
                          <div className="text-xl mb-1 font-mystic text-purple-200">{slot + 1}</div>
                          <div className="text-[8px] uppercase tracking-widest font-cinzel">
                           {language === 'zh' ? (['过去', '现在', '未来'][slot]) : (['Past', 'Present', 'Future'][slot])}
@@ -2453,11 +2500,15 @@ Reading Summary: ${readingSummary || "None"}`;
                           zIndex: index + 10,
                         }}
                       >
-                        <div className="w-full h-full rounded-md bg-slate-800 border border-purple-500/40 shadow-xl group-hover:-translate-y-4 transition-transform relative overflow-hidden">
-                          <div className="absolute inset-0 bg-gradient-to-br from-purple-700/20 to-black"></div>
-                          <div className="absolute inset-1 border border-white/5 rounded-sm flex items-center justify-center">
-                              <span className="text-purple-300/20 text-xl font-mystic">☾</span>
-                          </div>
+                        <div
+                          className="w-full h-full rounded-md border border-purple-500/40 shadow-xl group-hover:-translate-y-4 transition-transform relative overflow-hidden"
+                          style={{
+                            backgroundImage: 'url(/img/card_bg.png)',
+                            backgroundSize: 'cover',
+                            backgroundPosition: 'center',
+                          }}
+                        >
+                          <div className="absolute inset-0 bg-slate-900/30"></div>
                         </div>
                       </div>
                     );

@@ -15,7 +15,7 @@ interface TarotCard3DProps {
 }
 
 // Card back texture (using a gradient as fallback)
-const CARD_BACK_URL = '/img/tarot-card-back.png';
+const CARD_BACK_URL = '/img/card_bg.png';
 
 export const TarotCard3D: React.FC<TarotCard3DProps> = ({
   card,

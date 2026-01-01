@@ -20,20 +20,13 @@ export const Card: React.FC<CardProps> = ({ card, isRevealed, onClick, className
       <div className={`relative w-full h-full duration-700 transform-style-3d transition-all ${isRevealed ? 'rotate-y-180' : ''}`}>
 
         {/* Card Back */}
-        <div className="absolute w-full h-full backface-hidden rounded-lg shadow-xl border-2 border-purple-900 bg-slate-800 flex items-center justify-center overflow-hidden group">
-          {/* Subtle Sheen/Texture */}
-          <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
-
-          {/* Decorative Pattern */}
-          <div className="absolute inset-2 border border-purple-500/30 rounded flex items-center justify-center">
-             <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full border border-amber-500/40 flex items-center justify-center relative">
-                <div className="absolute w-full h-full border border-purple-500/40 rounded-full animate-spin-slow"></div>
-                <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-amber-400 rounded-full shadow-[0_0_15px_rgba(251,191,36,0.8)]"></div>
-             </div>
-          </div>
-          <div className="absolute inset-0 opacity-30 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-purple-600 via-slate-900 to-black"></div>
-          {/* Mystery Symbol */}
-          <span className="font-mystic text-2xl sm:text-3xl md:text-4xl text-purple-200/60 transition-transform duration-500 group-hover:scale-110">☾</span>
+        <div className="absolute w-full h-full backface-hidden rounded-lg shadow-xl border-2 border-purple-900 overflow-hidden">
+          <img
+            src="/img/card_bg.png"
+            alt={language === 'zh' ? '塔罗牌背面' : 'Tarot card back'}
+            className="w-full h-full object-cover"
+            loading="lazy"
+          />
         </div>
 
         {/* Card Front */}
