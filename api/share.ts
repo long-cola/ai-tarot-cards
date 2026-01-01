@@ -44,10 +44,10 @@ async function handleCreateShare(req: any, res: any, pool: any) {
     question,
     cards,
     reading,
-    language,
     topicId,
     eventId
   } = req.body || {};
+  let language = req.body?.language;
 
   if (!shareType || !['quick', 'topic_event', 'topic_baseline', 'topic_full'].includes(shareType)) {
     return res.status(400).json({ ok: false, message: 'invalid_share_type' });
@@ -106,6 +106,11 @@ async function handleCreateShare(req: any, res: any, pool: any) {
     if (!topicRes.rows.length) {
       return res.status(404).json({ ok: false, message: 'topic_not_found' });
     }
+
+    // Use topic's language if not provided
+    if (!language) {
+      language = topicRes.rows[0].language || 'zh';
+    }
   }
 
   // Parse cards if it's a string
@@ -121,12 +126,20 @@ async function handleCreateShare(req: any, res: any, pool: any) {
   const cardsJson = parsedCards ? JSON.stringify(parsedCards) : null;
 
   // Insert shared reading
-  const insert = await pool.query(
-    `INSERT INTO shared_readings (share_type, question, cards, reading, language, topic_id, event_id, created_by)
-     VALUES ($1, $2, $3::jsonb, $4, $5, $6, $7, $8)
-     RETURNING id`,
-    [shareType, question || null, cardsJson, reading || null, language || null, topicId || null, eventId || null, userId]
-  );
+  console.log('[share] Inserting share:', { shareType, question, cardsJson, language, topicId, eventId, userId });
+
+  let insert;
+  try {
+    insert = await pool.query(
+      `INSERT INTO shared_readings (share_type, question, cards, reading, language, topic_id, event_id, created_by)
+       VALUES ($1, $2, $3::jsonb, $4, $5, $6, $7, $8)
+       RETURNING id`,
+      [shareType, question || null, cardsJson, reading || null, language || null, topicId || null, eventId || null, userId]
+    );
+  } catch (dbError: any) {
+    console.error('[share] Database insert error:', dbError.message, dbError.code, dbError.detail);
+    return res.status(500).json({ ok: false, message: 'db_error', details: dbError.message });
+  }
 
   const shareId = insert.rows[0].id;
 
