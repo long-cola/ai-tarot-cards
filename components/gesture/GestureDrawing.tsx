@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useGestureRecognition } from '../../hooks/useGestureRecognition';
 import { TarotCardData, DrawnCard, Language } from '../../types';
 
@@ -12,6 +12,14 @@ interface GestureDrawingProps {
 }
 
 const SELECTION_COOLDOWN = 1500;
+const GESTURE_LAYOUT = {
+  maxOffset: 6,
+  gap: 52.8,
+  widths: [321, 166.46, 147.96, 129.47, 110.97, 92.48, 73.98],
+  heights: [588, 304.92, 271.04, 237.16, 203.28, 169.4, 135.52],
+  radii: [11, 9.9, 8.8, 7.7, 6.6, 5.5, 4.4],
+  opacities: [1, 0.85, 0.7, 0.55, 0.4, 0.25, 0.2],
+};
 
 export const GestureDrawing: React.FC<GestureDrawingProps> = ({
   deck,
@@ -30,10 +38,20 @@ export const GestureDrawing: React.FC<GestureDrawingProps> = ({
   const [isPinching, setIsPinching] = useState(false);
   const [previewCard, setPreviewCard] = useState<{card: TarotCardData, isReversed: boolean, index: number} | null>(null);
   const [flipProgress, setFlipProgress] = useState(0);
+  const [layoutScale, setLayoutScale] = useState(1);
 
   const lastSelectionTime = useRef(0);
   const lastHandX = useRef<number | null>(null);
   const flipAnimationRef = useRef<number | null>(null);
+  const layoutOffsets = useMemo(() => {
+    const offsets = [0];
+    for (let i = 1; i <= GESTURE_LAYOUT.maxOffset; i += 1) {
+      const prev = GESTURE_LAYOUT.widths[i - 1];
+      const next = GESTURE_LAYOUT.widths[i];
+      offsets[i] = offsets[i - 1] + prev / 2 + GESTURE_LAYOUT.gap + next / 2;
+    }
+    return offsets;
+  }, []);
 
   const {
     gesture,
@@ -67,6 +85,18 @@ export const GestureDrawing: React.FC<GestureDrawingProps> = ({
     animationId = requestAnimationFrame(animate);
     return () => cancelAnimationFrame(animationId);
   }, [targetIndex, isPinching]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const updateScale = () => {
+      const scaleX = window.innerWidth / 1920;
+      const scaleY = window.innerHeight / 1080;
+      setLayoutScale(Math.min(scaleX, scaleY, 1));
+    };
+    updateScale();
+    window.addEventListener('resize', updateScale);
+    return () => window.removeEventListener('resize', updateScale);
+  }, []);
 
   // Update current index
   useEffect(() => {
@@ -171,21 +201,36 @@ export const GestureDrawing: React.FC<GestureDrawingProps> = ({
   }, [isReady, isLoading, error, startRecognition]);
 
   // Card transform calculation
-  const getCardTransform = (index: number) => {
+  const lerp = (start: number, end: number, progress: number) => start + (end - start) * progress;
+  const interpolate = (values: number[], value: number) => {
+    const clamped = Math.min(values.length - 1, Math.max(0, value));
+    const low = Math.floor(clamped);
+    const high = Math.min(values.length - 1, low + 1);
+    const t = clamped - low;
+    return lerp(values[low], values[high], t);
+  };
+
+  const getCardLayout = (index: number) => {
     const offset = index - smoothIndex;
     const absOffset = Math.abs(offset);
-
-    const xPos = offset * 190;
-    const yPos = absOffset * 8;
-    const baseScale = Math.max(0.45, 1 - absOffset * 0.1);
-    const focus = Math.max(0, 1 - absOffset);
-    const scale = baseScale * (1 + focus * 0.6);
-    const opacity = Math.max(0.2, 1 - absOffset * 0.18);
+    const clamped = Math.min(GESTURE_LAYOUT.maxOffset, absOffset);
+    const width = interpolate(GESTURE_LAYOUT.widths, clamped);
+    const height = interpolate(GESTURE_LAYOUT.heights, clamped);
+    const radius = interpolate(GESTURE_LAYOUT.radii, clamped);
+    const opacity = interpolate(GESTURE_LAYOUT.opacities, clamped);
+    const baseOffset = interpolate(layoutOffsets, clamped);
+    const xPos = Math.sign(offset) * baseOffset;
+    const yPos = (GESTURE_LAYOUT.heights[0] - height) / 2;
 
     return {
-      transform: `translateX(${xPos}px) translateY(${yPos}px) scale(${scale})`,
+      width,
+      height,
+      radius,
       opacity,
-      zIndex: Math.round(100 - absOffset * 10),
+      xPos,
+      yPos,
+      zIndex: Math.round(100 - absOffset * 6),
+      isCentered: absOffset < 0.5,
     };
   };
 
@@ -220,8 +265,6 @@ export const GestureDrawing: React.FC<GestureDrawingProps> = ({
     );
   }
 
-  const isCentered = (index: number) => Math.abs(index - smoothIndex) < 0.5;
-
   return (
     <div className="fixed inset-0 z-[9999] overflow-hidden bg-[#140F2A]">
       <div className="absolute inset-0 pointer-events-none">
@@ -234,70 +277,101 @@ export const GestureDrawing: React.FC<GestureDrawingProps> = ({
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#140F2A]/50 to-[#140F2A]" />
       </div>
 
-      <div className="relative z-10 w-full h-full flex flex-col items-center px-4 pt-14 pb-12">
-        <button
-          onClick={onExitGestureMode}
-          className="absolute left-4 top-4 z-20 px-4 py-1 text-xs rounded-full border border-purple-300/20 text-[#BDA1FF] hover:bg-purple-500/10 transition-all"
-        >
-          {language === 'zh' ? '退出' : 'Exit'}
-        </button>
+      <div
+        className="absolute left-1/2 top-1/2"
+        style={{
+          width: '1920px',
+          height: '1080px',
+          transform: `translate(-50%, -50%) scale(${layoutScale})`,
+          transformOrigin: 'center',
+        }}
+      >
+        <div className="relative w-full h-full">
+          <button
+            onClick={onExitGestureMode}
+            className="absolute z-20 px-4 py-1 text-xs rounded-full border border-purple-300/20 text-[#BDA1FF] hover:bg-purple-500/10 transition-all"
+            style={{ left: '27px', top: '22px', width: '63px', height: '32px' }}
+          >
+            {language === 'zh' ? '退出' : 'Exit'}
+          </button>
 
-        <h2 className="text-[#E8E3FF] text-xl md:text-2xl lg:text-3xl font-mystic tracking-wide text-center">
-          {language === 'zh' ? '挥手移动卡牌，捏合选择。' : 'Wave to move the cards, pinch to select.'}
-        </h2>
+          <h2
+            className="text-[#E8E3FF] text-[32px] leading-[48px] font-mystic tracking-wide text-center"
+            style={{ position: 'absolute', top: '118px', left: '50%', width: '646px', transform: 'translateX(-50%)' }}
+          >
+            {language === 'zh' ? '挥手移动卡牌，捏合选择。' : 'Wave to move the cards, pinch to select.'}
+          </h2>
 
-        <div className="mt-5 flex items-center gap-4 md:gap-6">
-          {[0, 1, 2].map((i) => {
-            const label = language === 'zh'
-              ? ['过去', '现在', '未来'][i]
-              : ['Past', 'Present', 'Future'][i];
-            const isActive = drawnCards.length === i;
-            const isDone = drawnCards.length > i;
+          <div
+            className="absolute left-1/2 flex items-center gap-[84px]"
+            style={{ top: '216px', transform: 'translateX(-50%)' }}
+          >
+            {[0, 1, 2].map((i) => {
+              const label = language === 'zh'
+                ? ['过去', '现在', '未来'][i]
+                : ['Past', 'Present', 'Future'][i];
+              const isActive = drawnCards.length === i;
+              const isDone = drawnCards.length > i;
 
-            return (
-              <div
-                key={label}
-                className={`px-6 py-1 rounded-full border text-xs md:text-sm font-mystic tracking-wide ${
-                  i === 0 ? 'bg-[#3E2080]/20' : 'bg-[#070212]/20'
-                } ${
-                  isActive ? 'border-amber-400/60 text-[#E8E3FF]' : 'border-[#564790] text-[#9B82C6]'
-                } ${
-                  isDone ? 'opacity-60' : 'opacity-100'
-                }`}
-              >
-                {label}
-              </div>
-            );
-          })}
-        </div>
+              return (
+                <div
+                  key={label}
+                  className={`flex items-center justify-center border text-base font-mystic tracking-wide ${
+                    i === 0 ? 'bg-[#3E2080]/20' : 'bg-[#070212]/20'
+                  } ${isActive ? 'border-amber-400/60 text-[#E8E3FF]' : 'border-[#564790] text-[#9B82C6]'} ${
+                    isDone ? 'opacity-60' : 'opacity-100'
+                  }`}
+                  style={{ width: '160px', height: '53px', borderRadius: '16px' }}
+                >
+                  {label}
+                </div>
+              );
+            })}
+          </div>
 
-        {!isPinching && (
-          <div className="mt-10 flex-1 w-full flex items-center justify-center" style={{ perspective: '1000px' }}>
-            <div className="relative flex items-center justify-center" style={{ transformStyle: 'preserve-3d' }}>
+          {!isPinching && (
+            <div
+              className="absolute left-1/2"
+              style={{
+                top: '309px',
+                width: '2397.21px',
+                height: '588px',
+                transform: 'translateX(-50%)',
+              }}
+            >
               {deck.map((card, index) => {
-                const transform = getCardTransform(index);
-                const centered = isCentered(index);
+                const offset = index - smoothIndex;
+                if (Math.abs(offset) > GESTURE_LAYOUT.maxOffset + 0.5) return null;
+
+                const layout = getCardLayout(index);
+                const shadowY = Math.round(layout.height * 0.052 * 100) / 100;
+                const shadowBlur = Math.round(layout.height * 0.104 * 100) / 100;
 
                 return (
                   <div
                     key={card.id}
                     className="absolute"
                     style={{
-                      ...transform,
-                      width: '180px',
-                      height: '270px',
+                      width: `${layout.width}px`,
+                      height: `${layout.height}px`,
+                      left: '50%',
+                      top: `${layout.yPos}px`,
+                      transform: `translateX(${layout.xPos}px) translateX(-50%)`,
+                      opacity: layout.opacity,
+                      zIndex: layout.zIndex,
                       transition: 'transform 0.1s ease-out, opacity 0.15s',
                     }}
                   >
-                    {centered && (
-                      <div className="absolute -inset-4 bg-amber-500/20 rounded-2xl blur-xl" />
-                    )}
-
-                    <div className={`relative w-full h-full rounded-xl overflow-hidden transition-all duration-200 ${
-                      centered
-                        ? 'border-2 border-amber-400 shadow-[0_0_50px_rgba(251,191,36,0.45)]'
-                        : 'border border-slate-700/50 shadow-[0_0_18px_rgba(0,0,0,0.5)]'
-                    }`}>
+                    <div
+                      className="relative w-full h-full overflow-hidden"
+                      style={{
+                        borderRadius: `${layout.radius}px`,
+                        border: layout.isCentered ? '1.1px solid #EBB658' : '1px solid rgba(86,71,144,0.4)',
+                        boxShadow: layout.isCentered
+                          ? '0px 17.6px 52.8px rgba(204, 175, 70, 0.3)'
+                          : `0px ${shadowY}px ${shadowBlur}px rgba(20, 2, 36, 0.8)`,
+                      }}
+                    >
                       <div
                         className="absolute inset-0"
                         style={{
@@ -306,21 +380,21 @@ export const GestureDrawing: React.FC<GestureDrawingProps> = ({
                           backgroundPosition: 'center',
                         }}
                       />
-                      <div className="absolute inset-0 bg-slate-900/25" />
                     </div>
                   </div>
                 );
               })}
             </div>
-          </div>
-        )}
+          )}
 
-        <button
-          onClick={onExitGestureMode}
-          className="mt-8 px-5 py-1 text-xs rounded-full border border-purple-300/20 text-[#BDA1FF] hover:bg-purple-500/10 transition-all"
-        >
-          {language === 'zh' ? '返回普通抽牌' : 'Back Normal Pick Card'}
-        </button>
+          <button
+            onClick={onExitGestureMode}
+            className="absolute px-5 py-1 text-xs rounded-full border border-purple-300/20 text-[#BDA1FF] hover:bg-purple-500/10 transition-all"
+            style={{ top: '991px', left: '50%', width: '175px', height: '32px', transform: 'translateX(-50%)' }}
+          >
+            {language === 'zh' ? '返回普通抽牌' : 'Back Normal Pick Card'}
+          </button>
+        </div>
       </div>
 
       {/* Preview overlay (when pinching) - card and info in column layout */}
