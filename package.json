@@ -11,7 +11,8 @@
     "db:migrate-prompts": "tsx scripts/migrate-prompts.ts",
     "db:migrate-analytics": "tsx scripts/migrate-analytics.ts",
     "db:migrate-shared-readings": "tsx scripts/migrate-shared-readings.ts",
-    "db:migrate-weekly-quota": "tsx scripts/migrate-weekly-quota.ts"
+    "db:migrate-weekly-quota": "tsx scripts/migrate-weekly-quota.ts",
+    "db:migrate-topic-full-share": "tsx scripts/migrate-topic-full-share.ts"
   },
   "dependencies": {
     "@mediapipe/tasks-vision": "^0.10.22-rc.20250304",
