@@ -546,6 +546,16 @@ const App: React.FC = () => {
   ]);
 
   const t = TRANSLATIONS[language];
+  const isDrawingView = phase === AppPhase.DRAWING
+    && !showBigTopicIntroPage
+    && !showTopicListPage
+    && !showTopicDetailPage
+    && !showSharedReadingPage
+    && !showPrivacyPage
+    && !showTermsPage
+    && !showBlogPage
+    && !showPricingPage
+    && !showLandingPage;
   
   // Initialize Deck
   useEffect(() => {
@@ -2085,8 +2095,8 @@ Reading Summary: ${readingSummary || "None"}`;
     >
       <StarryBackground />
 
-      {/* Hide navbar when in gesture mode */}
-      {!(isGestureMode && phase === AppPhase.DRAWING) && (
+      {/* Hide navbar during drawing to match full-screen layout */}
+      {!isDrawingView && (
       <Navbar
         onLoginClick={loginWithGoogle}
         onLogoutClick={handleLogout}
@@ -2412,79 +2422,72 @@ Reading Summary: ${readingSummary || "None"}`;
 
         {/* Phase: DRAWING - Traditional Mode */}
         {phase === AppPhase.DRAWING && !isGestureMode && !showBigTopicIntroPage && !showTopicListPage && !showTopicDetailPage && !showSharedReadingPage && !showPrivacyPage && !showTermsPage && !showBlogPage && !showPricingPage && !showLandingPage && (
-          <div className="w-full h-full flex flex-col animate-fade-in relative pt-20 md:pt-24">
-            <div className="text-center z-20 mb-6 md:mb-8">
-               <div className="flex items-center justify-center gap-3 mb-1">
-                 <h2 className="text-xl text-purple-100 tracking-widest font-mystic">{t.drawTitle}</h2>
-                 {/* Gesture mode toggle button */}
-                 <button
-                   onClick={() => setIsGestureMode(true)}
-                   disabled={drawnCards.length > 0}
-                   className={`
-                     px-3 py-1 text-xs rounded-full border transition-all whitespace-nowrap
-                     ${drawnCards.length > 0
-                       ? 'opacity-30 cursor-not-allowed border-slate-700 text-slate-600'
-                       : 'border-purple-400 text-purple-300 hover:bg-purple-500/20 hover:border-purple-300'
-                     }
-                   `}
-                   title={language === 'zh' ? '切换抽牌模式' : 'Toggle draw mode'}
-                 >
-                   {language === 'zh' ? '🖐️ 手势' : '🖐️ Gesture'}
-                 </button>
-               </div>
-               <div className="flex justify-center gap-1">
-                 {[0, 1, 2].map(i => (
-                   <div key={i} className={`w-2 h-2 rounded-full transition-colors duration-300 ${drawnCards.length > i ? 'bg-amber-500' : 'bg-slate-700'}`}></div>
-                 ))}
-               </div>
+          <div className="relative w-full flex-1 overflow-hidden animate-fade-in">
+            <div className="absolute inset-0 pointer-events-none">
+              <div
+                className="absolute inset-0 opacity-30 bg-cover bg-center"
+                style={{ backgroundImage: 'url(/img/bg.png)' }}
+              />
+              <div className="absolute -top-32 left-1/2 h-[520px] w-[1400px] -translate-x-1/2 rounded-full bg-[#140F2A] blur-[180px] opacity-90" />
+              <div className="absolute -bottom-40 left-1/2 h-[520px] w-[1600px] -translate-x-1/2 rounded-full bg-[#140F2A] blur-[180px] opacity-90" />
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#140F2A]/50 to-[#140F2A]" />
             </div>
 
-            <div className="grid grid-cols-3 gap-3 sm:gap-4 w-full max-w-lg mx-auto mb-3 md:mb-4 z-20 px-2">
-              {[0, 1, 2].map((slot) => (
-                <div key={slot} className="flex flex-col">
-                  <div
-                    className="aspect-[2/3.5] border border-purple-500/20 rounded-lg flex items-center justify-center backdrop-blur-sm relative transition-all duration-500 shadow-inner overflow-hidden"
-                    style={{
-                      backgroundImage: 'url(/img/card_bg.png)',
-                      backgroundSize: 'cover',
-                      backgroundPosition: 'center',
-                    }}
-                  >
-                    <div className="absolute inset-0 bg-slate-900/45 z-0"></div>
-                    {drawnCards[slot] ? (
-                       <div className="relative z-10 animate-fade-in w-full h-full p-1">
-                          <Card card={drawnCards[slot]} isRevealed={false} className="w-full h-full" language={language} />
-                       </div>
-                    ) : (
-                      <div className="relative z-10 text-center opacity-30">
-                         <div className="text-xl mb-1 font-mystic text-purple-200">{slot + 1}</div>
-                         <div className="text-[8px] uppercase tracking-widest font-cinzel">
-                          {language === 'zh' ? (['过去', '现在', '未来'][slot]) : (['Past', 'Present', 'Future'][slot])}
-                         </div>
+            <div className="relative z-10 w-full h-full flex flex-col items-center px-4 pb-10 pt-14 md:pt-16">
+              <button
+                onClick={goToDailyReading}
+                className="absolute left-4 top-4 z-20 px-4 py-1 text-xs rounded-full border border-purple-300/20 text-[#BDA1FF] hover:bg-purple-500/10 transition-all"
+              >
+                {language === 'zh' ? '退出' : 'Exit'}
+              </button>
+
+              <h2 className="text-[#E8E3FF] text-xl md:text-2xl lg:text-3xl font-mystic tracking-wide text-center">
+                {t.drawTitle}
+              </h2>
+
+              <div className="mt-8 md:mt-10 grid grid-cols-3 gap-4 md:gap-6 w-full max-w-2xl">
+                {[0, 1, 2].map((slot) => {
+                  const label = language === 'zh'
+                    ? ['过去', '现在', '未来'][slot]
+                    : ['Past', 'Present', 'Future'][slot];
+                  const slotTone = slot === 0 ? 'bg-[#3E2080]/20' : 'bg-[#070212]/20';
+
+                  return (
+                    <div key={slot} className="flex flex-col items-center">
+                      <div
+                        className={`relative aspect-[2/3.5] w-full rounded-2xl border border-[#564790] ${slotTone} backdrop-blur-[4px] overflow-hidden shadow-[0_16px_32px_rgba(20,2,36,0.8)] flex items-center justify-center`}
+                      >
+                        {drawnCards[slot] ? (
+                          <div className="relative z-10 animate-fade-in w-full h-full p-1">
+                            <Card card={drawnCards[slot]} isRevealed={false} className="w-full h-full" language={language} />
+                          </div>
+                        ) : (
+                          <div className="text-xs md:text-sm font-mystic tracking-[0.2em] text-[#9B82C6]">
+                            {label}
+                          </div>
+                        )}
+                        {drawnCards.length === slot && !isInteracting && (
+                          <div className="absolute inset-0 rounded-2xl border border-amber-400/60 animate-pulse shadow-[0_0_20px_rgba(245,158,11,0.2)] pointer-events-none"></div>
+                        )}
                       </div>
-                    )}
-                    {drawnCards.length === slot && !isInteracting && (
-                      <div className="absolute inset-0 border border-amber-500/50 rounded-lg animate-pulse shadow-[0_0_15px_rgba(245,158,11,0.15)] pointer-events-none"></div>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
+                    </div>
+                  );
+                })}
+              </div>
 
-            {/* Traditional card fan */}
-            <div className={`relative flex-1 w-full min-h-[280px] flex justify-center items-end perspective-1000 overflow-hidden ${isInteracting ? 'pointer-events-none grayscale-[0.5]' : ''} transition-all duration-500`}>
-              <div className="absolute inset-x-0 bottom-0 h-3/4 bg-gradient-to-t from-slate-950 via-purple-950/30 to-transparent pointer-events-none"></div>
-
-              <div className="relative w-full max-w-md h-80 mb-3 md:mb-4">
-                {deck.map((card, index) => {
+              <div className="mt-8 md:mt-12 w-full flex-1 flex flex-col items-center justify-end">
+                <div
+                  className={`relative w-full max-w-5xl h-40 md:h-48 lg:h-56 flex items-end justify-center perspective-1000 overflow-hidden ${isInteracting ? 'pointer-events-none grayscale-[0.5]' : ''} transition-all duration-500`}
+                >
+                  {deck.map((card, index) => {
                     const total = deck.length;
                     const center = (total - 1) / 2;
                     const offset = index - center;
 
-                    const degreePerCard = 4;
+                    const degreePerCard = 2.2;
                     const rotation = offset * degreePerCard;
-                    const translateY = Math.abs(offset) * 2 + (Math.abs(offset) > 5 ? Math.abs(offset) : 0);
-                    const translateX = offset * 12;
+                    const translateY = Math.abs(offset) * 1.2;
+                    const translateX = offset * 11;
 
                     return (
                       <div
@@ -2495,26 +2498,38 @@ Reading Summary: ${readingSummary || "None"}`;
                           width: '80px',
                           height: '128px',
                           marginLeft: '-40px',
-                          transformOrigin: '50% 120%',
+                          transformOrigin: '50% 135%',
                           transform: `translateX(${translateX}px) rotate(${rotation}deg) translateY(${translateY}px)`,
                           zIndex: index + 10,
                         }}
                       >
                         <div
-                          className="w-full h-full rounded-md border border-purple-500/40 shadow-xl group-hover:-translate-y-4 transition-transform relative overflow-hidden"
+                          className="w-full h-full rounded-md border border-purple-500/40 shadow-[0_16px_32px_rgba(20,2,36,0.8)] group-hover:-translate-y-3 transition-transform relative overflow-hidden"
                           style={{
                             backgroundImage: 'url(/img/card_bg.png)',
                             backgroundSize: 'cover',
                             backgroundPosition: 'center',
                           }}
                         >
-                          <div className="absolute inset-0 bg-slate-900/30"></div>
+                          <div className="absolute inset-0 bg-slate-900/20"></div>
                         </div>
                       </div>
                     );
-                })}
+                  })}
+                </div>
+
+                <button
+                  onClick={() => setIsGestureMode(true)}
+                  disabled={drawnCards.length > 0}
+                  className={`mt-6 px-5 py-1 text-xs rounded-full border transition-all ${
+                    drawnCards.length > 0
+                      ? 'opacity-30 cursor-not-allowed border-slate-700 text-slate-600'
+                      : 'border-purple-300/20 text-[#BDA1FF] hover:bg-purple-500/10'
+                  }`}
+                >
+                  {language === 'zh' ? '试试手势抽牌' : 'Try Gesture Pick Card'}
+                </button>
               </div>
-              <p className="absolute bottom-4 text-xs text-slate-500 tracking-widest font-cinzel opacity-60">SCROLL OR TAP TO DRAW</p>
             </div>
           </div>
         )}
@@ -2539,8 +2554,8 @@ Reading Summary: ${readingSummary || "None"}`;
 
       </main>
 
-      {/* Footer - hide when in gesture mode */}
-      {!(isGestureMode && phase === AppPhase.DRAWING) && (
+      {/* Footer - hide during drawing to match full-screen layout */}
+      {!isDrawingView && (
         <Footer
           language={language}
           onOpenCookieSettings={() => setShowCookieSettings(true)}
