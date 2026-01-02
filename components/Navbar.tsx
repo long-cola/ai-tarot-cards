@@ -155,20 +155,25 @@ export const Navbar: React.FC<NavbarProps> = ({
           >
             {isZh ? '遇事占卜' : 'Quick Reading'}
           </button>
-          <div className="relative group">
-            <span
-              className="text-white hover:text-white/80 transition-colors text-[16px] cursor-pointer"
-              style={{ fontWeight: 400, fontFamily: "'Noto Serif SC', serif" }}
-            >
+          <details className="group relative">
+            <summary className="list-none text-white hover:text-white/80 transition-colors text-[16px] cursor-pointer flex items-center gap-1" style={{ fontWeight: 400, fontFamily: "'Noto Serif SC', serif" }}>
               {isZh ? '热门塔罗' : 'Tarot Readings'}
-            </span>
-            <div className="absolute left-1/2 -translate-x-1/2 mt-3 min-w-[220px] rounded-xl border border-white/10 bg-[#1C1833]/95 backdrop-blur-md px-4 py-3 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity">
-              <div className="flex flex-col gap-2">
+              <svg className="w-3 h-3 text-white/70 group-open:rotate-180 transition-transform" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M5.23 7.21a.75.75 0 011.06.02L10 11.173l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" />
+              </svg>
+            </summary>
+            <div className="absolute left-1/2 -translate-x-1/2 mt-2 min-w-[220px] z-50" style={{
+              padding: '16px',
+              background: '#282446',
+              border: '1px solid #443E71',
+              borderRadius: '16px',
+            }}>
+              <div className="flex flex-col gap-3">
                 {tarotReadingLinks.map((link) => (
                   <a
                     key={link.href}
                     href={link.href}
-                    className="text-[14px] text-purple-200 hover:text-purple-100 transition-colors"
+                    className="text-[14px] text-purple-200 hover:text-purple-100 transition-colors block py-1"
                     style={{ fontFamily: "'Noto Serif SC', serif" }}
                   >
                     {link.label}
@@ -176,7 +181,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 ))}
               </div>
             </div>
-          </div>
+          </details>
           <button
             onClick={onTopicsClick}
             className="text-white hover:text-white/80 transition-colors text-[16px]"
