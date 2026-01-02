@@ -265,6 +265,10 @@ export const GestureDrawing: React.FC<GestureDrawingProps> = ({
     );
   }
 
+  const isPreviewing = isPinching && previewCard !== null;
+  const showPreviewInfo = isPreviewing && flipProgress >= 1;
+  const showPreviewOverlay = isPreviewing;
+
   return (
     <div className="fixed inset-0 z-[9999] overflow-hidden bg-[#140F2A]">
       <div className="absolute inset-0 pointer-events-none">
@@ -336,36 +340,75 @@ export const GestureDrawing: React.FC<GestureDrawingProps> = ({
             })}
           </div>
 
-          {!isPinching && (
-            <div
-              className="absolute left-1/2"
-              style={{
-                top: '309px',
-                width: '2397.21px',
-                height: '588px',
-                transform: 'translateX(-50%)',
-              }}
-            >
-              {deck.map((card, index) => {
-                const offset = index - smoothIndex;
-                if (Math.abs(offset) > GESTURE_LAYOUT.maxOffset + 0.5) return null;
+          <div
+            className="absolute left-1/2 relative"
+            style={{
+              top: '309px',
+              width: '2397.21px',
+              height: '588px',
+              transform: 'translateX(-50%)',
+            }}
+          >
+            {deck.map((card, index) => {
+              const offset = index - smoothIndex;
+              if (Math.abs(offset) > GESTURE_LAYOUT.maxOffset + 0.5) return null;
 
-                const layout = getCardLayout(index);
-                const shadowY = Math.round(layout.height * 0.052 * 100) / 100;
-                const shadowBlur = Math.round(layout.height * 0.104 * 100) / 100;
+              const layout = getCardLayout(index);
+              const shadowY = Math.round(layout.height * 0.052 * 100) / 100;
+              const shadowBlur = Math.round(layout.height * 0.104 * 100) / 100;
+              const isPreviewCard = isPreviewing && previewCard?.index === index;
+              const previewScale = isPreviewCard ? (showPreviewInfo ? 1.55 : 1.35) : 1;
+              const previewLift = isPreviewCard && showPreviewInfo ? -90 : 0;
+              const scaledWidth = layout.width * previewScale;
+              const scaledHeight = layout.height * previewScale;
+              const cardTop = layout.yPos + previewLift - (scaledHeight - layout.height) / 2;
+              const cardBottom = cardTop + scaledHeight;
+              const infoTop = cardBottom + 18;
+              const infoWidth = Math.max(260, scaledWidth + 24);
 
-                return (
+              return (
+                <React.Fragment key={card.id}>
+                  {isPreviewCard && showPreviewInfo && previewCard && (
+                    <div
+                      className="absolute"
+                      style={{
+                        left: '50%',
+                        top: `${infoTop}px`,
+                        width: `${infoWidth}px`,
+                        transform: `translateX(${layout.xPos}px) translateX(-50%)`,
+                        zIndex: 190,
+                      }}
+                    >
+                      <div className="rounded-2xl bg-black/90 border border-purple-200/30 px-4 py-3 backdrop-blur-xl shadow-[0_18px_40px_rgba(10,5,20,0.8)]">
+                        <h3 className="text-[22px] leading-[30px] font-mystic text-amber-400 mb-2 text-center">
+                          {language === 'zh' ? previewCard.card.nameCn : previewCard.card.name}
+                        </h3>
+                        <div className="flex flex-col items-center">
+                          <span className={`inline-block px-3 py-1 rounded text-xs font-mono ${
+                            previewCard.isReversed ? 'bg-purple-500/40 text-purple-200' : 'bg-amber-500/40 text-amber-200'
+                          }`}>
+                            {previewCard.isReversed ? (language === 'zh' ? '逆位' : 'REVERSED') : (language === 'zh' ? '正位' : 'UPRIGHT')}
+                          </span>
+                          <div className="mt-3 animate-pulse">
+                            <span className="text-cyan-400 text-sm font-mono">
+                              {language === 'zh' ? '🖐️ 松手确认' : '🖐️ Release to confirm'}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   <div
-                    key={card.id}
                     className="absolute"
                     style={{
                       width: `${layout.width}px`,
                       height: `${layout.height}px`,
                       left: '50%',
                       top: `${layout.yPos}px`,
-                      transform: `translateX(${layout.xPos}px) translateX(-50%)`,
+                      transform: `translateX(${layout.xPos}px) translateX(-50%) translateY(${previewLift}px) scale(${previewScale})`,
                       opacity: layout.opacity,
-                      zIndex: layout.zIndex,
+                      zIndex: isPreviewCard ? 200 : layout.zIndex,
                       transition: 'transform 0.1s ease-out, opacity 0.15s',
                     }}
                   >
@@ -377,101 +420,70 @@ export const GestureDrawing: React.FC<GestureDrawingProps> = ({
                         boxShadow: layout.isCentered
                           ? '0px 17.6px 52.8px rgba(204, 175, 70, 0.3)'
                           : `0px ${shadowY}px ${shadowBlur}px rgba(20, 2, 36, 0.8)`,
+                        transformStyle: 'preserve-3d',
                       }}
                     >
-                      <div
-                        className="absolute inset-0"
-                        style={{
-                          backgroundImage: 'url(/img/card_bg.png)',
-                          backgroundSize: 'cover',
-                          backgroundPosition: 'center',
-                        }}
-                      />
+                      {isPreviewCard ? (
+                        <div
+                          className="absolute inset-0"
+                          style={{
+                            transformStyle: 'preserve-3d',
+                            transform: `rotateY(${flipProgress * 180}deg)`,
+                            transition: 'transform 0.2s ease-out',
+                          }}
+                        >
+                          <div
+                            className="absolute inset-0"
+                            style={{
+                              backfaceVisibility: 'hidden',
+                              backgroundImage: 'url(/img/card_bg.png)',
+                              backgroundSize: 'cover',
+                              backgroundPosition: 'center',
+                            }}
+                          />
+                          <div
+                            className="absolute inset-0"
+                            style={{
+                              backfaceVisibility: 'hidden',
+                              transform: 'rotateY(180deg)',
+                            }}
+                          >
+                            <img
+                              src={previewCard?.card.imageUrl}
+                              alt={previewCard?.card.name}
+                              className={`w-full h-full object-cover ${previewCard?.isReversed ? 'rotate-180' : ''}`}
+                            />
+                          </div>
+                        </div>
+                      ) : (
+                        <div
+                          className="absolute inset-0"
+                          style={{
+                            backgroundImage: 'url(/img/card_bg.png)',
+                            backgroundSize: 'cover',
+                            backgroundPosition: 'center',
+                          }}
+                        />
+                      )}
                     </div>
                   </div>
-                );
-              })}
-            </div>
+                </React.Fragment>
+              );
+            })}
+          </div>
+
+          {!isPreviewing && (
+            <button
+              onClick={onExitGestureMode}
+              className="absolute px-5 py-1 text-xs rounded-full border border-purple-300/20 text-[#BDA1FF] hover:bg-purple-500/10 transition-all"
+              style={{ top: '991px', left: '50%', width: '175px', height: '32px', transform: 'translateX(-50%)' }}
+            >
+              {language === 'zh' ? '返回普通抽牌' : 'Back Normal Pick Card'}
+            </button>
           )}
 
-          <button
-            onClick={onExitGestureMode}
-            className="absolute px-5 py-1 text-xs rounded-full border border-purple-300/20 text-[#BDA1FF] hover:bg-purple-500/10 transition-all"
-            style={{ top: '991px', left: '50%', width: '175px', height: '32px', transform: 'translateX(-50%)' }}
-          >
-            {language === 'zh' ? '返回普通抽牌' : 'Back Normal Pick Card'}
-          </button>
         </div>
       </div>
-
-      {/* Preview overlay (when pinching) - card and info in column layout */}
-      {isPinching && previewCard && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center z-50 py-8">
-          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
-
-          {/* Content container - card above, info below */}
-          <div className="relative z-10 flex flex-col items-center">
-            {/* Flipping card */}
-            <div style={{ width: '180px', height: '270px', perspective: '1200px' }}>
-              <div
-                className="w-full h-full relative"
-                style={{
-                  transformStyle: 'preserve-3d',
-                  transform: `rotateY(${flipProgress * 180}deg)`,
-                }}
-              >
-                {/* Back */}
-                <div
-                  className="absolute inset-0 rounded-xl border-2 border-amber-500 shadow-[0_0_60px_rgba(251,191,36,0.5)] overflow-hidden"
-                  style={{ backfaceVisibility: 'hidden' }}
-                >
-                  <div
-                    className="w-full h-full"
-                    style={{
-                      backgroundImage: 'url(/img/card_bg.png)',
-                      backgroundSize: 'cover',
-                      backgroundPosition: 'center',
-                    }}
-                  />
-                </div>
-
-                {/* Front */}
-                <div
-                  className="absolute inset-0 rounded-xl border-2 border-amber-500 shadow-[0_0_60px_rgba(251,191,36,0.5)] overflow-hidden"
-                  style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
-                >
-                  <img
-                    src={previewCard.card.imageUrl}
-                    alt={previewCard.card.name}
-                    className={`w-full h-full object-cover ${previewCard.isReversed ? 'rotate-180' : ''}`}
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Card info - below the card */}
-            {flipProgress >= 1 && (
-              <div className="mt-6 text-center">
-                <h3 className="text-2xl font-mystic text-amber-400 mb-2">
-                  {language === 'zh' ? previewCard.card.nameCn : previewCard.card.name}
-                </h3>
-                <span className={`inline-block px-3 py-1 rounded text-xs font-mono ${
-                  previewCard.isReversed ? 'bg-purple-500/40 text-purple-200' : 'bg-amber-500/40 text-amber-200'
-                }`}>
-                  {previewCard.isReversed ? (language === 'zh' ? '逆位' : 'REVERSED') : (language === 'zh' ? '正位' : 'UPRIGHT')}
-                </span>
-
-                {/* Release hint */}
-                <div className="mt-4 animate-pulse">
-                  <span className="text-cyan-400 text-sm font-mono">
-                    {language === 'zh' ? '🖐️ 松手确认' : '🖐️ Release to confirm'}
-                  </span>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
 
       <div className="absolute w-1 h-1 opacity-0 pointer-events-none">
         <video

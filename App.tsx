@@ -384,9 +384,7 @@ const QUESTION_SUGGESTIONS: Record<Language, string[]> = {
   ],
 };
 
-const SHUFFLE_ANGLES = [
-  10, 20, 30, 40, 50, 60, 70, 80, 90, 0, -10, -20, -30, -40, -50, -60, -70, -80, -90,
-];
+const SHUFFLE_ANGLES = Array.from({ length: 36 }, (_, index) => index * 10);
 
 const formatCardLabel = (card: DrawnCard, language: Language) => {
   const isZh = language === 'zh';
@@ -2349,59 +2347,63 @@ Reading Summary: ${readingSummary || "None"}`;
         {/* Phase: SHUFFLING */}
         {phase === AppPhase.SHUFFLING && !showBigTopicIntroPage && !showTopicListPage && !showTopicDetailPage && !showSharedReadingPage && !showPrivacyPage && !showTermsPage && !showBlogPage && !showPricingPage && !showLandingPage && (
           <div className="flex flex-col items-center justify-center flex-1 animate-fade-in w-full">
-             <div className="relative w-[280px] h-[280px] md:w-[340px] md:h-[340px]">
-                {SHUFFLE_ANGLES.map((angle, index) => (
-                  <div
-                    key={`${angle}-${index}`}
-                    className="shuffle-card"
-                    style={{
-                      ['--angle' as any]: `${angle}deg`,
-                      ['--index' as any]: index,
-                      zIndex: index,
-                    }}
-                  >
-                    <div className="w-full h-full rounded-[16px] border border-[#3F2A5A] shadow-[0_16px_32px_rgba(20,2,36,0.8)] overflow-hidden">
-                      <div
-                        className="w-full h-full"
-                        style={{
-                          backgroundImage: 'url(/img/card_bg.png)',
-                          backgroundSize: 'cover',
-                          backgroundPosition: 'center',
-                        }}
-                      />
+             <div className="relative w-[400px] h-[300px] md:w-[500px] md:h-[350px]">
+                {SHUFFLE_ANGLES.map((angle, index) => {
+                  const reversedZIndex = SHUFFLE_ANGLES.length - 1 - index;
+                  return (
+                    <div
+                      key={`${angle}-${index}`}
+                      className="shuffle-card"
+                      style={{
+                        ['--target-angle' as any]: `${angle}deg`,
+                        ['--card-index' as any]: index,
+                        zIndex: reversedZIndex,
+                      }}
+                    >
+                      <div className="w-full h-full rounded-[16px] border border-[#3F2A5A] overflow-hidden">
+                        <div
+                          className="w-full h-full"
+                          style={{
+                            backgroundImage: 'url(/img/card_bg.png)',
+                            backgroundSize: 'cover',
+                            backgroundPosition: 'center',
+                          }}
+                        />
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
              </div>
              <p className="mt-16 text-amber-200/90 tracking-[0.3em] text-lg animate-pulse font-mystic drop-shadow-[0_0_8px_rgba(251,191,36,0.5)]">
                {t.shuffling}
              </p>
              <style>{`
-               @keyframes shuffleFan {
-                 0%, 15% {
-                   transform: translate(-50%, -50%) rotate(0deg) translateY(0);
-                 }
-                 45%, 70% {
-                   transform: translate(-50%, -50%) rotate(var(--angle)) translateY(-160px);
+               @keyframes cardSpread {
+                 0% {
+                   transform: rotate(0deg);
                  }
                  100% {
-                   transform: translate(-50%, -50%) rotate(0deg) translateY(0);
+                   transform: rotate(var(--target-angle));
                  }
                }
                .shuffle-card {
                  position: absolute;
                  left: 50%;
                  top: 50%;
-                 width: 120px;
-                 height: 200px;
-                 transform-origin: center;
-                 animation: shuffleFan 3.6s ease-in-out infinite;
-                 animation-delay: calc(var(--index) * 0.06s);
+                 margin-left: -70px;
+                 margin-top: -112px;
+                 width: 140px;
+                 height: 224px;
+                 transform-origin: center center;
+                 animation: cardSpread 2.5s ease-out forwards;
+                 animation-delay: calc(var(--card-index) * 0.04s);
                }
                @media (min-width: 768px) {
                  .shuffle-card {
-                   width: 140px;
-                   height: 230px;
+                   width: 160px;
+                   height: 256px;
+                   margin-left: -80px;
+                   margin-top: -128px;
                  }
                }
              `}</style>
@@ -2455,7 +2457,7 @@ Reading Summary: ${readingSummary || "None"}`;
                 )}
               </div>
 
-              <div className="mt-8 md:mt-10 grid grid-cols-3 gap-6 md:gap-8 w-full max-w-4xl">
+              <div className="mt-8 md:mt-10 grid grid-cols-3 gap-3 md:gap-4 w-full max-w-xl">
                 {[0, 1, 2].map((slot) => {
                   const label = language === 'zh'
                     ? ['过去', '现在', '未来'][slot]
@@ -2487,17 +2489,17 @@ Reading Summary: ${readingSummary || "None"}`;
 
               <div className="mt-8 md:mt-12 w-full flex-1 flex flex-col items-center justify-end">
                 <div
-                  className={`relative w-full max-w-5xl h-40 md:h-48 lg:h-56 flex items-end justify-center perspective-1000 overflow-hidden ${isInteracting ? 'pointer-events-none grayscale-[0.5]' : ''} transition-all duration-500`}
+                  className={`relative w-full max-w-6xl h-64 md:h-72 lg:h-80 flex items-end justify-center perspective-1000 overflow-visible ${isInteracting ? 'pointer-events-none grayscale-[0.5]' : ''} transition-all duration-500`}
                 >
                   {deck.map((card, index) => {
                     const total = deck.length;
                     const center = (total - 1) / 2;
                     const offset = index - center;
 
-                    const degreePerCard = 2.2;
+                    const degreePerCard = 3.4;
                     const rotation = offset * degreePerCard;
-                    const translateY = Math.abs(offset) * 1.2;
-                    const translateX = offset * 11;
+                    const translateY = Math.abs(offset) * 1.8;
+                    const translateX = offset * 18;
 
                     return (
                       <div
@@ -2505,9 +2507,9 @@ Reading Summary: ${readingSummary || "None"}`;
                         onClick={() => handleCardDraw(index)}
                         className="absolute bottom-0 left-1/2 cursor-pointer transition-all duration-300 group touch-manipulation"
                         style={{
-                          width: '80px',
-                          height: '128px',
-                          marginLeft: '-40px',
+                          width: '150px',
+                          height: '240px',
+                          marginLeft: '-75px',
                           transformOrigin: '50% 135%',
                           transform: `translateX(${translateX}px) rotate(${rotation}deg) translateY(${translateY}px)`,
                           zIndex: index + 10,
