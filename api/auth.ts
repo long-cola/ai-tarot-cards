@@ -1,5 +1,6 @@
 import { getPool } from '../services/db.js';
 import { signToken, setAuthCookie, clearAuthCookie } from '../services/jwt.js';
+import { trackNewUser } from '../services/analyticsService.js';
 
 export default async function handler(req: any, res: any) {
   // Strip query string
@@ -167,6 +168,9 @@ async function handleGoogleCallback(req: any, res: any) {
       );
       user = insert.rows[0];
       console.log('[OAuth Callback] New user created:', user.id);
+
+      // Track new user in analytics
+      await trackNewUser();
     }
 
     // Sign JWT and set cookie

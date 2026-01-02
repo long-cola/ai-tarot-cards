@@ -6,6 +6,11 @@ import {
   canAddTopicEvent,
   incrementWeeklyTopicCount,
 } from '../services/topicQuota.js';
+import {
+  trackNewTopic,
+  trackBaselineReading,
+  trackEventReading,
+} from '../services/analyticsService.js';
 
 export default async function handler(req: any, res: any) {
   const user = getUserFromRequest(req);
@@ -182,6 +187,12 @@ async function handleCreateTopic(req: any, res: any, user: any, pool: any) {
     await incrementWeeklyTopicCount(user.id);
   }
 
+  // Track analytics
+  await trackNewTopic();
+  if (baseline_reading) {
+    await trackBaselineReading();
+  }
+
   const updatedQuota = await getPlanQuotaSummary(user);
   return res.json({ ok: true, topic: insert.rows[0], quota: updatedQuota });
 }
@@ -290,6 +301,11 @@ async function handleAddEvent(req: any, res: any, user: any, pool: any, topicId:
   );
 
   await pool.query(`UPDATE topics SET updated_at=NOW() WHERE id=$1`, [topicId]);
+
+  // Track event reading if reading content exists
+  if (reading) {
+    await trackEventReading();
+  }
 
   const newCount = eventCount + 1;
   // Calculate remaining from quota check (which already accounts for downgrade logic)
