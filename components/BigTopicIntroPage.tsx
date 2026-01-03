@@ -204,7 +204,7 @@ export const BigTopicIntroPage: React.FC<BigTopicIntroPageProps> = ({
                 </div>
               </div>
               <h3 className="text-[20px] text-center" style={{ color: '#E8E3FF' }}>
-                {isZh ? '双生火焰之旅' : 'Twin Flame Journey'}
+                {isZh ? '他会联系我吗' : 'Will He Contact Me'}
               </h3>
             </a>
 
