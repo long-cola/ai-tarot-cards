@@ -721,25 +721,47 @@ const App: React.FC = () => {
 
       console.log('[PopState] Navigating to:', pathname, 'Route parts:', routeParts);
 
-      // Reset all page states
-      setShowPricingPage(false);
-      setShowBlogPage(false);
-      setShowTopicListPage(false);
-      setShowTopicDetailPage(false);
-      setShowPrivacyPage(false);
-      setShowTermsPage(false);
-      setShowLandingPage(false);
-      setCurrentLandingSlug(null);
-      setSelectedBlogId(null);
+      // Use React 18's automatic batching by wrapping all state updates together
+      // This prevents intermediate renders with all pages false
 
       // Set the correct page based on route
       if (route && isLandingPageSlug(route)) {
+        // Reset all other pages and set landing page
+        setShowPricingPage(false);
+        setShowBlogPage(false);
+        setShowTopicListPage(false);
+        setShowTopicDetailPage(false);
+        setShowPrivacyPage(false);
+        setShowTermsPage(false);
+        setShowBigTopicIntroPage(false);
+        setShowSharedReadingPage(false);
+        setSelectedBlogId(null);
         setCurrentLandingSlug(route);
         setShowLandingPage(true);
       } else if (route === 'pricing') {
         setShowPricingPage(true);
+        setShowBlogPage(false);
+        setShowTopicListPage(false);
+        setShowTopicDetailPage(false);
+        setShowPrivacyPage(false);
+        setShowTermsPage(false);
+        setShowLandingPage(false);
+        setShowBigTopicIntroPage(false);
+        setShowSharedReadingPage(false);
+        setCurrentLandingSlug(null);
+        setSelectedBlogId(null);
       } else if (route === 'blog') {
         setShowBlogPage(true);
+        setShowPricingPage(false);
+        setShowTopicListPage(false);
+        setShowTopicDetailPage(false);
+        setShowPrivacyPage(false);
+        setShowTermsPage(false);
+        setShowLandingPage(false);
+        setShowBigTopicIntroPage(false);
+        setShowSharedReadingPage(false);
+        setCurrentLandingSlug(null);
+        setSelectedBlogId(null);
       } else if (route === 'bigtopic') {
         const slug = routeParts[1];
         // Check if it's a case study slug
@@ -747,9 +769,20 @@ const App: React.FC = () => {
           const shareId = BIG_TOPIC_SLUG_MAP[slug];
           setSharedReadingId(shareId);
           setShowSharedReadingPage(true);
+          setShowBigTopicIntroPage(false);
         } else {
           setShowBigTopicIntroPage(true);
+          setShowSharedReadingPage(false);
         }
+        setShowPricingPage(false);
+        setShowBlogPage(false);
+        setShowTopicListPage(false);
+        setShowTopicDetailPage(false);
+        setShowPrivacyPage(false);
+        setShowTermsPage(false);
+        setShowLandingPage(false);
+        setCurrentLandingSlug(null);
+        setSelectedBlogId(null);
       } else if (route === 'topics') {
         const topicId = routeParts[1];
 
@@ -2116,31 +2149,51 @@ Reading Summary: ${readingSummary || "None"}`;
         }}
         onTopicsClick={() => {
           // Show Big Topic Intro Page
-          setShowBigTopicIntroPage(true);
-          setShowTopicListPage(false);
+          // Reset all pages first
           setShowBlogPage(false);
           setShowPricingPage(false);
+          setShowTopicListPage(false);
           setShowTopicDetailPage(false);
+          setShowPrivacyPage(false);
+          setShowTermsPage(false);
+          setShowLandingPage(false);
+          setShowSharedReadingPage(false);
+          setSelectedBlogId(null);
+          setCurrentLandingSlug(null);
+          // Then set target page
+          setShowBigTopicIntroPage(true);
           updateUrl('bigtopic');
         }}
         onBlogClick={() => {
-          setShowBlogPage(true);
+          // Reset all pages first
+          setShowPricingPage(false);
           setShowTopicListPage(false);
           setShowTopicDetailPage(false);
           setShowPrivacyPage(false);
           setShowTermsPage(false);
-          setShowPricingPage(false);
+          setShowBigTopicIntroPage(false);
+          setShowLandingPage(false);
+          setShowSharedReadingPage(false);
           setSelectedBlogId(null);
+          setCurrentLandingSlug(null);
+          // Then set target page
+          setShowBlogPage(true);
           updateUrl('blog');
         }}
         onPricingClick={() => {
-          setShowPricingPage(true);
+          // Reset all pages first
           setShowBlogPage(false);
           setShowTopicListPage(false);
           setShowTopicDetailPage(false);
           setShowPrivacyPage(false);
           setShowTermsPage(false);
+          setShowBigTopicIntroPage(false);
+          setShowLandingPage(false);
+          setShowSharedReadingPage(false);
           setSelectedBlogId(null);
+          setCurrentLandingSlug(null);
+          // Then set target page
+          setShowPricingPage(true);
           updateUrl('pricing');
         }}
         language={language}
