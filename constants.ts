@@ -155,3 +155,8 @@ export const TRANSLATIONS = {
     planBadgeFree: "Free",
   }
 };
+
+// Big Topic Case Study Slug Mappings
+export const BIG_TOPIC_SLUG_MAP: Record<string, string> = {
+  'Will-He-Contact-Me': '37fae20a-e28f-4ca8-b819-ddd730596a49',
+};

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { AppPhase, DrawnCard, SPREAD_LABELS, Language, SessionUser, Plan, Topic, TopicEvent, PlanQuota, TopicWithUsage } from './types';
-import { MAJOR_ARCANA, TRANSLATIONS } from './constants';
+import { MAJOR_ARCANA, TRANSLATIONS, BIG_TOPIC_SLUG_MAP } from './constants';
 import { getTarotReading } from './services/bailianService';
 import { Card } from './components/Card';
 import { StarryBackground } from './components/StarryBackground';
@@ -741,7 +741,15 @@ const App: React.FC = () => {
       } else if (route === 'blog') {
         setShowBlogPage(true);
       } else if (route === 'bigtopic') {
-        setShowBigTopicIntroPage(true);
+        const slug = routeParts[1];
+        // Check if it's a case study slug
+        if (slug && BIG_TOPIC_SLUG_MAP[slug]) {
+          const shareId = BIG_TOPIC_SLUG_MAP[slug];
+          setSharedReadingId(shareId);
+          setShowSharedReadingPage(true);
+        } else {
+          setShowBigTopicIntroPage(true);
+        }
       } else if (route === 'topics') {
         const topicId = routeParts[1];
 

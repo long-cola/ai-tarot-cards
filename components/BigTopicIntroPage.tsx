@@ -184,7 +184,15 @@ export const BigTopicIntroPage: React.FC<BigTopicIntroPageProps> = ({
 
           <div className="flex flex-col md:flex-row items-start justify-center gap-8 w-full">
             {/* Case 1 */}
-            <div className="flex flex-col items-center gap-6 flex-1 max-w-[312px]">
+            <a
+              href="/bigtopic/Will-He-Contact-Me"
+              className="flex flex-col items-center gap-6 flex-1 max-w-[312px] cursor-pointer transition-transform hover:scale-105"
+              onClick={(e) => {
+                e.preventDefault();
+                window.history.pushState({}, '', '/bigtopic/Will-He-Contact-Me');
+                window.dispatchEvent(new PopStateEvent('popstate'));
+              }}
+            >
               <div className="w-full h-[180px] rounded-2xl flex items-center justify-center" style={{
                 background: '#230E34',
                 border: '1px solid rgba(171, 128, 158, 0.5)',
@@ -198,7 +206,7 @@ export const BigTopicIntroPage: React.FC<BigTopicIntroPageProps> = ({
               <h3 className="text-[20px] text-center" style={{ color: '#E8E3FF' }}>
                 {isZh ? '双生火焰之旅' : 'Twin Flame Journey'}
               </h3>
-            </div>
+            </a>
 
             {/* Case 2 */}
             <div className="flex flex-col items-center gap-6 flex-1 max-w-[312px]">
