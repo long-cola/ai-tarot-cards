@@ -3124,11 +3124,12 @@ Reading Summary: ${readingSummary || "None"}`;
                                 opacity: isEventShuffling ? 0.7 : 1,
                               }}
                             >
-                              <div className="w-full h-full rounded-md bg-slate-800 border border-purple-500/40 shadow-xl relative overflow-hidden">
-                                <div className="absolute inset-0 bg-gradient-to-br from-purple-700/20 to-black"></div>
-                                <div className="absolute inset-1 border border-white/5 rounded-sm flex items-center justify-center">
-                                  <span className="text-purple-300/20 text-xl font-mystic">☾</span>
-                                </div>
+                              <div className="w-full h-full rounded-md border border-purple-500/40 shadow-xl relative overflow-hidden">
+                                <img
+                                  src="/img/card_bg.png"
+                                  alt="Card back"
+                                  className="absolute inset-0 w-full h-full object-cover"
+                                />
                               </div>
                             </div>
                           );
