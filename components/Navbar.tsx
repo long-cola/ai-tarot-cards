@@ -162,18 +162,18 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <path d="M5.23 7.21a.75.75 0 011.06.02L10 11.173l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" />
               </svg>
             </summary>
-            <div className="absolute left-1/2 -translate-x-1/2 mt-2 min-w-[220px] z-50" style={{
+            <div className="absolute left-1/2 -translate-x-1/2 mt-2 min-w-[280px] z-50" style={{
               padding: '16px',
               background: '#282446',
               border: '1px solid #443E71',
               borderRadius: '16px',
             }}>
-              <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-2">
                 {tarotReadingLinks.map((link) => (
                   <a
                     key={link.href}
                     href={link.href}
-                    className="text-[14px] text-purple-200 hover:text-purple-100 transition-colors block py-1"
+                    className="text-[14px] text-purple-200 hover:text-white hover:bg-purple-600/30 transition-all block px-3 py-2 rounded-lg"
                     style={{ fontFamily: "'Noto Serif SC', serif" }}
                   >
                     {link.label}
