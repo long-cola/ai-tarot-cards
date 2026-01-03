@@ -193,15 +193,11 @@ export const BigTopicIntroPage: React.FC<BigTopicIntroPageProps> = ({
                 window.dispatchEvent(new PopStateEvent('popstate'));
               }}
             >
-              <div className="w-full h-[180px] rounded-2xl flex items-center justify-center" style={{
+              <div className="w-full h-[180px] rounded-2xl flex items-center justify-center overflow-hidden" style={{
                 background: '#230E34',
                 border: '1px solid rgba(171, 128, 158, 0.5)',
               }}>
-                <div className="w-[120px] h-[120px] rounded-full flex items-center justify-center" style={{
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                }}>
-                  <span className="text-[48px]">🔥</span>
-                </div>
+                <img src="/img/case_studies.png" alt="Will He Contact Me" className="w-full h-full object-cover" />
               </div>
               <h3 className="text-[20px] text-center" style={{ color: '#E8E3FF' }}>
                 {isZh ? '他会联系我吗' : 'Will He Contact Me'}
@@ -210,15 +206,11 @@ export const BigTopicIntroPage: React.FC<BigTopicIntroPageProps> = ({
 
             {/* Case 2 */}
             <div className="flex flex-col items-center gap-6 flex-1 max-w-[312px]">
-              <div className="w-full h-[180px] rounded-2xl flex items-center justify-center" style={{
+              <div className="w-full h-[180px] rounded-2xl flex items-center justify-center overflow-hidden" style={{
                 background: '#230E34',
                 border: '1px solid rgba(171, 128, 158, 0.5)',
               }}>
-                <div className="w-[120px] h-[120px] rounded-full flex items-center justify-center" style={{
-                  background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-                }}>
-                  <span className="text-[48px]">💼</span>
-                </div>
+                <img src="/img/case_studies.png" alt="Career Transformation" className="w-full h-full object-cover" />
               </div>
               <h3 className="text-[20px] text-center" style={{ color: '#E8E3FF' }}>
                 {isZh ? '职业转型' : 'Career Transformation'}
@@ -227,15 +219,11 @@ export const BigTopicIntroPage: React.FC<BigTopicIntroPageProps> = ({
 
             {/* Case 3 */}
             <div className="flex flex-col items-center gap-6 flex-1 max-w-[312px]">
-              <div className="w-full h-[180px] rounded-2xl flex items-center justify-center" style={{
+              <div className="w-full h-[180px] rounded-2xl flex items-center justify-center overflow-hidden" style={{
                 background: '#230E34',
                 border: '1px solid rgba(171, 128, 158, 0.5)',
               }}>
-                <div className="w-[120px] h-[120px] rounded-full flex items-center justify-center" style={{
-                  background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-                }}>
-                  <span className="text-[48px]">🌙</span>
-                </div>
+                <img src="/img/case_studies.png" alt="30-Day Spiritual Growth" className="w-full h-full object-cover" />
               </div>
               <h3 className="text-[20px] text-center" style={{ color: '#E8E3FF' }}>
                 {isZh ? '30天灵性成长' : '30-Day Spiritual Growth'}
