@@ -205,30 +205,46 @@ export const BigTopicIntroPage: React.FC<BigTopicIntroPageProps> = ({
             </a>
 
             {/* Case 2 */}
-            <div className="flex flex-col items-center gap-6 flex-1 max-w-[312px]">
+            <a
+              href="/bigtopic/Will-Our-Relationship-Continue"
+              className="flex flex-col items-center gap-6 flex-1 max-w-[312px] cursor-pointer transition-transform hover:scale-105"
+              onClick={(e) => {
+                e.preventDefault();
+                window.history.pushState({}, '', '/bigtopic/Will-Our-Relationship-Continue');
+                window.dispatchEvent(new PopStateEvent('popstate'));
+              }}
+            >
               <div className="w-full h-[180px] rounded-2xl flex items-center justify-center overflow-hidden" style={{
                 background: '#230E34',
                 border: '1px solid rgba(171, 128, 158, 0.5)',
               }}>
-                <img src="/img/case_studies.png" alt="Career Transformation" className="w-full h-full object-cover" />
+                <img src="/img/case_studies.png" alt="Will Our Relationship Continue" className="w-full h-full object-cover" />
               </div>
               <h3 className="text-[20px] text-center" style={{ color: '#E8E3FF' }}>
-                {isZh ? '职业转型' : 'Career Transformation'}
+                {isZh ? '我们的关系会继续吗' : 'Will Our Relationship Continue'}
               </h3>
-            </div>
+            </a>
 
             {/* Case 3 */}
-            <div className="flex flex-col items-center gap-6 flex-1 max-w-[312px]">
+            <a
+              href="/bigtopic/Is-My-Current-Job-Right-for-Me"
+              className="flex flex-col items-center gap-6 flex-1 max-w-[312px] cursor-pointer transition-transform hover:scale-105"
+              onClick={(e) => {
+                e.preventDefault();
+                window.history.pushState({}, '', '/bigtopic/Is-My-Current-Job-Right-for-Me');
+                window.dispatchEvent(new PopStateEvent('popstate'));
+              }}
+            >
               <div className="w-full h-[180px] rounded-2xl flex items-center justify-center overflow-hidden" style={{
                 background: '#230E34',
                 border: '1px solid rgba(171, 128, 158, 0.5)',
               }}>
-                <img src="/img/case_studies.png" alt="30-Day Spiritual Growth" className="w-full h-full object-cover" />
+                <img src="/img/case_studies.png" alt="Is My Current Job Right for Me" className="w-full h-full object-cover" />
               </div>
               <h3 className="text-[20px] text-center" style={{ color: '#E8E3FF' }}>
-                {isZh ? '30天灵性成长' : '30-Day Spiritual Growth'}
+                {isZh ? '我目前的工作适合我吗' : 'Is My Current Job Right for Me'}
               </h3>
-            </div>
+            </a>
           </div>
         </div>
 

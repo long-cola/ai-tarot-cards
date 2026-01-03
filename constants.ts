@@ -159,4 +159,6 @@ export const TRANSLATIONS = {
 // Big Topic Case Study Slug Mappings
 export const BIG_TOPIC_SLUG_MAP: Record<string, string> = {
   'Will-He-Contact-Me': '37fae20a-e28f-4ca8-b819-ddd730596a49',
+  'Will-Our-Relationship-Continue': '44455bbc-d41e-432e-a3db-24dd1b5ba70b',
+  'Is-My-Current-Job-Right-for-Me': '12ac8ec7-f79a-4d63-87eb-24b21fd13045',
 };
