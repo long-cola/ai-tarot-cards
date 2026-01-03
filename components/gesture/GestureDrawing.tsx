@@ -69,17 +69,36 @@ export const GestureDrawing: React.FC<GestureDrawingProps> = ({
     return g === 'ILoveYou' || g === 'Closed_Fist' || g === 'Victory';
   };
 
-  // Smooth carousel animation
+  // Memoize visible cards to avoid recalculating on every render
+  const visibleCardIndices = useMemo(() => {
+    const center = Math.round(smoothIndex);
+    const indices: number[] = [];
+    const range = GESTURE_LAYOUT.maxOffset + 1;
+
+    for (let i = Math.max(0, center - range); i <= Math.min(deck.length - 1, center + range); i++) {
+      indices.push(i);
+    }
+    return indices;
+  }, [smoothIndex, deck.length]);
+
+  // Smooth carousel animation - optimized with threshold to reduce updates
   useEffect(() => {
     if (isPinching) return;
 
     let animationId: number;
-    const animate = () => {
-      setSmoothIndex(prev => {
-        const diff = targetIndex - prev;
-        if (Math.abs(diff) < 0.01) return targetIndex;
-        return prev + diff * 0.12;
-      });
+    let lastUpdate = 0;
+    const targetFPS = 60;
+    const frameInterval = 1000 / targetFPS;
+
+    const animate = (timestamp: number) => {
+      if (timestamp - lastUpdate >= frameInterval) {
+        setSmoothIndex(prev => {
+          const diff = targetIndex - prev;
+          if (Math.abs(diff) < 0.01) return targetIndex;
+          return prev + diff * 0.15; // Slightly faster for better responsiveness
+        });
+        lastUpdate = timestamp;
+      }
       animationId = requestAnimationFrame(animate);
     };
     animationId = requestAnimationFrame(animate);
@@ -210,7 +229,7 @@ export const GestureDrawing: React.FC<GestureDrawingProps> = ({
     return lerp(values[low], values[high], t);
   };
 
-  const getCardLayout = (index: number) => {
+  const getCardLayout = useCallback((index: number) => {
     const offset = index - smoothIndex;
     const absOffset = Math.abs(offset);
     const clamped = Math.min(GESTURE_LAYOUT.maxOffset, absOffset);
@@ -232,7 +251,7 @@ export const GestureDrawing: React.FC<GestureDrawingProps> = ({
       zIndex: Math.round(100 - absOffset * 6),
       isCentered: absOffset < 0.5,
     };
-  };
+  }, [smoothIndex, layoutOffsets]);
 
   // Error fallback
   if (error) {
@@ -349,9 +368,10 @@ export const GestureDrawing: React.FC<GestureDrawingProps> = ({
               transform: 'translateX(-50%)',
             }}
           >
-            {deck.map((card, index) => {
+            {visibleCardIndices.map(index => {
+              const card = deck[index];
               const offset = index - smoothIndex;
-              if (Math.abs(offset) > GESTURE_LAYOUT.maxOffset + 0.5) return null;
+              const absOffset = Math.abs(offset);
 
               const layout = getCardLayout(index);
               const shadowY = Math.round(layout.height * 0.052 * 100) / 100;
@@ -409,7 +429,7 @@ export const GestureDrawing: React.FC<GestureDrawingProps> = ({
                       transform: `translateX(${layout.xPos}px) translateX(-50%) translateY(${previewLift}px) scale(${previewScale})`,
                       opacity: layout.opacity,
                       zIndex: isPreviewCard ? 200 : layout.zIndex,
-                      transition: 'transform 0.1s ease-out, opacity 0.15s',
+                      willChange: 'transform, opacity',
                     }}
                   >
                     <div
@@ -429,7 +449,7 @@ export const GestureDrawing: React.FC<GestureDrawingProps> = ({
                           style={{
                             transformStyle: 'preserve-3d',
                             transform: `rotateY(${flipProgress * 180}deg)`,
-                            transition: 'transform 0.2s ease-out',
+                            willChange: 'transform',
                           }}
                         >
                           <div
