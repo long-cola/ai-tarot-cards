@@ -13,6 +13,9 @@ export interface LandingPageContent {
     ctaText: string;
     prefillQuestion: string;
   };
+  intro?: {
+    content: string;
+  };
   problem: {
     title: string;
     paragraphs: string[];
@@ -61,6 +64,9 @@ const LANDING_PAGES: Record<LandingPageSlug, { en: LandingPageContent; zh: Landi
         ctaText: 'Get My Free Reading',
         prefillQuestion: 'Will he contact me?',
       },
+      intro: {
+        content: 'When communication stops, it\'s natural to wonder whether he will ever reach out again. This question often comes with confusion, hope, and anxiety. This AI tarot reading is designed to help you reflect on emotional dynamics, timing, and possible next steps — not to predict the future, but to offer perspective when your thoughts feel stuck.',
+      },
       problem: {
         title: 'Why This Question Haunts Us',
         paragraphs: [
@@ -72,22 +78,22 @@ const LANDING_PAGES: Record<LandingPageSlug, { en: LandingPageContent; zh: Landi
       commonSituations: {
         title: 'Common Situations People Ask About',
         situations: [
-          'I sent a message but he didn\'t reply for days',
-          'We had a great date but he went silent afterward',
-          'He said he needed space — will he come back?',
-          'We broke up recently and I\'m wondering if he\'ll reach out',
-          'He\'s been distant lately and I don\'t know why',
-          'I\'m afraid I scared him away by being too forward',
+          '"I miss him so much today, and I couldn\'t stop thinking about whether he would text me."',
+          '"We stopped talking after an argument, and I don\'t know if he\'s thinking about me."',
+          '"I sent the last message, and now there\'s silence."',
+          '"We broke up, but nothing was clearly resolved."',
+          '"He said he needed space — will he come back?"',
+          '"We had a great date but he went silent afterward."',
         ],
       },
       aiExplanation: {
-        title: 'How AI Tarot Helps You Think Clearly',
-        content: 'This tarot reading does not predict the future. Instead, it uses classic tarot symbolism combined with AI analysis to help you reflect on:',
+        title: 'How This AI Tarot Reading Helps',
+        content: 'This reading is not about predicting the future. It helps you:',
         points: [
-          'The emotional dynamics between you',
-          'Current influences affecting communication',
-          'Possible directions forward',
-          'Your own feelings and desires',
+          'Reflect on emotional distance and connection',
+          'Encourage clarity instead of impulsive actions',
+          'Offer perspective when waiting feels overwhelming',
+          'Understand your own feelings and desires',
         ],
       },
       tarotEntry: {
@@ -96,16 +102,16 @@ const LANDING_PAGES: Record<LandingPageSlug, { en: LandingPageContent; zh: Landi
       },
       faqs: [
         {
-          question: 'Can tarot really tell if he will contact me?',
-          answer: 'Tarot is not about predicting specific actions of others. Instead, it helps you understand the current energies, your own feelings, and potential outcomes based on current trajectories. It is a tool for self-reflection and gaining clarity.',
+          question: 'Is this tarot reading free?',
+          answer: 'Yes. This AI tarot reading is free and designed for personal reflection. No credit card required.',
         },
         {
-          question: 'How accurate is AI tarot reading?',
-          answer: 'Our AI combines extensive knowledge of tarot symbolism with modern interpretive analysis. While it cannot predict the future, it provides meaningful insights that help you reflect on your situation and make empowered decisions.',
+          question: 'Does this reading predict the future?',
+          answer: 'No. It offers emotional insight and perspective, not fixed predictions. Tarot helps you think clearly about your situation rather than telling you what will happen.',
         },
         {
-          question: 'Is this reading really free?',
-          answer: 'Yes! You can start for free with no credit card required. Some advanced features may require a paid plan, but basic readings are always free.',
+          question: 'How accurate is an AI tarot reading?',
+          answer: 'Accuracy depends on reflection and interpretation. This tool helps you think clearly rather than give absolute answers. It combines traditional tarot symbolism with AI analysis to provide meaningful insights.',
         },
       ],
     },
@@ -122,6 +128,9 @@ const LANDING_PAGES: Record<LandingPageSlug, { en: LandingPageContent; zh: Landi
         ctaText: '开始免费占卜',
         prefillQuestion: '他会联系我吗？',
       },
+      intro: {
+        content: '当沟通停止时，想知道他是否会再次联系是很自然的。这个问题往往伴随着困惑、希望和焦虑。这个AI塔罗占卜旨在帮助你反思情感动态、时机和可能的下一步——不是预测未来，而是在你的思绪陷入困境时提供视角。',
+      },
       problem: {
         title: '为什么这个问题困扰着我们',
         paragraphs: [
@@ -133,22 +142,22 @@ const LANDING_PAGES: Record<LandingPageSlug, { en: LandingPageContent; zh: Landi
       commonSituations: {
         title: '常见情况',
         situations: [
-          '我发了消息但他好几天都没回复',
-          '我们约会很愉快但之后他就沉默了',
-          '他说需要空间——他会回来吗？',
-          '我们最近分手了，我想知道他会不会主动联系',
-          '他最近很冷淡，我不知道为什么',
-          '我担心自己太主动把他吓跑了',
+          '"我今天太想他了，忍不住想他会不会给我发消息。"',
+          '"我们吵架后就不说话了，我不知道他是否还在想我。"',
+          '"我发了最后一条消息，现在一片沉默。"',
+          '"我们分手了，但什么都没有明确解决。"',
+          '"他说需要空间——他会回来吗？"',
+          '"我们约会很愉快但之后他就沉默了。"',
         ],
       },
       aiExplanation: {
-        title: 'AI塔罗如何帮助你理清思路',
-        content: '这个塔罗占卜不是预测未来。它结合经典塔罗象征意义和AI分析，帮助你反思：',
+        title: 'AI塔罗占卜如何帮助你',
+        content: '这个占卜不是预测未来。它帮助你：',
         points: [
-          '你们之间的情感动态',
-          '影响沟通的当前因素',
-          '可能的发展方向',
-          '你自己的感受和渴望',
+          '反思情感距离和连接',
+          '鼓励清晰思考而非冲动行动',
+          '在等待令人不堪重负时提供视角',
+          '理解你自己的感受和渴望',
         ],
       },
       tarotEntry: {
@@ -157,16 +166,16 @@ const LANDING_PAGES: Record<LandingPageSlug, { en: LandingPageContent; zh: Landi
       },
       faqs: [
         {
-          question: '塔罗真的能预测他会不会联系我吗？',
-          answer: '塔罗并非用于预测他人的具体行为。它帮助你理解当前的能量状态、你自己的感受，以及基于当前轨迹的可能结果。它是一个自我反思和获得清晰认知的工具。',
+          question: '这个塔罗占卜是免费的吗？',
+          answer: '是的。这个AI塔罗占卜是免费的，专为个人反思设计。无需信用卡。',
         },
         {
-          question: 'AI塔罗解读准确吗？',
-          answer: '我们的AI结合了丰富的塔罗象征知识和现代解读分析。虽然它无法预测未来，但它提供有意义的洞察，帮助你反思当前处境并做出明智的决定。',
+          question: '这个占卜会预测未来吗？',
+          answer: '不会。它提供情感洞察和视角，而不是固定的预测。塔罗帮助你清晰地思考你的处境，而不是告诉你会发生什么。',
         },
         {
-          question: '这个占卜真的免费吗？',
-          answer: '是的！你可以免费开始，无需信用卡。部分高级功能可能需要付费计划，但基础占卜始终免费。',
+          question: 'AI塔罗占卜准确吗？',
+          answer: '准确性取决于反思和解读。这个工具帮助你清晰思考，而不是给出绝对答案。它结合传统塔罗象征意义和AI分析，提供有意义的洞察。',
         },
       ],
     },

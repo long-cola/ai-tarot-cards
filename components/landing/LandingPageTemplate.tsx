@@ -119,6 +119,7 @@ export const LandingPageTemplate: React.FC<LandingPageTemplateProps> = ({
             data={pageData.hero}
             onCTAClick={() => onStartReading(pageData.hero.prefillQuestion)}
           />
+          {pageData.intro && <IntroSection data={pageData.intro} />}
           <ProblemSection data={pageData.problem} />
           <CommonSituationsSection data={pageData.commonSituations} />
           <AIExplanationSection data={pageData.aiExplanation} />
@@ -175,6 +176,17 @@ const HeroSection: React.FC<{
       </button>
     </div>
   </div>
+);
+
+// Intro Section Component
+const IntroSection: React.FC<{
+  data: LandingPageContent['intro'];
+}> = ({ data }) => (
+  <section className="w-full max-w-4xl px-8 md:px-16 py-8">
+    <p className="text-white/80 text-base md:text-lg leading-relaxed text-center">
+      {data.content}
+    </p>
+  </section>
 );
 
 // Problem Section Component
