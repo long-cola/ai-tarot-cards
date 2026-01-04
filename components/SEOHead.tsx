@@ -179,6 +179,9 @@ const SEOHead: React.FC<SEOProps> = ({
       <meta property="og:title" content={finalTitle} />
       <meta property="og:description" content={finalDescription} />
       <meta property="og:image" content={image} />
+      <meta property="og:image:width" content="1200" />
+      <meta property="og:image:height" content="630" />
+      <meta property="og:image:alt" content={isZh ? "AI塔罗占卜工具" : "AI Tarot Reading Tool"} />
       <meta property="og:url" content={canonicalUrl} />
       <meta property="og:site_name" content={isZh ? "神秘塔罗 AI" : "Mystic Tarot AI"} />
       <meta property="og:locale" content={lang === 'zh-Hans' ? 'zh_Hans_CN' : 'en_US'} />

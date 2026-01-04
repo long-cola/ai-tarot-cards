@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet-async';
 import { Language } from '../../types';
 import { getLandingPageData, LandingPageContent } from './LandingPageData';
 import SEOHead from '../SEOHead';
+import { SocialShare } from '../SocialShare';
 
 interface LandingPageTemplateProps {
   slug: string;
@@ -132,6 +133,11 @@ export const LandingPageTemplate: React.FC<LandingPageTemplateProps> = ({
               label: link.label[isZh ? 'zh' : 'en'],
               href: link.href[isZh ? 'zh' : 'en'],
             }))}
+          />
+          <SocialShare
+            url={pageData.seo.canonicalUrl}
+            title={pageData.seo.title}
+            language={language}
           />
           <CTAFooter language={language} onStartReading={() => onStartReading(pageData.hero.prefillQuestion)} />
         </div>
