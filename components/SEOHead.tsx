@@ -150,8 +150,8 @@ const SEOHead: React.FC<SEOProps> = ({
       <meta name="googlebot" content="index, follow" />
       <meta name="msnbot" content="index, follow" />
 
-      {/* Bing 网站验证 - 请替换为你的验证码 */}
-      <meta name="msvalidate.01" content="YOUR_BING_VERIFICATION_CODE" />
+      {/* Bing 网站验证 */}
+      <meta name="msvalidate.01" content="3E4818CEB5B93E77E8E67448E34B8DCC" />
 
       {/* 移动端优化 */}
       <meta name="mobile-web-app-capable" content="yes" />
