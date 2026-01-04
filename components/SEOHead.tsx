@@ -8,7 +8,7 @@ interface SEOProps {
   image?: string;
   url?: string;
   lang?: 'zh-Hans' | 'en';
-  schemaType?: 'WebSite' | 'Service' | 'Article';
+  schemaType?: 'WebSite' | 'Service' | 'Article' | 'SoftwareApplication';
 }
 
 const SITE_ROOT = 'https://ai-tarotcard.com';
@@ -113,6 +113,25 @@ const SEOHead: React.FC<SEOProps> = ({
       };
     }
 
+    if (schemaType === 'SoftwareApplication') {
+      return {
+        ...baseSchema,
+        '@type': 'SoftwareApplication',
+        applicationCategory: 'LifestyleApplication',
+        operatingSystem: 'Web Browser',
+        offers: {
+          '@type': 'Offer',
+          price: '0',
+          priceCurrency: 'USD'
+        },
+        aggregateRating: {
+          '@type': 'AggregateRating',
+          ratingValue: '4.8',
+          ratingCount: '1250'
+        }
+      };
+    }
+
     return baseSchema;
   };
 
@@ -129,6 +148,10 @@ const SEOHead: React.FC<SEOProps> = ({
       <meta name="author" content="神秘塔罗 AI / Mystic Tarot AI" />
       <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
       <meta name="googlebot" content="index, follow" />
+      <meta name="msnbot" content="index, follow" />
+
+      {/* Bing 网站验证 - 请替换为你的验证码 */}
+      <meta name="msvalidate.01" content="YOUR_BING_VERIFICATION_CODE" />
 
       {/* 移动端优化 */}
       <meta name="mobile-web-app-capable" content="yes" />

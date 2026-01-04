@@ -119,6 +119,7 @@ export const LandingPageTemplate: React.FC<LandingPageTemplateProps> = ({
             onCTAClick={() => onStartReading(pageData.hero.prefillQuestion)}
           />
           <ProblemSection data={pageData.problem} />
+          <CommonSituationsSection data={pageData.commonSituations} />
           <AIExplanationSection data={pageData.aiExplanation} />
           <TarotEntrySection
             data={pageData.tarotEntry}
@@ -186,6 +187,30 @@ const ProblemSection: React.FC<{
         <p key={index} className="text-white/70 text-lg leading-relaxed">
           {paragraph}
         </p>
+      ))}
+    </div>
+  </section>
+);
+
+// Common Situations Section Component
+const CommonSituationsSection: React.FC<{
+  data: LandingPageContent['commonSituations'];
+}> = ({ data }) => (
+  <section className="w-full max-w-4xl px-8 md:px-16 py-16">
+    <h2
+      style={{ fontFamily: "'Noto Serif SC', serif" }}
+      className="text-2xl md:text-3xl font-bold text-white/90 mb-8 text-center"
+    >
+      {data.title}
+    </h2>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {data.situations.map((situation, index) => (
+        <div
+          key={index}
+          className="bg-white/5 rounded-lg p-4 border border-white/10 hover:bg-white/10 transition-colors"
+        >
+          <p className="text-white/70 leading-relaxed">{situation}</p>
+        </div>
       ))}
     </div>
   </section>

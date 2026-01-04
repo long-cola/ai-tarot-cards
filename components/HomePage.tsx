@@ -82,7 +82,7 @@ export const HomePage: React.FC<HomePageProps> = ({
           : 'Free online AI tarot reading in 3 seconds. Get instant insights on love, career, money & life decisions. Three-card spread reveals past, present, future. 24/7 mystical guidance powered by AI.'}
         url={isZh ? '/zh/' : '/'}
         lang={isZh ? 'zh-Hans' : 'en'}
-        schemaType="WebSite"
+        schemaType="SoftwareApplication"
       />
       <FAQSchema language={language} />
 
@@ -207,6 +207,53 @@ export const HomePage: React.FC<HomePageProps> = ({
                     {item.label}
                   </a>
                 ))}
+              </div>
+            </div>
+
+            {/* SEO Content Section */}
+            <div className="w-full max-w-4xl px-4 mt-12">
+              <div className="prose prose-invert prose-sm max-w-none">
+                {isZh ? (
+                  <div className="text-white/70 leading-relaxed space-y-4">
+                    <h2 className="text-[20px] font-semibold text-white/90 mb-4">什么是AI塔罗占卜？</h2>
+                    <p>
+                      AI塔罗占卜是一个结合古老塔罗智慧与现代人工智能技术的在线工具平台。我们的使命是帮助你在爱情、事业、财运和人生重要决策中获得清晰的洞察和指引。无论你是在思考"他会联系我吗"、"我该辞职吗"，还是寻求每日灵性指导，我们的AI都能为你提供即时、个性化的塔罗解读。
+                    </p>
+                    <p>
+                      与传统塔罗占卜不同，AI塔罗不是预测未来，而是帮助你探索可能性、理清思路、倾听内心的声音。我们的平台24小时随时可用，让你在需要时随时获得支持和启发。
+                    </p>
+                    <h3 className="text-[18px] font-semibold text-white/90 mt-6 mb-3">为什么选择我们的AI塔罗服务？</h3>
+                    <ul className="list-disc pl-6 space-y-2">
+                      <li><strong>即时解读</strong>：3秒内获得专业的塔罗牌解读，无需等待</li>
+                      <li><strong>深度洞察</strong>：结合经典塔罗象征意义和AI智能分析，提供有意义的反思</li>
+                      <li><strong>隐私保护</strong>：你的问题和解读完全私密，无需担心隐私泄露</li>
+                      <li><strong>多场景覆盖</strong>：爱情关系、职业发展、财务决策、每日指引等全方位支持</li>
+                    </ul>
+                    <p className="mt-4">
+                      无论你是塔罗新手还是资深爱好者，我们的平台都能为你提供有价值的洞察。开始你的免费塔罗之旅，让AI帮助你发现内心深处的答案。
+                    </p>
+                  </div>
+                ) : (
+                  <div className="text-white/70 leading-relaxed space-y-4">
+                    <h2 className="text-[20px] font-semibold text-white/90 mb-4">What is AI Tarot Reading?</h2>
+                    <p>
+                      AI Tarot is an online platform that combines ancient tarot wisdom with modern artificial intelligence technology. Our mission is to help you gain clarity and guidance on love, career, money, and life decisions. Whether you are wondering "Will he contact me?", "Should I leave my job?", or seeking daily spiritual guidance, our AI provides instant, personalized tarot interpretations.
+                    </p>
+                    <p>
+                      Unlike traditional fortune-telling, AI Tarot does not predict the future. Instead, it helps you explore possibilities, clarify your thoughts, and listen to your inner voice. Our platform is available 24/7, providing support and inspiration whenever you need it.
+                    </p>
+                    <h3 className="text-[18px] font-semibold text-white/90 mt-6 mb-3">Why Choose Our AI Tarot Service?</h3>
+                    <ul className="list-disc pl-6 space-y-2">
+                      <li><strong>Instant Insights</strong>: Get professional tarot readings in 3 seconds, no waiting required</li>
+                      <li><strong>Deep Analysis</strong>: Combines classic tarot symbolism with AI intelligence for meaningful reflection</li>
+                      <li><strong>Privacy Protected</strong>: Your questions and readings are completely private and confidential</li>
+                      <li><strong>Comprehensive Coverage</strong>: Support for love relationships, career development, financial decisions, daily guidance, and more</li>
+                    </ul>
+                    <p className="mt-4">
+                      Whether you are new to tarot or an experienced enthusiast, our platform offers valuable insights for everyone. Start your free tarot journey today and let AI help you discover the answers within.
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
