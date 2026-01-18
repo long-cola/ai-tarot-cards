@@ -1,7 +1,7 @@
 {
-  "name": "神秘塔罗 AI - AI驱动的塔罗牌占卜",
-  "short_name": "塔罗 AI",
-  "description": "体验沉浸式AI塔罗牌占卜，由阿里云百炼Qwen模型驱动的深度解读。洗牌仪式、神秘氛围，探索命运的指引。",
+  "name": "Mystic Tarot AI - AI Tarot Card Reading",
+  "short_name": "Tarot AI",
+  "description": "Experience immersive AI tarot readings with a mystical ritual and instant guidance.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
@@ -28,7 +28,7 @@
     }
   ],
   "categories": ["lifestyle", "entertainment", "utilities"],
-  "lang": "zh-CN",
+  "lang": "en-US",
   "dir": "ltr",
   "prefer_related_applications": false
 }

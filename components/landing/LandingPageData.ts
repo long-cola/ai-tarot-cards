@@ -1,4 +1,4 @@
-import { Language } from '../../types';
+import { Language, ReadingConfig } from '../../types';
 
 export interface LandingPageContent {
   slug: string;
@@ -7,6 +7,7 @@ export interface LandingPageContent {
     description: string;
     canonicalUrl: string;
   };
+  readingConfig?: ReadingConfig;
   hero: {
     title: string;
     subtitle: string;
@@ -29,6 +30,10 @@ export interface LandingPageContent {
     content: string;
     points: string[];
   };
+  longForm?: {
+    title: string;
+    paragraphs: string[];
+  };
   tarotEntry: {
     title: string;
     ctaText: string;
@@ -44,12 +49,19 @@ export const LANDING_PAGE_SLUGS = [
   'love-tarot-reading',
   'should-i-leave-my-job-tarot',
   'career-tarot-reading',
-  'daily-tarot-guidance'
+  'daily-tarot-guidance',
+  'tarot-card-generator',
+  'one-card-tarot',
+  'random-tarot-card-generator',
+  'tarot-spreads',
+  'celtic-cross-tarot'
 ] as const;
 
 export type LandingPageSlug = typeof LANDING_PAGE_SLUGS[number];
 
-const LANDING_PAGES: Record<LandingPageSlug, { en: LandingPageContent; zh: LandingPageContent }> = {
+type LandingPageVariants = { en: LandingPageContent; zh?: LandingPageContent };
+
+const LANDING_PAGES: Record<LandingPageSlug, LandingPageVariants> = {
   'will-he-contact-me-tarot': {
     en: {
       slug: 'will-he-contact-me-tarot',
@@ -676,12 +688,405 @@ const LANDING_PAGES: Record<LandingPageSlug, { en: LandingPageContent; zh: Landi
       ],
     },
   },
+  'tarot-card-generator': {
+    en: {
+      slug: 'tarot-card-generator',
+      seo: {
+        title: 'Tarot Card Generator - Draw Cards Online | Mystic Tarot',
+        description: 'Free tarot card generator to draw cards online. Get a quick, meaningful card draw and start a reading in seconds.',
+        canonicalUrl: 'https://ai-tarotcard.com/tarot-card-generator',
+      },
+      hero: {
+        title: 'Free Tarot Card Generator - Draw a Card Instantly',
+        subtitle: 'Shuffle and draw in seconds for a clear, focused message.',
+        ctaText: 'Draw Your Card Now',
+        prefillQuestion: 'What should I focus on right now?',
+      },
+      intro: {
+        content: 'This tarot card generator is built for speed and clarity. Draw a card, read the core meaning, and decide your next step with a calmer mind.',
+      },
+      problem: {
+        title: 'Why people use a tarot card generator',
+        paragraphs: [
+          'When you feel stuck, it helps to see the situation from a new angle. A quick draw can break the loop of overthinking.',
+          'Physical decks are great, but they are not always nearby. A digital generator gives you access when you need it.',
+          'The goal is not prediction. It is to surface the symbols and insights you already sense but have not named.',
+        ],
+      },
+      commonSituations: {
+        title: 'Common reasons to draw a card',
+        situations: [
+          'What should I focus on before I make this decision?',
+          'What is the one message I need right now?',
+          'What creative prompt will help me journal today?',
+          'What energy should guide my day?',
+          'What should I notice about this relationship?',
+          'What am I overlooking that could help me reset?',
+        ],
+      },
+      aiExplanation: {
+        title: 'How the AI reading helps',
+        content: 'The AI reading expands the card message into practical guidance.',
+        points: [
+          'Highlights the core theme behind your draw',
+          'Shows how the card applies to your question',
+          'Offers a balanced view of challenges and opportunities',
+          'Gives a simple next step you can act on',
+        ],
+      },
+      longForm: {
+        title: 'How to Use a Tarot Card Generator',
+        paragraphs: [
+          'A tarot card generator is a simple way to draw cards online without a physical deck. Instead of cutting and shuffling by hand, the tool uses a randomized draw that mimics a real shuffle. The value is speed and focus. You can go from a question to a card in seconds, anytime you need perspective. This generator is designed for clarity, not fortune telling. It gives you a clean starting point so you can reflect on the image, symbolism, and the message that stands out to you. Think of it as a prompt for insight, not a fixed prediction.',
+          'Using the tarot card generator is straightforward. First, set a clear intention. It can be a decision, a feeling, or a situation you want to understand better. Next, draw your cards. A single card can show the theme of the moment, while a three card draw can show context and movement. After you draw, read the card name and its orientation. Upright and reversed positions change the tone, which helps you see what to lean into and what to watch. If you want, you can start a full reading for deeper guidance.',
+          'Good questions make better readings. Instead of asking yes or no, try questions that invite insight such as "What should I focus on in my career right now?" or "What is the hidden influence in this relationship?" This shifts the reading from prediction to reflection. It also makes the cards feel more relevant, because they become a mirror for your current thinking. If you feel stuck, use the generator as a reset. Draw a card with no question and let it highlight what you have been overlooking.',
+          'A tarot card is packed with symbols, color, and archetypes. The generator helps you surface those symbols quickly, but the meaning is still personal. If you draw The Sun upright, the message may be confidence and visibility. If it is reversed, it might highlight doubt or a delayed breakthrough. Use the keywords as a starting point, then ask how the card connects to your current reality. This is why a generator can be powerful. It gives you a neutral image that you can interpret without outside noise.',
+          'Many people use a tarot card generator as part of a routine. A single morning draw can set an intention for the day. A weekly draw can guide planning. When you face a big choice, a focused draw can help you slow down and notice your real priorities. The generator does not replace your agency. It creates a space where you can listen to your own insight. Over time, you can track cards and themes in a journal and notice patterns that are easy to miss in the moment.',
+          'If you want to go deeper, use the generator as a doorway into spreads. A three card draw can expand on a single card by showing context and next steps. Larger spreads can explore complex situations. This page is built for quick access, but you can always start a full reading when you need more detail. Draw now, take the message seriously, and then decide the action that feels aligned. Tarot works best when the reading becomes a conversation with your own intuition.',
+        ],
+      },
+      tarotEntry: {
+        title: 'Ready to draw a card?',
+        ctaText: 'Draw now',
+      },
+      faqs: [
+        {
+          question: 'Is this tarot card generator free?',
+          answer: 'Yes. You can draw a card for free and start a reading anytime.',
+        },
+        {
+          question: 'How many cards should I draw?',
+          answer: 'One card is great for focus. Three cards add context and movement when you need more detail.',
+        },
+        {
+          question: 'Does the generator predict the future?',
+          answer: 'No. It offers reflection and guidance, not fixed outcomes.',
+        },
+      ],
+    },
+  },
+  'one-card-tarot': {
+    en: {
+      slug: 'one-card-tarot',
+      seo: {
+        title: 'One Card Tarot - Quick Focused Reading | Mystic Tarot',
+        description: 'One card tarot reading for fast clarity. Draw a single card and get a focused message you can apply today.',
+        canonicalUrl: 'https://ai-tarotcard.com/one-card-tarot',
+      },
+      readingConfig: {
+        drawCount: 1,
+      },
+      hero: {
+        title: 'One-Card Tarot Reading - Fast, Focused Insight',
+        subtitle: 'Pull a single card for a clear theme and quick guidance.',
+        ctaText: 'Draw One Card',
+        prefillQuestion: 'What is the key message I need right now?',
+      },
+      intro: {
+        content: 'One card tarot is simple, direct, and surprisingly powerful. It is ideal when you want a clear theme without the noise of a larger spread.',
+      },
+      problem: {
+        title: 'Why one card readings work',
+        paragraphs: [
+          'When everything feels complex, one strong message can cut through the fog.',
+          'A single card helps you focus on what matters most right now.',
+          'It is fast enough for daily use and deep enough for real insight.',
+        ],
+      },
+      commonSituations: {
+        title: 'When to use one card tarot',
+        situations: [
+          'What is the key message I need today?',
+          'What should I focus on this week?',
+          'How can I center my energy right now?',
+          'What do I need to know about this relationship?',
+          'What creative prompt will help me journal?',
+          'What nudge should I follow before deciding?',
+        ],
+      },
+      aiExplanation: {
+        title: 'How the single card is interpreted',
+        content: 'The AI reading expands a single card into a practical message.',
+        points: [
+          'Explains the card meaning in simple language',
+          'Connects the symbol to your current question',
+          'Offers a grounded action you can take',
+          'Keeps the reading focused and concise',
+        ],
+      },
+      longForm: {
+        title: 'Why One Card Tarot Is So Effective',
+        paragraphs: [
+          'One card tarot works because it reduces noise. With a larger spread, it is easy to get lost in details and conflicting signals. A single card strips the reading down to one clear theme. That theme becomes your focus for the day, the week, or the decision in front of you. It is also a low pressure ritual. You can draw a card in a minute, sit with the message, and move forward without needing to interpret a full narrative. This is why one card tarot is a favorite for daily use.',
+          'To use one card tarot well, start with a clear intention. It can be a question like "What energy should I embody today?" or a situation like "How should I approach this conversation?" The key is to keep it open and reflective. Then draw a single card and note its orientation. Upright and reversed positions shift the tone of the message. Upright might show the healthy expression of the card. Reversed might show a block, a warning, or a need to look inward.',
+          'Once you have the card, do not rush. Look at the imagery and the keywords. Ask yourself what stands out first. The strongest impression is often the most useful. Then connect the message to your real life. If you draw The Hermit, you might need quiet space. If you draw The Chariot, you might need focus and momentum. The card is not a command. It is a mirror that highlights what is already present in your situation.',
+          'One card tarot is also a powerful journaling practice. Write down the card, the orientation, and your immediate reaction. Then write one paragraph about how the message applies to your day. Over time, you will see patterns in the cards you draw and how you respond. This creates a personal map of your growth, which is often more valuable than any single reading.',
+          'A common mistake is asking a yes or no question. One card tarot works best when the answer can be a theme, a quality, or a focus. Instead of "Will this work out?" try "What should I pay attention to if I move forward?" This gives the card room to guide you. Another mistake is drawing repeated cards until you get a message you like. Trust the first draw and use it as the starting point for reflection.',
+          'If you need more depth, you can always expand to a three card spread after the one card draw. The single card becomes the headline, and the spread fills in the context. Start with one card now, and when the moment calls for more detail, step into a fuller reading. One card tarot is not a shortcut. It is a focused way to listen to your intuition in real time.',
+        ],
+      },
+      tarotEntry: {
+        title: 'Draw your one card message',
+        ctaText: 'Start reading',
+      },
+      faqs: [
+        {
+          question: 'Is one card tarot accurate?',
+          answer: 'It can be very accurate for focus and reflection. The power comes from a clear question and honest interpretation.',
+        },
+        {
+          question: 'Should I draw more than one card?',
+          answer: 'Start with one. If you need more context, expand to a three card spread afterward.',
+        },
+        {
+          question: 'What if I draw a challenging card?',
+          answer: 'Challenging cards usually point to growth. Use the message to adjust your approach rather than fear it.',
+        },
+      ],
+    },
+  },
+  'random-tarot-card-generator': {
+    en: {
+      slug: 'random-tarot-card-generator',
+      seo: {
+        title: 'Random Tarot Card Generator - Instant Draw | Mystic Tarot',
+        description: 'Get a random tarot card instantly. This generator draws a card the moment you arrive so you can reflect and reset fast.',
+        canonicalUrl: 'https://ai-tarotcard.com/random-tarot-card-generator',
+      },
+      readingConfig: {
+        drawCount: 1,
+        autoDraw: true,
+        allowGuest: true,
+      },
+      hero: {
+        title: 'Random Tarot Card Generator - Instant Draw',
+        subtitle: 'A card appears the moment you land. No setup, no login.',
+        ctaText: 'Get My Random Card',
+        prefillQuestion: 'Draw a random tarot card for me.',
+      },
+      intro: {
+        content: 'A random tarot card is a fast way to reset your focus. Let the card highlight the theme you need to see today.',
+      },
+      problem: {
+        title: 'Why randomness can be useful',
+        paragraphs: [
+          'Random draws remove overthinking and let the message find you.',
+          'They work well when you do not know what to ask or where to start.',
+          'The surprise element often reveals what you were ignoring.',
+        ],
+      },
+      commonSituations: {
+        title: 'Great times to use a random draw',
+        situations: [
+          'What message shows up for me today?',
+          'What perspective can unstick me right now?',
+          'What quick insight do I need in this moment?',
+          'What creative spark should I explore?',
+          'What do I need to reset after a hard day?',
+          'What light-touch check-in is helpful now?',
+        ],
+      },
+      aiExplanation: {
+        title: 'What you can do with the card',
+        content: 'Use the card as a mirror and a small action prompt.',
+        points: [
+          'Notice the first symbol that catches your eye',
+          'Read the core meaning and connect it to your day',
+          'Write one sentence about how to apply it',
+          'Decide one small action you can take now',
+        ],
+      },
+      longForm: {
+        title: 'What a Random Tarot Card Can Reveal',
+        paragraphs: [
+          'A random tarot card generator is perfect when you want insight without a long ritual. The draw is instant and unbiased, which helps you step out of your normal patterns. Because the card is random, it often points to a theme you were not actively thinking about. That is the value of the draw. It interrupts the loop of your own assumptions and lets a new symbol take center stage. You do not need a detailed question to use it. You only need a willingness to reflect.',
+          'The generator uses a digital shuffle to mimic a real deck. That means every card has a fair chance of appearing. When the card shows up, pause before you interpret it. Look at the name, notice whether it is upright or reversed, and see which part of the card pulls your attention first. The initial reaction often tells you what the message is about. For example, The Tower can feel disruptive, but it can also be a sign that the old structure is ready to fall so something better can be built.',
+          'Random draws are great for daily practice. You can pull a card in the morning, write down one intention, and carry it through the day. You can also pull a card in the evening as a reflection prompt. Over time, a simple random draw becomes a steady habit that builds self awareness. It is not about predicting outcomes. It is about naming patterns and choosing how you want to respond.',
+          'If you find yourself wanting to redraw, pause and ask why. Repeating the draw can become a way to avoid the message you already received. Instead, stay with the first card and explore it from different angles. If the meaning feels unclear, ask a follow up question and use the same card as the anchor. This keeps the process focused and avoids spiraling into noise.',
+          'This generator is a fast entry point, but it does not have to stay surface level. If the card touches a deeper issue, you can expand into a larger spread or start a full reading. The random draw becomes the headline, and a fuller reading can reveal the details. Think of this as a quick signal. When the signal is strong, follow it.',
+          'Above all, a random tarot card is a practice in trust. You trust the shuffle, you trust your intuition, and you trust that a symbol can open a meaningful conversation with yourself. That is why this tool is simple and immediate. It puts the card in front of you right away so you can begin that conversation without delay.',
+        ],
+      },
+      tarotEntry: {
+        title: 'Want a new card?',
+        ctaText: 'Draw now',
+      },
+      faqs: [
+        {
+          question: 'Is the random tarot card really random?',
+          answer: 'Yes. The draw is randomized to mimic a real shuffle.',
+        },
+        {
+          question: 'How often can I use a random draw?',
+          answer: 'As often as you like. Many people use it once a day for a quick check in.',
+        },
+        {
+          question: 'Can I get a deeper reading after a random card?',
+          answer: 'Yes. Use the card as a starting point and then begin a full reading.',
+        },
+      ],
+    },
+  },
+  'tarot-spreads': {
+    en: {
+      slug: 'tarot-spreads',
+      seo: {
+        title: 'Tarot Spreads - Choose the Right Layout | Mystic Tarot',
+        description: 'Learn tarot spreads and choose the right layout for your question. Start with a simple draw and expand when needed.',
+        canonicalUrl: 'https://ai-tarotcard.com/tarot-spreads',
+      },
+      hero: {
+        title: 'Tarot Spreads - Choose Your Layout',
+        subtitle: 'Pick a spread that fits your question in seconds.',
+        ctaText: 'Choose a Spread',
+        prefillQuestion: 'What spread should I use for this situation?',
+      },
+      intro: {
+        content: 'A tarot spread is a layout that gives structure to a reading. The layout defines how each card should be interpreted.',
+      },
+      problem: {
+        title: 'Why spreads matter',
+        paragraphs: [
+          'Without a spread, it can be hard to connect cards into a clear story.',
+          'A good layout gives each card a role, which makes the message easier to apply.',
+          'Choosing the right spread helps you avoid overcomplicating a simple question.',
+        ],
+      },
+      commonSituations: {
+        title: 'When a spread helps the most',
+        situations: [
+          'Which spread fits this question best?',
+          'Can I see past, present, and future at a glance?',
+          'What spread shows pros and cons clearly?',
+          'Which layout helps me see the root of a pattern?',
+          'What structure keeps this reading focused?',
+          'Do I need more than one card right now?',
+        ],
+      },
+      aiExplanation: {
+        title: 'How the AI reading uses spreads',
+        content: 'The AI reading interprets each position and connects the cards into one story.',
+        points: [
+          'Explains what each position means',
+          'Connects the card meanings across positions',
+          'Highlights the main thread of the reading',
+          'Suggests a grounded next action',
+        ],
+      },
+      longForm: {
+        title: 'A Simple Guide to Tarot Spreads',
+        paragraphs: [
+          'A tarot spread is the structure of a reading. It is a layout of positions that tells you how to read each card. The most common spread is a three card layout: past, present, and future. It gives you movement and context without feeling overwhelming. A one card draw is even simpler and works well for daily check ins. Larger spreads offer depth but require more patience and careful interpretation.',
+          'Choosing the right spread starts with your question. If you want a quick theme, one card is enough. If you want context and direction, three cards are ideal. If you are working through a big life shift, a larger spread can reveal underlying influences and long term patterns. The spread is like a map. It shows where you are, what is influencing you, and where you might be heading if you stay on the same path.',
+          'Many readers treat spreads as flexible frameworks. You can adapt positions to fit your question. For example, a three card spread can become situation, challenge, and advice. A five card spread can become past, present, future, obstacle, and outcome. The important part is to define the positions before you draw so each card has a clear role. This keeps the reading grounded and prevents you from forcing a meaning that does not fit.',
+          'The Celtic Cross is the classic deep spread, often used for complex questions. It includes positions for the present, immediate challenge, past, future, conscious goals, unconscious drivers, external influences, hopes and fears, and likely outcome. It is rich and layered, but it takes time. If you are new to tarot spreads, start smaller and build toward larger layouts as your confidence grows.',
+          'When you read a spread, focus on relationships between cards, not just individual meanings. Look for repeating suits, themes, or symbols. Notice which positions carry the most tension or momentum. The spread is a story, not a list. The more you practice, the more natural it becomes to see how the cards talk to each other.',
+          'This page gives you a clear entry point into spreads, even before advanced layouts are available. Start with a focused draw, then expand as needed. The right spread is the one that matches the complexity of your question. Choose a layout, draw your cards, and let the structure guide the insight that follows.',
+        ],
+      },
+      tarotEntry: {
+        title: 'Start with a focused draw',
+        ctaText: 'Start reading',
+      },
+      faqs: [
+        {
+          question: 'What is a tarot spread?',
+          answer: 'A spread is a layout that gives each card a specific role and makes the reading easier to interpret.',
+        },
+        {
+          question: 'Which spread should I use?',
+          answer: 'Use one card for quick focus, three cards for context, and larger spreads for complex questions.',
+        },
+        {
+          question: 'Can I create my own spread?',
+          answer: 'Yes. As long as you define each position clearly, custom spreads can work very well.',
+        },
+      ],
+    },
+  },
+  'celtic-cross-tarot': {
+    en: {
+      slug: 'celtic-cross-tarot',
+      seo: {
+        title: 'Celtic Cross Tarot - Classic Deep Reading | Mystic Tarot',
+        description: 'Learn the Celtic Cross tarot spread and how to interpret its positions. Start a reading and explore deeper insight.',
+        canonicalUrl: 'https://ai-tarotcard.com/celtic-cross-tarot',
+      },
+      hero: {
+        title: 'Celtic Cross Tarot - 10-Card Deep Dive',
+        subtitle: 'Classic spread for complex questions with layered insight.',
+        ctaText: 'Explore the Celtic Cross',
+        prefillQuestion: 'What is the deeper story in this situation?',
+      },
+      intro: {
+        content: 'The Celtic Cross is a ten card spread used for big questions and long term clarity. It offers both depth and structure.',
+      },
+      problem: {
+        title: 'Why the Celtic Cross remains a classic',
+        paragraphs: [
+          'It shows multiple layers at once: the present, the challenge, the past, and the likely direction.',
+          'It balances internal factors with external influences and reveals hidden drivers.',
+          'It is especially useful when you need a full picture, not just a quick answer.',
+        ],
+      },
+      commonSituations: {
+        title: 'When to use a Celtic Cross reading',
+        situations: [
+          'What is the deeper story behind this situation?',
+          'What is blocking me right now?',
+          'What hidden influence is shaping this outcome?',
+          'What do I hope for vs. what do I fear?',
+          'How is my environment affecting this?',
+          'What direction is this likely to take?',
+        ],
+      },
+      aiExplanation: {
+        title: 'How the spread is interpreted',
+        content: 'The AI reading connects each position into a single narrative.',
+        points: [
+          'Clarifies the present situation and the main challenge',
+          'Shows how the past shaped the current moment',
+          'Highlights conscious goals and unconscious drivers',
+          'Surfaces external influences and the likely outcome',
+        ],
+      },
+      longForm: {
+        title: 'Understanding the Celtic Cross Tarot Spread',
+        paragraphs: [
+          'The Celtic Cross tarot spread is one of the most respected layouts in traditional tarot. It uses ten positions to show a full landscape of a situation. The first cards describe the present and the challenge. The next cards reveal the past, the near future, and the deeper foundation of the issue. The final line explores your mindset, external influences, hopes and fears, and the likely outcome. Because it is so detailed, the Celtic Cross is best reserved for big questions rather than daily check ins.',
+          'Each position has a role. The crossing card highlights what is blocking or intensifying the present. The foundation card points to the root of the matter. The past card shows what led here, and the near future hints at the next shift. The conscious goal card shows what you want, while the unconscious card shows what you might be avoiding. The external influence card reflects your environment, while hopes and fears reveal the emotional backdrop that can shape the outcome.',
+          'The Celtic Cross works well for decisions that feel heavy or complex. Career pivots, relationship crossroads, or major life changes benefit from this spread because it gives you multiple angles at once. It also helps you avoid tunnel vision. When you see both internal and external factors, you can act with more balance. The outcome card is not fate. It is a likely direction based on the current energy and choices.',
+          'Interpreting the Celtic Cross requires patience. Focus on how the cards connect to each other, not just the individual meanings. Look for repeating themes, contrasting symbols, and shifts in tone between positions. The reading is a story, and the cards are the chapters. When you read them together, the message becomes clearer and more practical.',
+          'This page is a guide to the Celtic Cross and a starting point for deeper work. While a full ten card layout is not required to begin, you can still start with a focused draw and build from there. Use the draw to identify the main theme, then consider how the spread positions would expand that theme into a full narrative.',
+          'If you are new to the Celtic Cross, begin with a strong question and a calm mindset. Take notes as you read. The more you practice, the more natural the spread becomes. The Celtic Cross is not about predicting the future. It is about seeing the present more clearly so you can make a better choice.',
+        ],
+      },
+      tarotEntry: {
+        title: 'Start with a focused draw',
+        ctaText: 'Start reading',
+      },
+      faqs: [
+        {
+          question: 'How many cards are in the Celtic Cross?',
+          answer: 'The classic Celtic Cross uses ten cards, each with a specific role in the reading.',
+        },
+        {
+          question: 'Is the Celtic Cross only for experts?',
+          answer: 'It is advanced, but beginners can still use it by taking time with each position.',
+        },
+        {
+          question: 'Can I use the Celtic Cross for any question?',
+          answer: 'It works best for complex or long term questions. For quick insight, use one or three cards.',
+        },
+      ],
+    },
+  },
 };
 
 export function getLandingPageData(slug: string, language: Language): LandingPageContent | null {
   const pageData = LANDING_PAGES[slug as LandingPageSlug];
   if (!pageData) return null;
-  return pageData[language];
+  return pageData[language] || pageData.en;
 }
 
 export function getAllLandingSlugs(): string[] {

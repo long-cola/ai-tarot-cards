@@ -8,12 +8,20 @@ export enum AppPhase {
 
 export type Language = 'zh' | 'en';
 
+export interface ReadingConfig {
+  drawCount?: number;
+  autoDraw?: boolean;
+  allowGuest?: boolean;
+}
+
 export interface TarotCardData {
   id: number;
   name: string; // English name
   nameCn: string; // Chinese name
   meaningUpright: string;
   meaningReversed: string;
+  meaningUprightEn?: string;
+  meaningReversedEn?: string;
   imageUrl: string;
 }
 

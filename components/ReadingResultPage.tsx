@@ -24,6 +24,8 @@ interface ReadingResultPageProps {
   reading: string;
   language: 'zh' | 'en';
   isLoading: boolean;
+  drawCount: number;
+  allowGuestReading: boolean;
   onSaveTopic: () => void;
   onTryAgain: () => void;
   isSaving: boolean;
@@ -39,6 +41,8 @@ export const ReadingResultPage: React.FC<ReadingResultPageProps> = ({
   reading,
   language,
   isLoading,
+  drawCount,
+  allowGuestReading,
   onSaveTopic,
   onTryAgain,
   isSaving,
@@ -50,16 +54,16 @@ export const ReadingResultPage: React.FC<ReadingResultPageProps> = ({
   const isZh = language === 'zh';
 
   // Show login prompt if user is not logged in and reading is empty
-  const showLoginPrompt = !user && !reading && !isLoading;
+  const showLoginPrompt = !allowGuestReading && !user && !reading && !isLoading;
 
   // Show upgrade prompt if user is logged in but reading is empty (quota exhausted)
-  const showUpgradePrompt = user && !reading && !isLoading;
+  const showUpgradePrompt = !allowGuestReading && user && !reading && !isLoading;
 
   const getCardPosition = (position: number) => {
     if (isZh) {
-      return ['过去', '现在', '未来'][position] || '事件';
+      return drawCount === 1 ? '单牌' : (['过去', '现在', '未来'][position] || '事件');
     }
-    return ['Past', 'Present', 'Future'][position] || 'Event';
+    return drawCount === 1 ? 'Card' : (['Past', 'Present', 'Future'][position] || 'Event');
   };
 
   const getCardName = (card: Card) => {
@@ -76,10 +80,14 @@ export const ReadingResultPage: React.FC<ReadingResultPageProps> = ({
   return (
     <>
       <SEOHead
-        title={isZh ? `${question.substring(0, 40)} - AI塔罗占卜结果 | 神秘塔罗` : `${question.substring(0, 40)} - AI Tarot Result | Mystic Tarot`}
+        title={isZh
+          ? `${question.substring(0, 40)} - AI塔罗占卜结果 | 神秘塔罗`
+          : `${question.substring(0, 40)} - AI Tarot Result | Mystic Tarot`}
         description={isZh
           ? `免费AI塔罗占卜结果：${cards.map(c => c.nameCn).join('、')}。专业解读爱情事业财运，洞察过去现在未来。`
-          : `Free AI tarot reading: ${cards.map(c => c.name).join(', ')}. Professional insights on love, career, fortune. Past, present, future revealed.`}
+          : drawCount === 1
+            ? `Free one card tarot draw: ${cards.map(c => c.name).join(', ')}. Quick meaning and focused guidance.`
+            : `Free AI tarot reading: ${cards.map(c => c.name).join(', ')}. Professional insights on love, career, fortune. Past, present, future revealed.`}
         url={typeof window !== 'undefined' ? window.location.pathname + window.location.search : (isZh ? '/zh/' : '/')}
         lang={isZh ? 'zh-Hans' : 'en'}
         schemaType="Article"
@@ -277,29 +285,33 @@ export const ReadingResultPage: React.FC<ReadingResultPageProps> = ({
           {!isLoading && reading && (
             <>
               <div className="flex flex-col items-start gap-4 md:gap-[20px] w-full">
-                <p className="text-[12px] md:text-[14px] leading-[18px] md:leading-[22px] text-center w-full px-2" style={{ color: 'rgba(205, 191, 238, 0.5)' }}>
-                  {isZh
-                    ? '将你的问题创建为一个人生大命题吧！创建后，当你需要对这个人生大命题进行新的启示时，可以再次进行抽牌，延续人生大命题，查看演进记录。'
-                    : 'Create a big topic from your question! After creation, when you need new insights, you can draw cards again to continue and view the evolution.'
-                  }
-                </p>
+                {drawCount === 3 && (
+                  <p className="text-[12px] md:text-[14px] leading-[18px] md:leading-[22px] text-center w-full px-2" style={{ color: 'rgba(205, 191, 238, 0.5)' }}>
+                    {isZh
+                      ? '将你的问题创建为一个人生大命题吧！创建后，当你需要对这个人生大命题进行新的启示时，可以再次进行抽牌，延续人生大命题，查看演进记录。'
+                      : 'Create a big topic from your question! After creation, when you need new insights, you can draw cards again to continue and view the evolution.'
+                    }
+                  </p>
+                )}
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-start gap-3 md:gap-[20px] w-full">
-                  <button
-                    onClick={onSaveTopic}
-                    disabled={isSaving || topicCreated}
-                    className="flex-1 flex justify-center items-center px-8 md:px-[64px] py-3 md:py-[12px] rounded-[100px] text-[14px] md:text-[16px] font-bold hover:opacity-90 transition-opacity disabled:opacity-50 min-h-[40px] md:h-[43px]"
-                    style={{
-                      backgroundColor: '#DD8424',
-                      color: '#000000',
-                      opacity: 0.8
-                    }}
-                  >
-                    {topicCreated
-                      ? (isZh ? '已创建命题' : 'Topic Created')
-                      : isSaving
-                      ? (isZh ? '保存中...' : 'Saving...')
-                      : (isZh ? '保存为人生大命题' : 'Save as Big Topic')}
-                  </button>
+                  {drawCount === 3 && (
+                    <button
+                      onClick={onSaveTopic}
+                      disabled={isSaving || topicCreated}
+                      className="flex-1 flex justify-center items-center px-8 md:px-[64px] py-3 md:py-[12px] rounded-[100px] text-[14px] md:text-[16px] font-bold hover:opacity-90 transition-opacity disabled:opacity-50 min-h-[40px] md:h-[43px]"
+                      style={{
+                        backgroundColor: '#DD8424',
+                        color: '#000000',
+                        opacity: 0.8
+                      }}
+                    >
+                      {topicCreated
+                        ? (isZh ? '已创建命题' : 'Topic Created')
+                        : isSaving
+                        ? (isZh ? '保存中...' : 'Saving...')
+                        : (isZh ? '保存为人生大命题' : 'Save as Big Topic')}
+                    </button>
+                  )}
                   <button
                     onClick={onTryAgain}
                     className="flex-1 flex justify-center items-center px-6 md:px-[20px] py-3 md:py-[7px] rounded-[100px] text-[14px] md:text-[16px] font-bold hover:opacity-90 transition-opacity min-h-[40px] md:h-[43px]"

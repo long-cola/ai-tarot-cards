@@ -71,9 +71,11 @@ export default async function handler(req: any, res: any) {
       // Format cards based on language
       const cardsString = cards
         .map((c: any) => {
-          const posName = isZh
-            ? ['过去', '现在', '未来'][c.position]
-            : ['The Past', 'The Present', 'The Future'][c.position];
+          const posName = cards.length === 1
+            ? (isZh ? '单牌' : 'Card')
+            : (isZh
+              ? ['过去', '现在', '未来'][c.position]
+              : ['The Past', 'The Present', 'The Future'][c.position]);
           const cardName = isZh ? c.nameCn : c.name;
           const status = isZh ? (c.isReversed ? '逆位' : '正位') : c.isReversed ? 'Reversed' : 'Upright';
           return `${posName}: ${cardName} (${status})`;

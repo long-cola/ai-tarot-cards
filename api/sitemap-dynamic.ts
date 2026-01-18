@@ -31,12 +31,6 @@ export default async function handler(req: any, res: any) {
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>${baseUrl}/zh/</loc>
-    <lastmod>${now.split('T')[0]}</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
     <loc>${baseUrl}/topics</loc>
     <lastmod>${now.split('T')[0]}</lastmod>
     <changefreq>weekly</changefreq>

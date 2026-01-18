@@ -60,6 +60,13 @@ export const HomePage: React.FC<HomePageProps> = ({
         { label: 'Career Tarot Reading', href: '/career-tarot-reading' },
         { label: 'Daily Tarot Guidance', href: '/daily-tarot-guidance' },
       ];
+  const tarotTools = [
+    { label: 'Tarot Card Generator', href: '/tarot-card-generator' },
+    { label: 'One Card Tarot', href: '/one-card-tarot' },
+    { label: 'Random Tarot Card Generator', href: '/random-tarot-card-generator' },
+    { label: 'Tarot Spreads', href: '/tarot-spreads' },
+    { label: 'Celtic Cross Tarot', href: '/celtic-cross-tarot' },
+  ];
 
   const handleSubmit = () => {
     if (localQuestion.trim()) {
@@ -199,6 +206,27 @@ export const HomePage: React.FC<HomePageProps> = ({
               </h2>
               <div className="flex flex-wrap justify-center items-center gap-4 px-4 text-[14px] md:text-[15px]">
                 {popularReadings.map((item) => (
+                  <a
+                    key={item.href}
+                    href={item.href}
+                    className="text-[#BDA1FF] hover:text-[#E2DBFF] transition-colors underline underline-offset-4"
+                  >
+                    {item.label}
+                  </a>
+                ))}
+              </div>
+            </div>
+
+            {/* Tarot Tools */}
+            <div className="w-full flex flex-col items-center gap-4 mt-6">
+              <h2
+                className="text-[18px] md:text-[20px] font-semibold text-center"
+                style={{ color: '#E8E3FF', fontFamily: "'Noto Serif SC', serif" }}
+              >
+                {isZh ? '塔罗工具' : 'Tarot Tools'}
+              </h2>
+              <div className="flex flex-wrap justify-center items-center gap-4 px-4 text-[14px] md:text-[15px]">
+                {tarotTools.map((item) => (
                   <a
                     key={item.href}
                     href={item.href}

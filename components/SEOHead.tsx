@@ -12,6 +12,7 @@ interface SEOProps {
 }
 
 const SITE_ROOT = 'https://ai-tarotcard.com';
+const ENABLE_ZH = false;
 
 const SEOHead: React.FC<SEOProps> = ({
   title = 'Free AI Tarot Reading - Love, Career & Life Guidance | Mystic Tarot',
@@ -22,7 +23,8 @@ const SEOHead: React.FC<SEOProps> = ({
   lang = 'en',
   schemaType = 'WebSite'
 }) => {
-  const isZh = lang === 'zh-Hans';
+  const effectiveLang = ENABLE_ZH ? lang : 'en';
+  const isZh = effectiveLang === 'zh-Hans';
 
   // Normalize path from url prop or window.location
   const normalizedPath = (() => {
@@ -40,7 +42,7 @@ const SEOHead: React.FC<SEOProps> = ({
 
   const pathWithoutLang = normalizedPath.replace(/^\/zh(\/|$)/, '/');
   const normalizedBasePath = pathWithoutLang === '' ? '/' : pathWithoutLang;
-  const canonicalPath = lang === 'zh-Hans'
+  const canonicalPath = effectiveLang === 'zh-Hans'
     ? `/zh${normalizedBasePath === '/' ? '/' : normalizedBasePath}`
     : normalizedBasePath;
 
@@ -60,11 +62,11 @@ const SEOHead: React.FC<SEOProps> = ({
   };
 
   const finalDescription = description === defaultDescriptions['zh-Hans'] || description === '免费在线AI塔罗占卜，3秒获得专业解读。爱情、事业、财运、人生决策即时指引。神秘三牌阵洞察过去现在未来，24小时随时占卜，AI深度解析命运走向。'
-    ? defaultDescriptions[lang]
+    ? defaultDescriptions[effectiveLang]
     : description;
 
   const finalTitle = title === defaultTitles['zh-Hans'] || title === '免费AI塔罗占卜 - 爱情事业财运解读 | 神秘塔罗在线'
-    ? defaultTitles[lang]
+    ? defaultTitles[effectiveLang]
     : title;
 
   // 生成JSON-LD结构化数据
@@ -138,7 +140,7 @@ const SEOHead: React.FC<SEOProps> = ({
   return (
     <Helmet>
       {/* 基本Meta标签 */}
-      <html lang={lang} />
+      <html lang={effectiveLang} />
       <title>{finalTitle}</title>
       <meta name="description" content={finalDescription} />
       <link rel="canonical" href={canonicalUrl} />
@@ -184,7 +186,7 @@ const SEOHead: React.FC<SEOProps> = ({
       <meta property="og:image:alt" content={isZh ? "AI塔罗占卜工具" : "AI Tarot Reading Tool"} />
       <meta property="og:url" content={canonicalUrl} />
       <meta property="og:site_name" content={isZh ? "神秘塔罗 AI" : "Mystic Tarot AI"} />
-      <meta property="og:locale" content={lang === 'zh-Hans' ? 'zh_Hans_CN' : 'en_US'} />
+      <meta property="og:locale" content={effectiveLang === 'zh-Hans' ? 'zh_Hans_CN' : 'en_US'} />
 
       {/* Twitter Card 标签 */}
       <meta name="twitter:card" content="summary_large_image" />
@@ -193,7 +195,7 @@ const SEOHead: React.FC<SEOProps> = ({
       <meta name="twitter:image" content={image} />
 
       {/* Hreflang 多语言标签 */}
-      <link rel="alternate" hreflang="zh-Hans" href={zhHref} />
+      {ENABLE_ZH && <link rel="alternate" hreflang="zh-Hans" href={zhHref} />}
       <link rel="alternate" hreflang="en" href={enHref} />
       <link rel="alternate" hreflang="x-default" href={enHref} />
 

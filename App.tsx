@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { AppPhase, DrawnCard, SPREAD_LABELS, Language, SessionUser, Plan, Topic, TopicEvent, PlanQuota, TopicWithUsage } from './types';
+import { AppPhase, DrawnCard, Language, SessionUser, Plan, Topic, TopicEvent, PlanQuota, TopicWithUsage, ReadingConfig } from './types';
 import { MAJOR_ARCANA, TRANSLATIONS, BIG_TOPIC_SLUG_MAP } from './constants';
 import { getTarotReading } from './services/bailianService';
 import { Card } from './components/Card';
@@ -58,7 +58,7 @@ const Header = ({
   onBack?: () => void, 
   showBack: boolean,
   language: Language,
-  onToggleLanguage: () => void,
+  onToggleLanguage?: () => void,
   user: SessionUser | null,
   plan: Plan,
   onLogin: () => void,
@@ -85,12 +85,14 @@ const Header = ({
      </h1>
 
      <div className="flex items-center gap-2">
-        <button 
-          onClick={onToggleLanguage} 
-          className="text-xs font-cinzel border border-white/20 bg-white/5 hover:bg-white/10 text-white/80 px-2 py-1 rounded transition-colors"
-        >
-          {language === 'zh' ? 'EN' : '中'}
-        </button>
+        {onToggleLanguage && (
+          <button 
+            onClick={onToggleLanguage} 
+            className="text-xs font-cinzel border border-white/20 bg-white/5 hover:bg-white/10 text-white/80 px-2 py-1 rounded transition-colors"
+          >
+            {language === 'zh' ? 'EN' : '中'}
+          </button>
+        )}
         {plan === 'member' && (
           <span className="text-[10px] px-2 py-1 rounded-md bg-amber-500/20 border border-amber-400/40 text-amber-100">
             {language === 'zh' ? '会员' : 'Member'}
@@ -386,11 +388,21 @@ const QUESTION_SUGGESTIONS: Record<Language, string[]> = {
 
 const SHUFFLE_ANGLES = Array.from({ length: 36 }, (_, index) => index * 10);
 
-const formatCardLabel = (card: DrawnCard, language: Language) => {
+const getPositionLabel = (position: number, language: Language, drawCount: number) => {
+  const isZh = language === 'zh';
+  if (drawCount === 1) {
+    return isZh ? '单牌' : 'Card';
+  }
+  return isZh
+    ? ["过去", "现在", "未来"][position] ?? "事件"
+    : ["Past", "Present", "Future"][position] ?? "Event";
+};
+
+const formatCardLabel = (card: DrawnCard, language: Language, drawCount = 3) => {
   const isZh = language === 'zh';
   const name = isZh ? card.nameCn : card.name;
   const status = isZh ? (card.isReversed ? "逆位" : "正位") : (card.isReversed ? "Reversed" : "Upright");
-  const posName = isZh ? ["过去", "现在", "未来"][card.position] ?? "事件" : ["Past", "Present", "Future"][card.position] ?? "Event";
+  const posName = getPositionLabel(card.position, language, drawCount);
   return `${posName}: ${name} (${status})`;
 };
 
@@ -443,16 +455,13 @@ const App: React.FC = () => {
   const [question, setQuestion] = useState(initialPending?.question || '');
   const [deck, setDeck] = useState<typeof MAJOR_ARCANA>([]);
   const [drawnCards, setDrawnCards] = useState<DrawnCard[]>(initialPending?.cards || []);
+  const [drawCount, setDrawCount] = useState<number>(initialPending?.cards?.length || 3);
+  const [allowGuestReading, setAllowGuestReading] = useState(false);
   const [reading, setReading] = useState(initialPending?.reading || '');
   const [isReadingLoading, setIsReadingLoading] = useState(false);
   const [isInteracting, setIsInteracting] = useState(false);
   const [isGestureMode, setIsGestureMode] = useState(false);
-  const [language, setLanguage] = useState<Language>(() => {
-    if (typeof window !== 'undefined') {
-      return window.location.pathname.startsWith('/zh') ? 'zh' : 'en';
-    }
-    return 'en';
-  });
+  const [language, setLanguage] = useState<Language>('en');
   const [errorMsg, setErrorMsg] = useState('');
   const [user, setUser] = useState<SessionUser | null>(null);
   const [plan, setPlan] = useState<Plan>('guest');
@@ -517,6 +526,7 @@ const App: React.FC = () => {
   const [showToast, setShowToast] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const readingRef = useRef<HTMLDivElement>(null);
+  const languageToggleEnabled = false;
 
   const viewKey = useMemo(() => {
     if (showSharedReadingPage && sharedReadingId) return `share:${sharedReadingId}`;
@@ -544,6 +554,9 @@ const App: React.FC = () => {
   ]);
 
   const t = TRANSLATIONS[language];
+  const drawTitleText = drawCount === 1
+    ? (language === 'zh' ? '请凭直觉抽取一张牌' : 'Draw One Card by Intuition')
+    : t.drawTitle;
   const isDrawingView = phase === AppPhase.DRAWING
     && !showBigTopicIntroPage
     && !showTopicListPage
@@ -558,6 +571,14 @@ const App: React.FC = () => {
   // Initialize Deck
   useEffect(() => {
     setDeck([...MAJOR_ARCANA]);
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (window.location.pathname.startsWith('/zh')) {
+      const strippedPath = window.location.pathname.replace(/^\/zh/, '') || '/';
+      window.history.replaceState(null, '', `${strippedPath}${window.location.search}${window.location.hash}`);
+    }
   }, []);
 
   // Initialize cookie consent + analytics state
@@ -682,6 +703,7 @@ const App: React.FC = () => {
           setQuestion(decoded.question);
           setReading(decoded.reading);
           setDrawnCards(decoded.cards);
+          setDrawCount(decoded.cards.length || 3);
           setPhase(AppPhase.ANALYSIS);
           setShareMode(true);
         }
@@ -1094,10 +1116,12 @@ const App: React.FC = () => {
         // Prepare variables for first reading
         const isZh = language === 'zh';
         const baselineCardsStr = pendingBaseline.cards
-          .map(c => formatCardLabel(c, language))
+          .map(c => formatCardLabel(c, language, pendingBaseline.cards.length))
           .join(isZh ? '，' : ', ');
 
-        const promptKey = isZh ? 'prompt_first_zh' : 'prompt_first_en';
+        const promptKey = isZh
+          ? (pendingBaseline.cards.length === 1 ? 'prompt_single_zh' : 'prompt_first_zh')
+          : (pendingBaseline.cards.length === 1 ? 'prompt_single_en' : 'prompt_first_en');
         const variables = {
           question: pendingBaseline.question,
           baseline_cards: baselineCardsStr
@@ -1377,11 +1401,74 @@ const App: React.FC = () => {
     return shuffled;
   };
 
+  const normalizeReadingConfig = (config?: ReadingConfig) => ({
+    drawCount: Math.max(1, config?.drawCount ?? 3),
+    autoDraw: Boolean(config?.autoDraw),
+    allowGuest: Boolean(config?.allowGuest),
+  });
+
+  const autoDrawCards = (count: number) => {
+    const shuffled = shuffleArray(MAJOR_ARCANA);
+    const selected = shuffled.slice(0, count).map((card, index) => ({
+      ...card,
+      isReversed: Math.random() > 0.5,
+      position: index,
+    }));
+    setDrawnCards(selected);
+    setDeck(shuffled.slice(count));
+    setPhase(AppPhase.ANALYSIS);
+  };
+
+  const buildGuestReading = (cards: DrawnCard[]) => {
+    if (!cards.length) return '';
+    const card = cards[0];
+    const status = card.isReversed ? 'Reversed' : 'Upright';
+    const meaning = card.isReversed
+      ? (card.meaningReversedEn || card.meaningReversed)
+      : (card.meaningUprightEn || card.meaningUpright);
+
+    return [
+      `## Your Card: ${card.name} (${status})`,
+      '',
+      `**Core meaning:** ${meaning}`,
+      '',
+      '**Reflection prompts:**',
+      '- What does this card mirror in your current situation?',
+      '- What action would express the best version of this card today?',
+      '- What small step can you take in the next 24 hours?',
+    ].join('\n');
+  };
+
   // Handle Input Submit
   const handleStart = () => {
     if (!question.trim()) return;
 
     setErrorMsg('');
+    setPhase(AppPhase.SHUFFLING);
+  };
+
+  const startReadingFromLanding = (prefillQuestion: string, config?: ReadingConfig) => {
+    const normalized = normalizeReadingConfig(config);
+    setDrawCount(normalized.drawCount);
+    setAllowGuestReading(normalized.allowGuest);
+    setQuestion(prefillQuestion);
+    setErrorMsg('');
+    setReading('');
+    setDrawnCards([]);
+    setDeck([...MAJOR_ARCANA]);
+    setIsInteracting(false);
+    setShareMode(false);
+    setShareLink('');
+    setShareError('');
+    setPendingTopicTitle('');
+    setShowLandingPage(false);
+    setCurrentLandingSlug(null);
+
+    if (normalized.autoDraw) {
+      autoDrawCards(normalized.drawCount);
+      return;
+    }
+
     setPhase(AppPhase.SHUFFLING);
   };
 
@@ -1406,7 +1493,7 @@ const App: React.FC = () => {
 
   // Draw Logic
   const handleCardDraw = (index: number) => {
-    if (drawnCards.length >= 3 || isInteracting) return;
+    if (drawnCards.length >= drawCount || isInteracting) return;
 
     setIsInteracting(true);
 
@@ -1426,7 +1513,7 @@ const App: React.FC = () => {
     newDeck.splice(index, 1);
     setDeck(newDeck);
 
-    if (newDrawn.length === 3) {
+    if (newDrawn.length === drawCount) {
       // Immediately transition to ANALYSIS phase to show loading animation
       setTimeout(() => setPhase(AppPhase.ANALYSIS), 0);
     } else {
@@ -1436,11 +1523,17 @@ const App: React.FC = () => {
     }
   };
 
-  // Analysis Logic - triggers immediately after drawing 3 cards
+  // Analysis Logic - triggers immediately after drawing cards
   useEffect(() => {
-    if (phase === AppPhase.ANALYSIS && drawnCards.length === 3 && !reading) {
+    if (phase === AppPhase.ANALYSIS && drawnCards.length === drawCount && !reading) {
       // Immediately start the reading process
       const fetchReading = async () => {
+        if (!user && allowGuestReading) {
+          setReading(buildGuestReading(drawnCards));
+          setIsReadingLoading(false);
+          return;
+        }
+
         // Check if user is logged in first
         const allowed = await ensureUsageAllowance();
         if (!allowed) {
@@ -1471,10 +1564,12 @@ const App: React.FC = () => {
         // Prepare variables for first reading
         const isZh = language === 'zh';
         const baselineCardsStr = drawnCards
-          .map(c => formatCardLabel(c, language))
+          .map(c => formatCardLabel(c, language, drawCount))
           .join(isZh ? '，' : ', ');
 
-        const promptKey = isZh ? 'prompt_first_zh' : 'prompt_first_en';
+        const promptKey = isZh
+          ? (drawCount === 1 ? 'prompt_single_zh' : 'prompt_first_zh')
+          : (drawCount === 1 ? 'prompt_single_en' : 'prompt_first_en');
         const variables = {
           question: question,
           baseline_cards: baselineCardsStr
@@ -1510,7 +1605,7 @@ const App: React.FC = () => {
 
       fetchReading();
     }
-  }, [phase, drawnCards, question, language, pendingTopicTitle, topicQuota]);
+  }, [phase, drawnCards, question, language, pendingTopicTitle, topicQuota, drawCount, allowGuestReading, user]);
 
   // Auto-save topic when reading completes from Big Topic Intro flow
   useEffect(() => {
@@ -1523,6 +1618,10 @@ const App: React.FC = () => {
   const handleSaveTopic = async () => {
     if (!user) {
       setTopicError(language === 'zh' ? '请先登录后再创建命题。' : 'Please log in to save as a topic.');
+      return;
+    }
+    if (drawCount !== 3) {
+      setTopicError(language === 'zh' ? '仅三张牌解读可保存为命题。' : 'Only three-card readings can be saved as topics.');
       return;
     }
     if (!reading || drawnCards.length < 3) {
@@ -1600,6 +1699,17 @@ const App: React.FC = () => {
     }
   };
 
+  const handleTryAgain = () => {
+    if (allowGuestReading && drawCount === 1) {
+      setReading('');
+      setDrawnCards([]);
+      setIsReadingLoading(false);
+      autoDrawCards(drawCount);
+      return;
+    }
+    resetApp();
+  };
+
   const handleSaveImage = async () => {
     if (!readingRef.current) return;
     setIsSavingImage(true);
@@ -1654,8 +1764,7 @@ const App: React.FC = () => {
 
   // Update browser URL for client-side routing
   const updateUrl = (route: string) => {
-    const langPrefix = language === 'zh' ? '/zh' : '';
-    const newUrl = route === '/' ? langPrefix || '/' : `${langPrefix}/${route}`;
+    const newUrl = route === '/' ? '/' : `/${route}`;
     navigateToPath(newUrl);
   };
 
@@ -1666,6 +1775,8 @@ const App: React.FC = () => {
     setReading('');
     setDeck([...MAJOR_ARCANA]);
     setIsInteracting(false);
+    setDrawCount(3);
+    setAllowGuestReading(false);
     setErrorMsg('');
     setCreatedTopicId(null);
     setTopicSaveMessage('');
@@ -1716,24 +1827,15 @@ const App: React.FC = () => {
     setShowTermsPage(false);
     resetApp();
     setShowBigTopicIntroPage(true);
-    navigateToPath('/zh/bigtopic');
+    navigateToPath('/bigtopic');
   };
 
   const toggleLanguage = () => {
-    setLanguage(prev => {
-      const next = prev === 'zh' ? 'en' : 'zh';
-      if (typeof window !== 'undefined') {
-        const { pathname, search, hash } = window.location;
-        const strippedPath = pathname.startsWith('/zh') ? pathname.replace(/^\/zh/, '') || '/' : pathname || '/';
-        const normalizedPath = strippedPath.startsWith('/') ? strippedPath : `/${strippedPath}`;
-        const nextPath =
-          next === 'zh'
-            ? `/zh${normalizedPath === '/' ? '/' : normalizedPath}${search}${hash}`
-            : `${normalizedPath}${search}${hash}`;
-        window.location.assign(nextPath);
-      }
-      return next;
-    });
+    if (typeof window === 'undefined') return;
+    if (window.location.pathname.startsWith('/zh')) {
+      const strippedPath = window.location.pathname.replace(/^\/zh/, '') || '/';
+      window.location.assign(`${strippedPath}${window.location.search}${window.location.hash}`);
+    }
   };
 
   const handleCookieConsentChange = (status: Exclude<CookieConsentStatus, null>) => {
@@ -1855,13 +1957,13 @@ const buildEventQuestion = (card: DrawnCard, topic?: Topic, events: TopicEvent[]
     const isZh = language === 'zh';
     const baselineCards = topic?.baseline_cards || [];
     const baselineStr = baselineCards.length
-      ? baselineCards.map(c => formatCardLabel(c, language)).join(isZh ? "，" : ", ")
+      ? baselineCards.map(c => formatCardLabel(c, language, baselineCards.length)).join(isZh ? "，" : ", ")
       : (isZh ? "暂无" : "None");
     const baselineReading = topic?.baseline_reading ? topic.baseline_reading.slice(0, 800) : '';
     const historyStr = events.length
       ? events.map((ev, idx) => {
           const dateStr = ev.created_at ? new Date(ev.created_at).toLocaleDateString() : '';
-          const cardStr = ev.cards?.map(c => formatCardLabel(c as DrawnCard, language)).join(isZh ? "，" : ", ");
+          const cardStr = ev.cards?.map(c => formatCardLabel(c as DrawnCard, language, 1)).join(isZh ? "，" : ", ");
           const readingSummary = ev.reading ? (ev.reading.length > 300 ? ev.reading.slice(0, 300) + '...' : ev.reading) : '';
 
           if (isZh) {
@@ -1880,7 +1982,7 @@ Reading Summary: ${readingSummary || "None"}`;
         }).join(isZh ? "\n\n" : "\n\n")
       : (isZh ? "暂无历史事件" : "No past events");
 
-    const currentCardStr = formatCardLabel(card, language);
+    const currentCardStr = formatCardLabel(card, language, 1);
 
     if (isZh) {
       return `你是一位专业的塔罗师AI助手，精通78张塔罗牌的象征意义、正逆位解读、牌阵应用和灵性指导。你以温和、中立且富有洞察力的方式为用户提供塔罗解读服务，注重启发而非预言，强调个人能动性和内在成长。
@@ -1993,14 +2095,14 @@ Card drawn: ${currentCardStr}`;
 
       // Build detailed baseline cards info with position labels
       const baselineCardsStr = baselineCards.length
-        ? baselineCards.map(c => formatCardLabel(c, language)).join(isZh ? "，" : ", ")
+        ? baselineCards.map(c => formatCardLabel(c, language, baselineCards.length)).join(isZh ? "，" : ", ")
         : (isZh ? "暂无" : "None");
 
       // Build history string with full event details
       const historyStr = topicEvents.length
         ? topicEvents.map((ev, idx) => {
             const dateStr = ev.created_at ? new Date(ev.created_at).toLocaleDateString() : '';
-            const cardStr = ev.cards?.map(c => formatCardLabel(c as DrawnCard, language)).join(isZh ? "，" : ", ");
+            const cardStr = ev.cards?.map(c => formatCardLabel(c as DrawnCard, language, 1)).join(isZh ? "，" : ", ");
             // Include reading summary (limit to 300 chars to avoid too long context)
             const readingSummary = ev.reading ? (ev.reading.length > 300 ? ev.reading.slice(0, 300) + '...' : ev.reading) : '';
 
@@ -2020,7 +2122,7 @@ Reading Summary: ${readingSummary || "None"}`;
           }).join(isZh ? "\n\n" : "\n\n")
         : (isZh ? "暂无历史事件" : "No past events");
 
-      const currentCardStr = formatCardLabel(eventCard, language);
+      const currentCardStr = formatCardLabel(eventCard, language, 1);
       const currentDate = new Date().toLocaleDateString(isZh ? 'zh-CN' : 'en-US', {
         year: 'numeric',
         month: 'long',
@@ -2139,7 +2241,7 @@ Reading Summary: ${readingSummary || "None"}`;
       <Navbar
         onLoginClick={loginWithGoogle}
         onLogoutClick={handleLogout}
-        onLanguageToggle={toggleLanguage}
+        onLanguageToggle={languageToggleEnabled ? toggleLanguage : undefined}
         onQuickReadingClick={() => {
           setShowTopicListPage(false);
           setShowBlogPage(false);
@@ -2253,11 +2355,8 @@ Reading Summary: ${readingSummary || "None"}`;
           <LandingPageTemplate
             slug={currentLandingSlug}
             language={language}
-            onStartReading={(prefillQuestion) => {
-              setShowLandingPage(false);
-              setCurrentLandingSlug(null);
-              setQuestion(prefillQuestion);
-              handleStart();
+            onStartReading={(prefillQuestion, config) => {
+              startReadingFromLanding(prefillQuestion, config);
             }}
           />
         )}
@@ -2506,7 +2605,7 @@ Reading Summary: ${readingSummary || "None"}`;
 
               <div className="relative w-full max-w-4xl flex items-center justify-center">
                 <h2 className="text-[#E8E3FF] text-xl md:text-2xl lg:text-3xl font-mystic tracking-wide text-center">
-                  {t.drawTitle}
+                  {drawTitleText}
                 </h2>
                 {drawnCards.length === 0 && (
                   <button
@@ -2518,11 +2617,9 @@ Reading Summary: ${readingSummary || "None"}`;
                 )}
               </div>
 
-              <div className="mt-8 md:mt-10 grid grid-cols-3 gap-3 md:gap-4 w-full max-w-xl">
-                {[0, 1, 2].map((slot) => {
-                  const label = language === 'zh'
-                    ? ['过去', '现在', '未来'][slot]
-                    : ['Past', 'Present', 'Future'][slot];
+              <div className={`mt-8 md:mt-10 grid gap-3 md:gap-4 w-full ${drawCount === 1 ? 'grid-cols-1 max-w-xs' : 'grid-cols-3 max-w-xl'}`}>
+                {Array.from({ length: drawCount }, (_, slot) => {
+                  const label = getPositionLabel(slot, language, drawCount);
                   const slotTone = slot === 0 ? 'bg-[#3E2080]/20' : 'bg-[#070212]/20';
 
                   return (
@@ -2604,8 +2701,10 @@ Reading Summary: ${readingSummary || "None"}`;
             reading={reading}
             language={language}
             isLoading={isReadingLoading}
+            drawCount={drawCount}
+            allowGuestReading={allowGuestReading}
             onSaveTopic={handleSaveTopic}
-            onTryAgain={resetApp}
+            onTryAgain={handleTryAgain}
             isSaving={isSavingTopic}
             topicCreated={!!createdTopicId}
             user={user}

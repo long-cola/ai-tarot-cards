@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Language } from '../../types';
+import { Language, ReadingConfig } from '../../types';
 import { getLandingPageData, LandingPageContent } from './LandingPageData';
 import SEOHead from '../SEOHead';
 import { SocialShare } from '../SocialShare';
@@ -8,8 +8,16 @@ import { SocialShare } from '../SocialShare';
 interface LandingPageTemplateProps {
   slug: string;
   language: Language;
-  onStartReading: (prefillQuestion: string) => void;
+  onStartReading: (prefillQuestion: string, config?: ReadingConfig) => void;
 }
+
+const TOOL_PAGE_SLUGS = new Set([
+  'tarot-card-generator',
+  'one-card-tarot',
+  'random-tarot-card-generator',
+  'tarot-spreads',
+  'celtic-cross-tarot',
+]);
 
 const landingLinks = [
   {
@@ -67,6 +75,74 @@ const landingLinks = [
       zh: '/zh/daily-tarot-guidance',
     },
   },
+  {
+    slug: 'tarot-card-generator',
+    label: {
+      en: 'Tarot Card Generator',
+      zh: 'Tarot Card Generator',
+    },
+    href: {
+      en: '/tarot-card-generator',
+      zh: '/tarot-card-generator',
+    },
+  },
+  {
+    slug: 'one-card-tarot',
+    label: {
+      en: 'One Card Tarot',
+      zh: 'One Card Tarot',
+    },
+    href: {
+      en: '/one-card-tarot',
+      zh: '/one-card-tarot',
+    },
+  },
+  {
+    slug: 'random-tarot-card-generator',
+    label: {
+      en: 'Random Tarot Card Generator',
+      zh: 'Random Tarot Card Generator',
+    },
+    href: {
+      en: '/random-tarot-card-generator',
+      zh: '/random-tarot-card-generator',
+    },
+  },
+  {
+    slug: 'tarot-spreads',
+    label: {
+      en: 'Tarot Spreads',
+      zh: 'Tarot Spreads',
+    },
+    href: {
+      en: '/tarot-spreads',
+      zh: '/tarot-spreads',
+    },
+  },
+  {
+    slug: 'celtic-cross-tarot',
+    label: {
+      en: 'Celtic Cross Tarot',
+      zh: 'Celtic Cross Tarot',
+    },
+    href: {
+      en: '/celtic-cross-tarot',
+      zh: '/celtic-cross-tarot',
+    },
+  },
+];
+
+const CELTIC_CROSS_POSITIONS = [
+  'Present',
+  'Challenge',
+  'Past',
+  'Near Future',
+  'Foundation',
+  'Conscious Goal',
+  'Unconscious',
+  'External Influence',
+  'Hopes and Fears',
+  'Outcome',
 ];
 
 export const LandingPageTemplate: React.FC<LandingPageTemplateProps> = ({
@@ -76,9 +152,15 @@ export const LandingPageTemplate: React.FC<LandingPageTemplateProps> = ({
 }) => {
   const pageData = getLandingPageData(slug, language);
   const isZh = language === 'zh';
+  const isToolPage = TOOL_PAGE_SLUGS.has(slug);
+  const relatedTitle = isZh
+    ? (isToolPage ? '相关塔罗工具' : '相关塔罗问题')
+    : (isToolPage ? 'Related Tarot Tools' : 'Related Tarot Questions');
   const relatedLinks = landingLinks
     .filter((link) => link.slug !== slug)
+    .filter((link) => (isToolPage ? TOOL_PAGE_SLUGS.has(link.slug) : !TOOL_PAGE_SLUGS.has(link.slug)))
     .slice(0, 4);
+  const autoStartRef = useRef<string | null>(null);
 
   if (!pageData) {
     return (
@@ -88,6 +170,22 @@ export const LandingPageTemplate: React.FC<LandingPageTemplateProps> = ({
     );
   }
 
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      document.dispatchEvent(new Event('prerender-ready'));
+    }
+  }, [slug]);
+
+  useEffect(() => {
+    if (!pageData.readingConfig?.autoDraw || autoStartRef.current === slug) return;
+    if (typeof window === 'undefined') return;
+    autoStartRef.current = slug;
+    const timer = window.setTimeout(() => {
+      onStartReading(pageData.hero.prefillQuestion, pageData.readingConfig);
+    }, 350);
+    return () => window.clearTimeout(timer);
+  }, [pageData, onStartReading, slug]);
+
   return (
     <>
       <SEOHead
@@ -96,7 +194,7 @@ export const LandingPageTemplate: React.FC<LandingPageTemplateProps> = ({
         url={pageData.seo.canonicalUrl}
         lang={language === 'zh' ? 'zh-Hans' : 'en'}
         schemaType="Service"
-      />
+        />
       <FAQSchemaBlock faqs={pageData.faqs} />
 
       <div className="min-h-screen relative overflow-x-hidden">
@@ -117,19 +215,57 @@ export const LandingPageTemplate: React.FC<LandingPageTemplateProps> = ({
         <div className="relative z-10 flex flex-col items-center pb-20">
           <HeroSection
             data={pageData.hero}
-            onCTAClick={() => onStartReading(pageData.hero.prefillQuestion)}
+            onCTAClick={() => onStartReading(pageData.hero.prefillQuestion, pageData.readingConfig)}
           />
+          {slug === 'tarot-card-generator' && (
+            <QuickDrawSection
+              onDraw={(count) =>
+                onStartReading(pageData.hero.prefillQuestion, {
+                  ...pageData.readingConfig,
+                  drawCount: count,
+                })
+              }
+            />
+          )}
+          {slug === 'tarot-spreads' && (
+            <SpreadSelectorSection
+              onOneCard={() =>
+                onStartReading(pageData.hero.prefillQuestion, {
+                  ...pageData.readingConfig,
+                  drawCount: 1,
+                })
+              }
+              onThreeCard={() =>
+                onStartReading(pageData.hero.prefillQuestion, {
+                  ...pageData.readingConfig,
+                  drawCount: 3,
+                })
+              }
+            />
+          )}
+          {slug === 'celtic-cross-tarot' && (
+            <CelticCrossPositionsSection
+              onStartReading={() =>
+                onStartReading(pageData.hero.prefillQuestion, pageData.readingConfig)
+              }
+            />
+          )}
+          {isToolPage && (
+            <CommonSituationsSection data={pageData.commonSituations} compact />
+          )}
           {pageData.intro && <IntroSection data={pageData.intro} />}
           <ProblemSection data={pageData.problem} />
-          <CommonSituationsSection data={pageData.commonSituations} />
+          {!isToolPage && <CommonSituationsSection data={pageData.commonSituations} />}
           <AIExplanationSection data={pageData.aiExplanation} />
+          {pageData.longForm && <LongFormSection data={pageData.longForm} />}
           <TarotEntrySection
             data={pageData.tarotEntry}
-            onStartReading={() => onStartReading(pageData.hero.prefillQuestion)}
+            onStartReading={() => onStartReading(pageData.hero.prefillQuestion, pageData.readingConfig)}
+            previewCount={pageData.readingConfig?.drawCount}
           />
           <FAQDisplaySection data={pageData.faqs} language={language} />
           <RelatedLinksSection
-            title={isZh ? '相关塔罗问题' : 'Related Tarot Questions'}
+            title={relatedTitle}
             links={relatedLinks.map((link) => ({
               label: link.label[isZh ? 'zh' : 'en'],
               href: link.href[isZh ? 'zh' : 'en'],
@@ -140,7 +276,10 @@ export const LandingPageTemplate: React.FC<LandingPageTemplateProps> = ({
             title={pageData.seo.title}
             language={language}
           />
-          <CTAFooter language={language} onStartReading={() => onStartReading(pageData.hero.prefillQuestion)} />
+          <CTAFooter
+            language={language}
+            onStartReading={() => onStartReading(pageData.hero.prefillQuestion, pageData.readingConfig)}
+          />
         </div>
       </div>
     </>
@@ -178,6 +317,104 @@ const HeroSection: React.FC<{
   </div>
 );
 
+const QuickDrawSection: React.FC<{
+  onDraw: (count: number) => void;
+}> = ({ onDraw }) => (
+  <section className="w-full max-w-3xl px-8 md:px-16 pb-6">
+    <div className="flex flex-col items-center gap-4 text-center">
+      <p className="text-white/60 text-xs uppercase tracking-[0.3em]">Quick Draw</p>
+      <div className="flex flex-col sm:flex-row gap-3">
+        <button
+          onClick={() => onDraw(1)}
+          className="px-6 py-3 rounded-full border border-purple-500/40 text-white/90 hover:bg-purple-600/20 transition-colors"
+        >
+          Draw 1 Card
+        </button>
+        <button
+          onClick={() => onDraw(3)}
+          className="px-6 py-3 rounded-full bg-purple-600/80 text-white font-semibold hover:bg-purple-500 transition-colors"
+        >
+          Draw 3 Cards
+        </button>
+      </div>
+    </div>
+  </section>
+);
+
+const SpreadSelectorSection: React.FC<{
+  onOneCard: () => void;
+  onThreeCard: () => void;
+}> = ({ onOneCard, onThreeCard }) => (
+  <section className="w-full max-w-5xl px-8 md:px-16 pb-6">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="bg-white/5 rounded-2xl border border-white/10 p-5 flex flex-col gap-3">
+        <h3 className="text-lg font-semibold text-white/90">One Card</h3>
+        <p className="text-white/70 text-sm leading-relaxed">
+          Fast focus for daily guidance or a quick check-in.
+        </p>
+        <button
+          onClick={onOneCard}
+          className="mt-auto px-4 py-2 rounded-full border border-purple-500/40 text-white/90 hover:bg-purple-600/20 transition-colors"
+        >
+          Draw 1 Card
+        </button>
+      </div>
+      <div className="bg-white/5 rounded-2xl border border-white/10 p-5 flex flex-col gap-3">
+        <h3 className="text-lg font-semibold text-white/90">Three Card</h3>
+        <p className="text-white/70 text-sm leading-relaxed">
+          See past, present, and future context at a glance.
+        </p>
+        <button
+          onClick={onThreeCard}
+          className="mt-auto px-4 py-2 rounded-full bg-purple-600/80 text-white font-semibold hover:bg-purple-500 transition-colors"
+        >
+          Draw 3 Cards
+        </button>
+      </div>
+      <div className="bg-white/5 rounded-2xl border border-white/10 p-5 flex flex-col gap-3">
+        <h3 className="text-lg font-semibold text-white/90">Celtic Cross</h3>
+        <p className="text-white/70 text-sm leading-relaxed">
+          Classic 10-card layout for deep, layered insight.
+        </p>
+        <a
+          href="/celtic-cross-tarot"
+          className="mt-auto inline-flex items-center justify-center px-4 py-2 rounded-full border border-purple-500/40 text-white/90 hover:bg-purple-600/20 transition-colors"
+        >
+          Explore Layout
+        </a>
+      </div>
+    </div>
+  </section>
+);
+
+const CelticCrossPositionsSection: React.FC<{
+  onStartReading: () => void;
+}> = ({ onStartReading }) => (
+  <section className="w-full max-w-5xl px-8 md:px-16 pb-6">
+    <div className="bg-white/5 rounded-2xl border border-white/10 p-6 md:p-8 text-center">
+      <p className="text-white/60 text-xs uppercase tracking-[0.3em]">
+        10 Positions At A Glance
+      </p>
+      <div className="mt-5 grid grid-cols-2 md:grid-cols-5 gap-3">
+        {CELTIC_CROSS_POSITIONS.map((position) => (
+          <div
+            key={position}
+            className="text-white/80 text-sm md:text-base bg-white/5 border border-white/10 rounded-lg px-3 py-2"
+          >
+            {position}
+          </div>
+        ))}
+      </div>
+      <button
+        onClick={onStartReading}
+        className="mt-6 px-6 py-3 rounded-full bg-purple-600/80 text-white font-semibold hover:bg-purple-500 transition-colors"
+      >
+        Start Reading
+      </button>
+    </div>
+  </section>
+);
+
 // Intro Section Component
 const IntroSection: React.FC<{
   data: LandingPageContent['intro'];
@@ -213,8 +450,9 @@ const ProblemSection: React.FC<{
 // Common Situations Section Component
 const CommonSituationsSection: React.FC<{
   data: LandingPageContent['commonSituations'];
-}> = ({ data }) => (
-  <section className="w-full max-w-4xl px-8 md:px-16 py-16">
+  compact?: boolean;
+}> = ({ data, compact = false }) => (
+  <section className={`w-full max-w-4xl px-8 md:px-16 ${compact ? 'py-8' : 'py-16'}`}>
     <h2
       style={{ fontFamily: "'Noto Serif SC', serif" }}
       className="text-2xl md:text-3xl font-bold text-white/90 mb-8 text-center"
@@ -259,47 +497,74 @@ const AIExplanationSection: React.FC<{
   </section>
 );
 
+// Long Form Section Component
+const LongFormSection: React.FC<{
+  data: NonNullable<LandingPageContent['longForm']>;
+}> = ({ data }) => (
+  <section className="w-full max-w-4xl px-8 md:px-16 py-16">
+    <h2
+      style={{ fontFamily: "'Noto Serif SC', serif" }}
+      className="text-2xl md:text-3xl font-bold text-white/90 mb-8 text-center"
+    >
+      {data.title}
+    </h2>
+    <div className="space-y-6">
+      {data.paragraphs.map((paragraph, index) => (
+        <p key={index} className="text-white/70 text-lg leading-relaxed">
+          {paragraph}
+        </p>
+      ))}
+    </div>
+  </section>
+);
+
 // Tarot Entry Section Component
 const TarotEntrySection: React.FC<{
   data: LandingPageContent['tarotEntry'];
   onStartReading: () => void;
-}> = ({ data, onStartReading }) => (
-  <section className="w-full max-w-4xl px-8 md:px-16 py-20">
-    <h2
-      style={{ fontFamily: "'Noto Serif SC', serif" }}
-      className="text-2xl md:text-3xl font-bold text-white/90 mb-10 text-center"
-    >
-      {data.title}
-    </h2>
+  previewCount?: number;
+}> = ({ data, onStartReading, previewCount }) => {
+  const cardCount = previewCount && previewCount > 0 ? previewCount : 3;
+  const previewRotation = cardCount === 1 ? [0] : [-8, 0, 8].slice(0, cardCount);
 
-    {/* Card Preview */}
-    <div className="flex justify-center gap-4 md:gap-6 mb-10">
-      {[0, 1, 2].map((i) => (
-        <div
-          key={i}
-          onClick={onStartReading}
-          className="w-20 h-32 md:w-28 md:h-44 rounded-xl bg-gradient-to-b from-slate-800 to-slate-900 border-2 border-purple-900/60 shadow-2xl transform hover:scale-105 hover:-translate-y-2 transition-all duration-300 cursor-pointer flex items-center justify-center group"
-          style={{
-            transform: `rotate(${(i - 1) * 8}deg)`,
-          }}
-        >
-          <span className="text-purple-400/50 text-4xl group-hover:text-purple-400/80 transition-colors">
-            &#9789;
-          </span>
-        </div>
-      ))}
-    </div>
-
-    <div className="text-center">
-      <button
-        onClick={onStartReading}
-        className="px-10 py-5 bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-500 hover:to-purple-700 text-white font-bold rounded-xl shadow-lg shadow-purple-900/50 transition-all duration-300 hover:scale-105 text-xl"
+  return (
+    <section className="w-full max-w-4xl px-8 md:px-16 py-20">
+      <h2
+        style={{ fontFamily: "'Noto Serif SC', serif" }}
+        className="text-2xl md:text-3xl font-bold text-white/90 mb-10 text-center"
       >
-        {data.ctaText}
-      </button>
-    </div>
-  </section>
-);
+        {data.title}
+      </h2>
+
+      {/* Card Preview */}
+      <div className="flex justify-center gap-4 md:gap-6 mb-10">
+        {Array.from({ length: cardCount }).map((_, index) => (
+          <div
+            key={index}
+            onClick={onStartReading}
+            className="w-20 h-32 md:w-28 md:h-44 rounded-xl bg-gradient-to-b from-slate-800 to-slate-900 border-2 border-purple-900/60 shadow-2xl transform hover:scale-105 hover:-translate-y-2 transition-all duration-300 cursor-pointer flex items-center justify-center group"
+            style={{
+              transform: `rotate(${previewRotation[index] ?? 0}deg)`,
+            }}
+          >
+            <span className="text-purple-400/50 text-4xl group-hover:text-purple-400/80 transition-colors">
+              &#9789;
+            </span>
+          </div>
+        ))}
+      </div>
+
+      <div className="text-center">
+        <button
+          onClick={onStartReading}
+          className="px-10 py-5 bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-500 hover:to-purple-700 text-white font-bold rounded-xl shadow-lg shadow-purple-900/50 transition-all duration-300 hover:scale-105 text-xl"
+        >
+          {data.ctaText}
+        </button>
+      </div>
+    </section>
+  );
+};
 
 // FAQ Display Section Component
 const FAQDisplaySection: React.FC<{

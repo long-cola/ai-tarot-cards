@@ -57,6 +57,13 @@ export const Navbar: React.FC<NavbarProps> = ({
         { label: 'Career Tarot Reading', href: '/career-tarot-reading' },
         { label: 'Daily Tarot Guidance', href: '/daily-tarot-guidance' },
       ];
+  const tarotToolLinks = [
+    { label: 'Tarot Card Generator', href: '/tarot-card-generator' },
+    { label: 'One Card Tarot', href: '/one-card-tarot' },
+    { label: 'Random Tarot Card Generator', href: '/random-tarot-card-generator' },
+    { label: 'Tarot Spreads', href: '/tarot-spreads' },
+    { label: 'Celtic Cross Tarot', href: '/celtic-cross-tarot' },
+  ];
 
   // Debug: Log quota info when it changes
   useEffect(() => {
@@ -182,6 +189,33 @@ export const Navbar: React.FC<NavbarProps> = ({
               </div>
             </div>
           </details>
+          <details className="group relative">
+            <summary className="list-none text-white hover:text-white/80 transition-colors text-[16px] cursor-pointer flex items-center gap-1" style={{ fontWeight: 400, fontFamily: "'Noto Serif SC', serif" }}>
+              {isZh ? '塔罗工具' : 'Tarot Tools'}
+              <svg className="w-3 h-3 text-white/70 group-open:rotate-180 transition-transform" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M5.23 7.21a.75.75 0 011.06.02L10 11.173l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" />
+              </svg>
+            </summary>
+            <div className="absolute left-1/2 -translate-x-1/2 mt-2 min-w-[280px] z-50" style={{
+              padding: '16px',
+              background: '#282446',
+              border: '1px solid #443E71',
+              borderRadius: '16px',
+            }}>
+              <div className="flex flex-col gap-2">
+                {tarotToolLinks.map((link) => (
+                  <a
+                    key={link.href}
+                    href={link.href}
+                    className="text-[14px] text-purple-200 hover:text-white hover:bg-purple-600/30 transition-all block px-3 py-2 rounded-lg"
+                    style={{ fontFamily: "'Noto Serif SC', serif" }}
+                  >
+                    {link.label}
+                  </a>
+                ))}
+              </div>
+            </div>
+          </details>
           <button
             onClick={onTopicsClick}
             className="text-white hover:text-white/80 transition-colors text-[16px]"
@@ -208,12 +242,14 @@ export const Navbar: React.FC<NavbarProps> = ({
         {/* Right Actions */}
         <div className="flex items-center gap-2 md:gap-3">
           {/* Language Toggle */}
-          <button
-            onClick={onLanguageToggle}
-            className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white/80 hover:text-white text-xs font-medium transition-all"
-          >
-            {language.toUpperCase()}
-          </button>
+          {onLanguageToggle && (
+            <button
+              onClick={onLanguageToggle}
+              className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white/80 hover:text-white text-xs font-medium transition-all"
+            >
+              {language.toUpperCase()}
+            </button>
+          )}
 
           {/* Login/User */}
           {isAuthenticated ? (
@@ -468,6 +504,22 @@ export const Navbar: React.FC<NavbarProps> = ({
               </div>
               <div className="flex flex-col gap-2">
                 {tarotReadingLinks.map((link) => (
+                  <a
+                    key={link.href}
+                    href={link.href}
+                    className="text-sm text-purple-200 hover:text-purple-100 transition-colors"
+                  >
+                    {link.label}
+                  </a>
+                ))}
+              </div>
+            </div>
+            <div className="px-4 pt-2">
+              <div className="text-xs uppercase tracking-widest text-slate-400 mb-2">
+                {isZh ? '塔罗工具' : 'Tarot Tools'}
+              </div>
+              <div className="flex flex-col gap-2">
+                {tarotToolLinks.map((link) => (
                   <a
                     key={link.href}
                     href={link.href}
