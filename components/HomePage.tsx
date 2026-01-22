@@ -62,6 +62,7 @@ export const HomePage: React.FC<HomePageProps> = ({
       ];
   const tarotTools = [
     { label: 'Tarot Card Generator', href: '/tarot-card-generator' },
+    { label: 'Tarot Fortune Cards', href: '/tarot-fortune-cards' },
     { label: 'One Card Tarot', href: '/one-card-tarot' },
     { label: 'Random Tarot Card Generator', href: '/random-tarot-card-generator' },
     { label: 'Tarot Spreads', href: '/tarot-spreads' },
@@ -86,7 +87,7 @@ export const HomePage: React.FC<HomePageProps> = ({
         title={isZh ? '免费AI塔罗占卜 - 爱情事业财运解读 | 神秘塔罗在线' : 'Free AI Tarot Reading - Love, Career & Life Guidance | Mystic Tarot'}
         description={isZh
           ? '免费在线AI塔罗占卜，3秒获得专业解读。爱情、事业、财运、人生决策即时指引。神秘三牌阵洞察过去现在未来，24小时随时占卜，AI深度解析命运走向。'
-          : 'Free online AI tarot reading in 3 seconds. Get instant insights on love, career, money & life decisions. Three-card spread reveals past, present, future. 24/7 mystical guidance powered by AI.'}
+          : 'Free online AI tarot reading in 3 seconds. Draw tarot fortune cards for instant insights on love, career, money & life decisions. Three-card spread reveals past, present, future. 24/7 mystical guidance powered by AI.'}
         url={isZh ? '/zh/' : '/'}
         lang={isZh ? 'zh-Hans' : 'en'}
         schemaType="SoftwareApplication"
@@ -265,7 +266,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                   <div className="text-white/70 leading-relaxed space-y-4">
                     <h2 className="text-[20px] font-semibold text-white/90 mb-4">What is AI Tarot Reading?</h2>
                     <p>
-                      AI Tarot is an online platform that combines ancient tarot wisdom with modern artificial intelligence technology. Our mission is to help you gain clarity and guidance on love, career, money, and life decisions. Whether you are wondering "Will he contact me?", "Should I leave my job?", or seeking daily spiritual guidance, our AI provides instant, personalized tarot interpretations.
+                      AI Tarot is an online platform that combines ancient tarot wisdom with modern artificial intelligence technology. Our mission is to help you gain clarity and guidance on love, career, money, and life decisions. Whether you are wondering "Will he contact me?", "Should I leave my job?", or seeking daily spiritual guidance, our AI provides instant, personalized tarot interpretations. If you are looking for tarot fortune cards, our quick draws highlight the theme you need to hear right now.
                     </p>
                     <p>
                       Unlike traditional fortune-telling, AI Tarot does not predict the future. Instead, it helps you explore possibilities, clarify your thoughts, and listen to your inner voice. Our platform is available 24/7, providing support and inspiration whenever you need it.

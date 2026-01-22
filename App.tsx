@@ -17,6 +17,8 @@ import { PrivacyPolicyPage } from './components/PrivacyPolicyPage';
 import { TermsOfServicePage } from './components/TermsOfServicePage';
 import { PricingPage } from './components/PricingPage';
 import { LandingPageTemplate, isLandingPageSlug } from './components/landing';
+import { FortuneClusterPage } from './components/fortune/FortuneClusterPage';
+import { isFortuneClusterSlug } from './components/fortune/fortuneClusterConfig';
 import { Footer } from './components/Footer';
 import { CookieConsent as CookieConsentBanner } from './components/CookieConsent';
 import { Toast } from './components/Toast';
@@ -518,6 +520,8 @@ const App: React.FC = () => {
   const [showPricingPage, setShowPricingPage] = useState(false);
   const [showLandingPage, setShowLandingPage] = useState(false);
   const [currentLandingSlug, setCurrentLandingSlug] = useState<string | null>(null);
+  const [showFortuneClusterPage, setShowFortuneClusterPage] = useState(false);
+  const [currentFortuneSlug, setCurrentFortuneSlug] = useState<string | null>(null);
   const [pendingTopicTitle, setPendingTopicTitle] = useState<string>('');
   const [cookieConsent, setCookieConsent] = useState<CookieConsentStatus>(() => getCookieConsent());
   const [showCookieSettings, setShowCookieSettings] = useState(false);
@@ -530,6 +534,7 @@ const App: React.FC = () => {
 
   const viewKey = useMemo(() => {
     if (showSharedReadingPage && sharedReadingId) return `share:${sharedReadingId}`;
+    if (showFortuneClusterPage && currentFortuneSlug) return `fortune:${currentFortuneSlug}`;
     if (showPrivacyPage) return 'privacy';
     if (showTermsPage) return 'terms';
     if (showPricingPage) return 'pricing';
@@ -541,6 +546,8 @@ const App: React.FC = () => {
   }, [
     showSharedReadingPage,
     sharedReadingId,
+    showFortuneClusterPage,
+    currentFortuneSlug,
     showPrivacyPage,
     showTermsPage,
     showPricingPage,
@@ -566,7 +573,8 @@ const App: React.FC = () => {
     && !showTermsPage
     && !showBlogPage
     && !showPricingPage
-    && !showLandingPage;
+    && !showLandingPage
+    && !showFortuneClusterPage;
   
   // Initialize Deck
   useEffect(() => {
@@ -615,6 +623,14 @@ const App: React.FC = () => {
     // Remove language prefix if present
     const routeParts = pathParts.filter(p => p !== 'zh' && p !== 'en');
     const route = routeParts[0];
+
+    if (route && isFortuneClusterSlug(route)) {
+      console.log('[Router] Loading fortune cluster page:', route);
+      setCurrentFortuneSlug(route);
+      setShowFortuneClusterPage(true);
+      setShareDataLoaded(true);
+      return;
+    }
 
     // Check for landing pages first
     if (route && isLandingPageSlug(route)) {
@@ -747,7 +763,21 @@ const App: React.FC = () => {
       // This prevents intermediate renders with all pages false
 
       // Set the correct page based on route
-      if (route && isLandingPageSlug(route)) {
+      if (route && isFortuneClusterSlug(route)) {
+        setShowPricingPage(false);
+        setShowBlogPage(false);
+        setShowTopicListPage(false);
+        setShowTopicDetailPage(false);
+        setShowPrivacyPage(false);
+        setShowTermsPage(false);
+        setShowBigTopicIntroPage(false);
+        setShowSharedReadingPage(false);
+        setShowLandingPage(false);
+        setCurrentLandingSlug(null);
+        setSelectedBlogId(null);
+        setCurrentFortuneSlug(route);
+        setShowFortuneClusterPage(true);
+      } else if (route && isLandingPageSlug(route)) {
         // Reset all other pages and set landing page
         setShowPricingPage(false);
         setShowBlogPage(false);
@@ -757,6 +787,8 @@ const App: React.FC = () => {
         setShowTermsPage(false);
         setShowBigTopicIntroPage(false);
         setShowSharedReadingPage(false);
+        setShowFortuneClusterPage(false);
+        setCurrentFortuneSlug(null);
         setSelectedBlogId(null);
         setCurrentLandingSlug(route);
         setShowLandingPage(true);
@@ -770,6 +802,8 @@ const App: React.FC = () => {
         setShowLandingPage(false);
         setShowBigTopicIntroPage(false);
         setShowSharedReadingPage(false);
+        setShowFortuneClusterPage(false);
+        setCurrentFortuneSlug(null);
         setCurrentLandingSlug(null);
         setSelectedBlogId(null);
       } else if (route === 'blog') {
@@ -782,6 +816,8 @@ const App: React.FC = () => {
         setShowLandingPage(false);
         setShowBigTopicIntroPage(false);
         setShowSharedReadingPage(false);
+        setShowFortuneClusterPage(false);
+        setCurrentFortuneSlug(null);
         setCurrentLandingSlug(null);
         setSelectedBlogId(null);
       } else if (route === 'bigtopic') {
@@ -803,9 +839,13 @@ const App: React.FC = () => {
         setShowPrivacyPage(false);
         setShowTermsPage(false);
         setShowLandingPage(false);
+        setShowFortuneClusterPage(false);
+        setCurrentFortuneSlug(null);
         setCurrentLandingSlug(null);
         setSelectedBlogId(null);
       } else if (route === 'topics') {
+        setShowFortuneClusterPage(false);
+        setCurrentFortuneSlug(null);
         const topicId = routeParts[1];
 
         if (topicId) {
@@ -1463,6 +1503,8 @@ const App: React.FC = () => {
     setPendingTopicTitle('');
     setShowLandingPage(false);
     setCurrentLandingSlug(null);
+    setShowFortuneClusterPage(false);
+    setCurrentFortuneSlug(null);
 
     if (normalized.autoDraw) {
       autoDrawCards(normalized.drawCount);
@@ -1749,6 +1791,8 @@ const App: React.FC = () => {
   const clearLandingPageState = () => {
     setShowLandingPage(false);
     setCurrentLandingSlug(null);
+    setShowFortuneClusterPage(false);
+    setCurrentFortuneSlug(null);
   };
 
   const navigateToPath = (path: string) => {
@@ -1796,6 +1840,8 @@ const App: React.FC = () => {
     setShowPricingPage(false);
     setShowLandingPage(false);
     setCurrentLandingSlug(null);
+    setShowFortuneClusterPage(false);
+    setCurrentFortuneSlug(null);
     setPendingTopicTitle('');
     // Clean up any pending reading from localStorage
     localStorage.removeItem('pendingReading');
@@ -2259,9 +2305,11 @@ Reading Summary: ${readingSummary || "None"}`;
           setShowPrivacyPage(false);
           setShowTermsPage(false);
           setShowLandingPage(false);
+          setShowFortuneClusterPage(false);
           setShowSharedReadingPage(false);
           setSelectedBlogId(null);
           setCurrentLandingSlug(null);
+          setCurrentFortuneSlug(null);
           // Then set target page
           setShowBigTopicIntroPage(true);
           updateUrl('bigtopic');
@@ -2275,9 +2323,11 @@ Reading Summary: ${readingSummary || "None"}`;
           setShowTermsPage(false);
           setShowBigTopicIntroPage(false);
           setShowLandingPage(false);
+          setShowFortuneClusterPage(false);
           setShowSharedReadingPage(false);
           setSelectedBlogId(null);
           setCurrentLandingSlug(null);
+          setCurrentFortuneSlug(null);
           // Then set target page
           setShowBlogPage(true);
           updateUrl('blog');
@@ -2291,9 +2341,11 @@ Reading Summary: ${readingSummary || "None"}`;
           setShowTermsPage(false);
           setShowBigTopicIntroPage(false);
           setShowLandingPage(false);
+          setShowFortuneClusterPage(false);
           setShowSharedReadingPage(false);
           setSelectedBlogId(null);
           setCurrentLandingSlug(null);
+          setCurrentFortuneSlug(null);
           // Then set target page
           setShowPricingPage(true);
           updateUrl('pricing');
@@ -2361,8 +2413,16 @@ Reading Summary: ${readingSummary || "None"}`;
           />
         )}
 
+        {/* Fortune Cluster Pages */}
+        {showFortuneClusterPage && currentFortuneSlug && (
+          <FortuneClusterPage
+            slug={currentFortuneSlug}
+            language={language}
+          />
+        )}
+
         {/* Pricing Page */}
-        {showPricingPage && !showTopicListPage && !showTopicDetailPage && !showSharedReadingPage && !showPrivacyPage && !showTermsPage && !showBlogPage && !showLandingPage && (
+        {showPricingPage && !showTopicListPage && !showTopicDetailPage && !showSharedReadingPage && !showPrivacyPage && !showTermsPage && !showBlogPage && !showLandingPage && !showFortuneClusterPage && (
           <PricingPage
             language={language}
             onStartReading={() => {
@@ -2406,7 +2466,7 @@ Reading Summary: ${readingSummary || "None"}`;
         )}
 
         {/* Big Topic Intro Page */}
-        {showBigTopicIntroPage && !showTopicListPage && !showTopicDetailPage && !showSharedReadingPage && !showPrivacyPage && !showTermsPage && !showBlogPage && !showPricingPage && !showLandingPage && (
+        {showBigTopicIntroPage && !showTopicListPage && !showTopicDetailPage && !showSharedReadingPage && !showPrivacyPage && !showTermsPage && !showBlogPage && !showPricingPage && !showLandingPage && !showFortuneClusterPage && (
           <BigTopicIntroPage
             language={language}
             onStartNewTopic={(title) => {
@@ -2440,7 +2500,7 @@ Reading Summary: ${readingSummary || "None"}`;
         )}
 
         {/* Topic List Page */}
-        {showTopicListPage && !showTopicDetailPage && !showSharedReadingPage && !showPrivacyPage && !showTermsPage && !showBlogPage && !showPricingPage && !showLandingPage && (
+        {showTopicListPage && !showTopicDetailPage && !showSharedReadingPage && !showPrivacyPage && !showTermsPage && !showBlogPage && !showPricingPage && !showLandingPage && !showFortuneClusterPage && (
           <div className="px-4 py-4 w-full">
             <TopicListPage
               topics={topicList}
@@ -2459,7 +2519,7 @@ Reading Summary: ${readingSummary || "None"}`;
         )}
 
         {/* Topic Detail Page */}
-        {showTopicDetailPage && selectedTopic && !showSharedReadingPage && !showPrivacyPage && !showTermsPage && !showBlogPage && !showLandingPage && (
+        {showTopicDetailPage && selectedTopic && !showSharedReadingPage && !showPrivacyPage && !showTermsPage && !showBlogPage && !showLandingPage && !showFortuneClusterPage && (
           <div className="px-4 py-4 w-full">
             <TopicDetailPage
               topic={selectedTopic}
@@ -2485,7 +2545,7 @@ Reading Summary: ${readingSummary || "None"}`;
         )}
 
         {/* Phase: INPUT */}
-        {phase === AppPhase.INPUT && !showBigTopicIntroPage && !showTopicListPage && !showTopicDetailPage && !showSharedReadingPage && !showPrivacyPage && !showTermsPage && !showBlogPage && !showPricingPage && !showLandingPage && (
+        {phase === AppPhase.INPUT && !showBigTopicIntroPage && !showTopicListPage && !showTopicDetailPage && !showSharedReadingPage && !showPrivacyPage && !showTermsPage && !showBlogPage && !showPricingPage && !showLandingPage && !showFortuneClusterPage && (
           <HomePage
             language={language}
             question={question}
@@ -2505,7 +2565,7 @@ Reading Summary: ${readingSummary || "None"}`;
         )}
 
         {/* Phase: SHUFFLING */}
-        {phase === AppPhase.SHUFFLING && !showBigTopicIntroPage && !showTopicListPage && !showTopicDetailPage && !showSharedReadingPage && !showPrivacyPage && !showTermsPage && !showBlogPage && !showPricingPage && !showLandingPage && (
+        {phase === AppPhase.SHUFFLING && !showBigTopicIntroPage && !showTopicListPage && !showTopicDetailPage && !showSharedReadingPage && !showPrivacyPage && !showTermsPage && !showBlogPage && !showPricingPage && !showLandingPage && !showFortuneClusterPage && (
           <div className="flex flex-col items-center justify-center flex-1 animate-fade-in w-full">
              <div className="relative w-[400px] h-[300px] md:w-[500px] md:h-[350px]">
                 {SHUFFLE_ANGLES.map((angle, index) => {
@@ -2571,7 +2631,7 @@ Reading Summary: ${readingSummary || "None"}`;
         )}
 
         {/* Phase: DRAWING - Gesture Mode (full screen) */}
-        {phase === AppPhase.DRAWING && isGestureMode && !showBigTopicIntroPage && !showTopicListPage && !showTopicDetailPage && !showSharedReadingPage && !showPrivacyPage && !showTermsPage && !showBlogPage && !showPricingPage && !showLandingPage && (
+        {phase === AppPhase.DRAWING && isGestureMode && !showBigTopicIntroPage && !showTopicListPage && !showTopicDetailPage && !showSharedReadingPage && !showPrivacyPage && !showTermsPage && !showBlogPage && !showPricingPage && !showLandingPage && !showFortuneClusterPage && (
           <GestureDrawing
             deck={deck}
             drawnCards={drawnCards}
@@ -2583,7 +2643,7 @@ Reading Summary: ${readingSummary || "None"}`;
         )}
 
         {/* Phase: DRAWING - Traditional Mode */}
-        {phase === AppPhase.DRAWING && !isGestureMode && !showBigTopicIntroPage && !showTopicListPage && !showTopicDetailPage && !showSharedReadingPage && !showPrivacyPage && !showTermsPage && !showBlogPage && !showPricingPage && !showLandingPage && (
+        {phase === AppPhase.DRAWING && !isGestureMode && !showBigTopicIntroPage && !showTopicListPage && !showTopicDetailPage && !showSharedReadingPage && !showPrivacyPage && !showTermsPage && !showBlogPage && !showPricingPage && !showLandingPage && !showFortuneClusterPage && (
           <div className="relative w-full flex-1 overflow-hidden animate-fade-in">
             <div className="absolute inset-0 pointer-events-none">
               <div
@@ -2694,7 +2754,7 @@ Reading Summary: ${readingSummary || "None"}`;
         )}
 
         {/* Phase: REVEAL & ANALYSIS */}
-        {(phase === AppPhase.REVEAL || phase === AppPhase.ANALYSIS) && !showBigTopicIntroPage && !showTopicListPage && !showTopicDetailPage && !showSharedReadingPage && !showPrivacyPage && !showTermsPage && !showBlogPage && !showPricingPage && !showLandingPage && (
+        {(phase === AppPhase.REVEAL || phase === AppPhase.ANALYSIS) && !showBigTopicIntroPage && !showTopicListPage && !showTopicDetailPage && !showSharedReadingPage && !showPrivacyPage && !showTermsPage && !showBlogPage && !showPricingPage && !showLandingPage && !showFortuneClusterPage && (
           <ReadingResultPage
             question={question}
             cards={drawnCards}

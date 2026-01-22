@@ -59,6 +59,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       ];
   const tarotToolLinks = [
     { label: 'Tarot Card Generator', href: '/tarot-card-generator' },
+    { label: 'Tarot Fortune Cards', href: '/tarot-fortune-cards' },
     { label: 'One Card Tarot', href: '/one-card-tarot' },
     { label: 'Random Tarot Card Generator', href: '/random-tarot-card-generator' },
     { label: 'Tarot Spreads', href: '/tarot-spreads' },
